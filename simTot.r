@@ -8,7 +8,7 @@ library(parallel)
 #rstan_options("auto_write" = TRUE)
 #pboptions(type='none')
 
-mle <- function(data){
+mle <- function(data,se=TRUE){
     sdat <- with(data, list(
                            nctl=sum(1-Z),
                            ntrt=sum(Z),
@@ -22,13 +22,26 @@ mle <- function(data){
                        )
                  )
                                         #fit1 <-
-    fit <- optimizing(stanMod,data=sdat)
+    fit <- optimizing(stanMod,data=sdat,hessian=se)
 #    fit2 <- optimizing(stanMod,data=sdat)
 
  #   fit <- if(fit1$value>fit2$value) fit1 else fit2
 
+    if(se){
+        invHess <- -solve(fit$hessian)
+
+        return(
+            c(eff0=fit$par['mu10']-fit$par['mu00'],
+              se0=sqrt(invHess['mu10','mu10']+invHess['mu00','mu00']-2*invHess['mu10','mu00']),
+              eff1=fit$par['mu11']-fit$par['mu01'],
+              se1=sqrt(invHess['mu11','mu11']+invHess['mu01','mu01']-2*invHess['mu11','mu01'])
+              )
+        )
+    }
+
     c(eff0=fit$par['mu10']-fit$par['mu00'],
-      eff1=fit$par['mu11']-fit$par['mu01'])
+      eff1=fit$par['mu11']-fit$par['mu01']
+      )
 }
 
 stanMod <- stan_model('ps.stan')#,auto_write=TRUE)
@@ -60,6 +73,7 @@ twoStep <- function(data,justEst=TRUE){
         mycontrol <- new('geex_control', .root = setup_root_control(start = rep(.5,4)))
         bbb@.control <- mycontrol
         theta <- estimate_GFUN_roots(bbb)$root
+
         theta <- c(theta,
                    -theta[3],#+mean(data$Y[data$Z==1&data$S==0]),
                    coef(mod1)['S']-theta[4]
@@ -75,7 +89,44 @@ twoStep <- function(data,justEst=TRUE){
 }
 
 
+oneStep <- function(dat){
+    estFun <- function(data){
 
+        function(theta){
+            xb1 <- with(data,(cbind(1,S,x1,x2)%*%theta[1:4])[,1]) ## ols z=1
+            xb2 <- with(data,(cbind(x1,x2)%*%theta[3:4])[,1]) ## just xb for z=0 (b is same in trt groups)
+            xb3 <- with(data,(cbind(1,x1,x2)%*%theta[5:7])[,1]) ## logit z=1
+
+            ps <- plogis(xb3)
+
+            c(
+### regression for treatment group
+                ifelse(data$Z==1,data$Y-xb1,0),
+                ifelse(data$Z==1,data$S*(data$Y-xb1),0),
+                ifelse(data$Z==1,data$x1*(data$Y-xb1),0),
+                ifelse(data$Z==1,data$x2*(data$Y-xb1),0),
+### logistic regression
+                ifelse(data$Z==1,data$S-ps,0),
+                ifelse(data$Z==1,data$x1*(data$S-ps),0),
+                ifelse(data$Z==1,data$x2*(data$S-ps),0),
+### mixture model in control group
+                ifelse(data$Z==0,theta[9]*ps+theta[8]*(1-ps)-data$Y+xb2,0),
+                                        #ifelse(data$Z==0,data$x1*(theta[9]*ps+theta[8]*(1-ps)-data$Y+xb2),0),
+                                        #ifelse(data$Z==0,data$x2*(theta[9]*ps+theta[8]*(1-ps)-data$Y+xb2),0),
+                ifelse(data$Z==0,theta[9]*ps^2+theta[8]*(ps-ps^2)-(data$Y-xb2)*ps,0),
+                theta[10]-(theta[1]-theta[8]),
+                theta[11]-(theta[1]+theta[2]-theta[9])
+            )
+        }
+    }
+
+    res <- m_estimate(estFun,data,root_control = setup_root_control(start = rep(0,11)))
+
+    est <- coef(res)
+    se <- sqrt(diag(vcov(res)))
+
+    c(eff0=est[10],se0=se[10],eff1=est[11],se1=se[11])
+}
 
 ### mu00=0
 makeDat <- function(n,mu01=0.2,mu10=0,mu11=0.5,b1=1,gumb=FALSE){
@@ -113,16 +164,18 @@ sim2Step <- function(n,...){
     twoStep(dat)
 }
 
-simStan2step <- function(n,...){
+simStan2step <- function(n,...,se=TRUE){
     dat <- makeDat(n,...)
-    two <- twoStep(dat)
-    MLE <- mle(dat)
+    two <- if(se) oneStep(dat) else twoStep(dat)
+    MLE <- mle(dat,se=se)
 
-    out <- setNames(c(two[c('S0','S1','eff0','eff1')],MLE),
-             c('true0','true1','mom0','mom1','mle0','mle1')
+    out <- setNames(c(attr(dat,'trueEffs'),two,MLE),
+                    if(se){
+                        c('true0','true1','mom0','mom0se','mom1','mom1se','mle0','mle0se','mle1','mle1se')
+                        } else c('true0','true1','mom0','mom1','mle0','mle1')
              )
 
-    out <- c(out,unlist(list(...)))
+    out <- c(out,n,unlist(list(...)))
     #if(any(abs(out)>2)) return(list(out,dat))
     out
 }
@@ -136,9 +189,11 @@ summ <- function(sss){
     }
 
 
-oneCase <- function(nsim,cl, facs){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
+oneCase <- function(nsim,cl, facs,se=TRUE){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
 
-  print(Sys.time())
+    print(Sys.time())
+
+    facs$se <- se
   #cat(n,mu00,mu01,mu10,mu11,gumb,b1,'\n',sep=' ')
   clusterExport(cl,'facs',envir=environment())
 
@@ -165,6 +220,7 @@ fullsim <- function(nsim,
                     gumbs=c(TRUE,FALSE),
                     b1s=c(0,0.2,0.5,1),
                     ext='',
+                    se=TRUE,
                     cl=NULL
                     ){
 
@@ -185,7 +241,7 @@ fullsim <- function(nsim,
     for(i in 1:nrow(cases)){
     	  cat(round(i/nrow(cases)*100),'%\n')
 	  facs <- cases[i,]
-    	  res <- oneCase(nsim=nsim,cl=cl,facs=facs)#  try(do.call('oneCase',facs))
+    	  res <- oneCase(nsim=nsim,cl=cl,facs=facs,se=se)#  try(do.call('oneCase',facs))
 	  save(res,facs,file=paste0('simResults/sim',i,ext,'.RData'))
 	  }
 
@@ -199,7 +255,7 @@ fullsim <- function(nsim,
      clusterEvalQ(cl,library(rstan))
      clusterEvalQ(cl,library(geex))
 
-     clusterExport(cl,c('simStan2step','makeDat','mle','twoStep','stanMod'))
+     clusterExport(cl,c('simStan2step','makeDat','mle','twoStep','oneStep','stanMod'))
 ## }
 
 fullsim(1000,cl=cl)
