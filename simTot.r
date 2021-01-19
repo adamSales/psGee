@@ -120,7 +120,7 @@ oneStep <- function(dat){
         }
     }
 
-    res <- m_estimate(estFun,data,root_control = setup_root_control(start = rep(0,11)))
+    res <- m_estimate(estFun,dat,root_control = setup_root_control(start = rep(0.1,11)))
 
     est <- coef(res)
     se <- sqrt(diag(vcov(res)))
