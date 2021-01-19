@@ -126,11 +126,32 @@ simStan2step <- function(n,...){
     out
 }
 
+bias <- function(sss){
+
+    sss1 <- sss[,1:6]
+    sss2 <- sss[,7:11]
+
+    colMeans(cbind(sss1[,3:6]-sss1[,c(1,2,1,2)],sss2))
+}
+
+rmse <- function(sss){
+
+    sss1 <- sss[,1:6]
+    sss2 <- sss[,7:11]
+
+    c(
+        sqrt(colMeans((sss1[,3:6]-sss1[,c(1,2,1,2)])^2)),
+        colMeans(sss2)
+    )
+}
+
 
 summ <- function(sss){
-    rbind(rowMeans(sss),
-          apply(sss,1,sd),
-          sqrt(rowMeans((sss-sss[rep(1:2,3),])^2))
+    sss1 <- sss[,1:6]
+    sss2 <- sss[,7:11]
+    rbind(colMeans(sss1),
+          apply(sss1,2,sd),
+          sqrt(row1Means((sss-sss[rep(1:2,3),])^2))
           )
     }
 
@@ -165,3 +186,38 @@ fullsim <- function(nsim,
 
 res <- fullsim(500,cl=50)
 save(res,file='simulation.RData')
+
+ for(i in 1:99){
+ load(paste0('simResults/sim',i,'.RData'))
+ resList[[i]] <- res
+}
+
+biases <- sapply(resList,bias)
+rmses <- sapply(resList,rmse)
+
+
+plotRes <- function(rrr,fac,S){
+    www <- (max(rrr[fac,])-min(rrr[fac,]))*0.02
+    plot(rrr[fac,]-www,rrr[paste0('mom',S),],ylim=range(c(rrr[paste0('mom',S),],rrr[paste0('mle',S),])),xlim=c(min(rrr[fac,])-2*www,max(rrr[fac,])+2*www),pch=16,xlab=fac)
+    points(rrr[fac,]+www,rrr[paste0('mle',S),],col='red',pch=16)
+    legend('topright',legend=c('MOM','MLE'),col=c('black','red'),pch=16)
+    abline(h=0,lty=2)
+}
+
+
+loadRes <- function(){
+    load('simResults/cases.RData')
+
+    results <- list()
+    for(i in 1:nrow(cases)){
+        if(i %% 10==0) cat(round(i/nrow(cases)*100), '% ')
+        load(paste0('simResults/sim',i,'.RData'))
+        stopifnot(identical(facs,cases[i,]))
+        results[[i]] <- as.data.frame(res)
+        results[[i]]$n <- facs$n
+        rm(res,facs)
+    }
+
+    do.call('rbind',results)
+
+}
