@@ -1,11 +1,12 @@
-library(tidyverse)
+library(dplyr)
 library(rstan)
 library(geex)
 library(parallel)
-library(pbapply)
+#library(pbapply)
 
-rstan_options("auto_write" = TRUE)
 
+#rstan_options("auto_write" = TRUE)
+#pboptions(type='none')
 
 mle <- function(data){
     sdat <- with(data, list(
@@ -30,7 +31,7 @@ mle <- function(data){
       eff1=fit$par['mu11']-fit$par['mu01'])
 }
 
-stanMod <- stan_model('ps.stan',auto_write=TRUE)
+stanMod <- stan_model('ps.stan')#,auto_write=TRUE)
 
 
 twoStep <- function(data,justEst=TRUE){
@@ -76,8 +77,8 @@ twoStep <- function(data,justEst=TRUE){
 
 
 
-
-makeDat <- function(n,mu00=0,mu01=0.2,mu10=0,mu11=0.5,b1=1,gumb=FALSE){
+### mu00=0
+makeDat <- function(n,mu01=0.2,mu10=0,mu11=0.5,b1=1,gumb=FALSE){
 
     x1 <- rnorm(2*n)
     x2 <- rnorm(2*n)
@@ -96,10 +97,8 @@ makeDat <- function(n,mu00=0,mu01=0.2,mu10=0,mu11=0.5,b1=1,gumb=FALSE){
     error <- if(gumb) evd::rgumbel(2*n,loc=0,scale=0.16) else rnorm(2*n,0,0.2)
     error <- error-mean(error)
 
-    Yc <- 0.5*(x1+x2+x3)+mu01*S
-    Y <- Yc+(mu11-mu01)*S*Z+error
-
-
+    Y <- 0.5*(x1+x2+x3)+mu01*S+mu10*Z+(mu11-mu01-mu10)*Z*S+error
+    
     dat <- data.frame(Y,Z,S=ifelse(Z==1,S,0),x1,x2,Strue=S)
     attr(dat,'trueEffs') <- c(
         S0=mean(Y[Z==1&S==0])-mean(Y[Z==0&S==0]),
@@ -122,45 +121,47 @@ simStan2step <- function(n,...){
     out <- setNames(c(two[c('S0','S1','eff0','eff1')],MLE),
              c('true0','true1','mom0','mom1','mle0','mle1')
              )
+
+    out <- c(out,unlist(list(...)))
     #if(any(abs(out)>2)) return(list(out,dat))
     out
 }
 
-bias <- function(sss){
-
-    sss1 <- sss[,1:6]
-    sss2 <- sss[,7:11]
-
-    colMeans(cbind(sss1[,3:6]-sss1[,c(1,2,1,2)],sss2))
-}
-
-rmse <- function(sss){
-
-    sss1 <- sss[,1:6]
-    sss2 <- sss[,7:11]
-
-    c(
-        sqrt(colMeans((sss1[,3:6]-sss1[,c(1,2,1,2)])^2)),
-        colMeans(sss2)
-    )
-}
-
 
 summ <- function(sss){
-    sss1 <- sss[,1:6]
-    sss2 <- sss[,7:11]
-    rbind(colMeans(sss1),
-          apply(sss1,2,sd),
-          sqrt(row1Means((sss-sss[rep(1:2,3),])^2))
+    rbind(rowMeans(sss),
+          apply(sss,1,sd),
+          sqrt(rowMeans((sss-sss[rep(1:2,3),])^2))
           )
     }
+
+
+oneCase <- function(nsim,cl, facs){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
+
+  print(Sys.time())
+  #cat(n,mu00,mu01,mu10,mu11,gumb,b1,'\n',sep=' ')
+  clusterExport(cl,'facs',envir=environment())
+
+  time <- system.time(
+    res <- 
+      parLapply(cl, #mclapply( #pbreplicate(
+        1:nsim,
+        function(i) do.call('simStan2step',facs) #(n=n,mu00=0,mu01=mu01,mu10=mu10,mu11=mu11,gumb=gumb,b1=b1),
+#        mc.cores=cl
+      )
+   )
+  print(time)
+  res <- do.call('rbind',res)
+  attr(res,"time") <- time
+  res
+}
 
 
 fullsim <- function(nsim,
                     ns=c(100,500,1000),
                     mu01=c(0,.3),#sepTs=c(TRUE,FALSE),
                     mu10=c(0,.3),#sepCs=c(TRUE,FALSE),
-                    mu11=c(.3,.3),#effs=c(TRUE,FALSE),
+                    mu11=c(0,.3),#effs=c(TRUE,FALSE),
                     gumbs=c(TRUE,FALSE),
                     b1s=c(0,0.2,0.5,1),
                     cl=NULL
@@ -169,61 +170,37 @@ fullsim <- function(nsim,
     cases=expand.grid(ns,mu01,mu10,mu11,gumbs,b1s)
     names(cases) <- c('n','mu01','mu10','mu11','gumb','b1')
 
-    cases%>%
-        rowwise()%>%
-        mutate(res=list(pbreplicate(nsim,simStan2step(n=n,mu00=0,mu01=mu01,mu10=mu10,mu11=mu11,gumb=gumb,b1=b1),cl=cl)))
+    cat(nrow(cases),' conditions\n')
+
+    #cases%>%
+    #    rowwise()%>%
+    #    mutate(res=list(try(oneCase(nsim=nsim,n=n,mu00=0,mu01=mu01,mu10=mu10,mu11=mu11,gumb=gumb,b1=b1,cl=cl))))
+    
+    #cases$nsim <- nsim
+    #cases$cl <- cl
+    
+    save(cases,file='simResults/cases.RData')
+
+    for(i in 1:nrow(cases)){
+    	  cat(round(i/nrow(cases)*100),'%\n')
+	  facs <- cases[i,]
+    	  res <- oneCase(nsim=nsim,cl=cl,facs=facs)#  try(do.call('oneCase',facs))
+	  save(res,facs,file=paste0('simResults/sim',i,'.RData'))
+	  }
+
+    return(0)
 }
 
 
 ## if(!exists('cl')){
-##     cl <- makeCluster(6)
-##     clusterEvalQ(cl,library(tidyverse))
-##     clusterEvalQ(cl,library(rstan))
-##     clusterEvalQ(cl,library(geex))
+     cl <- makeCluster(20)
+     clusterEvalQ(cl,library(tidyverse))
+     clusterEvalQ(cl,library(rstan))
+     clusterEvalQ(cl,library(geex))
 
-##     clusterExport(cl,c('simStan2step','makeDat','mle','twoStep','stanMod'))
+     clusterExport(cl,c('simStan2step','makeDat','mle','twoStep','stanMod'))
 ## }
 
-res <- fullsim(500,cl=50)
-save(res,file='simulation.RData')
+fullsim(1000,cl=cl)
 
- for(i in 1:99){
- load(paste0('simResults/sim',i,'.RData'))
- resList[[i]] <- res
-}
-
-biases <- sapply(resList,bias)
-rmses <- sapply(resList,rmse)
-
-
-plotRes <- function(rrr,fac,S){
-    www <- (max(rrr[fac,])-min(rrr[fac,]))*0.02
-    plot(rrr[fac,]-www,rrr[paste0('mom',S),],ylim=range(c(rrr[paste0('mom',S),],rrr[paste0('mle',S),])),xlim=c(min(rrr[fac,])-2*www,max(rrr[fac,])+2*www),pch=16,xlab=fac)
-    points(rrr[fac,]+www,rrr[paste0('mle',S),],col='red',pch=16)
-    legend('topright',legend=c('MOM','MLE'),col=c('black','red'),pch=16)
-    abline(h=0,lty=2)
-}
-
-
-loadRes <- function(){
-    load('simResults/cases.RData')
-
-    results <- list()
-    for(i in 1:nrow(cases)){
-        if(i %% 10==0) cat(round(i/nrow(cases)*100), '% ')
-        load(paste0('simResults/sim',i,'.RData'))
-        stopifnot(identical(facs,cases[i,]))
-        results[[i]] <- as.data.frame(res)
-        results[[i]]$n <- facs$n
-        rm(res,facs)
-    }
-
-    do.call('rbind',results)
-
-}
-
-
-results%>%
-    filter(n==1000,gumb==0,mu01==0.3,mu10==0.3,mu11==0.3)%>%
-    group_by(b1,mu01,mu10,mu11)%>%
-    summarize(across(c(true0,true1),mean),across(c(mom0,mle0),~mean(.-true0)),across(c(mom1,mle1),~mean(.-true1)))
+stopCluster(cl)
