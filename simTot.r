@@ -98,7 +98,7 @@ makeDat <- function(n,mu01=0.2,mu10=0,mu11=0.5,b1=1,gumb=FALSE){
     error <- error-mean(error)
 
     Y <- 0.5*(x1+x2+x3)+mu01*S+mu10*Z+(mu11-mu01-mu10)*Z*S+error
-    
+
     dat <- data.frame(Y,Z,S=ifelse(Z==1,S,0),x1,x2,Strue=S)
     attr(dat,'trueEffs') <- c(
         S0=mean(Y[Z==1&S==0])-mean(Y[Z==0&S==0]),
@@ -143,7 +143,7 @@ oneCase <- function(nsim,cl, facs){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
   clusterExport(cl,'facs',envir=environment())
 
   time <- system.time(
-    res <- 
+    res <-
       parLapply(cl, #mclapply( #pbreplicate(
         1:nsim,
         function(i) do.call('simStan2step',facs) #(n=n,mu00=0,mu01=mu01,mu10=mu10,mu11=mu11,gumb=gumb,b1=b1),
@@ -161,9 +161,10 @@ fullsim <- function(nsim,
                     ns=c(100,500,1000),
                     mu01=c(0,.3),#sepTs=c(TRUE,FALSE),
                     mu10=c(0,.3),#sepCs=c(TRUE,FALSE),
-                    mu11=c(0,.3),#effs=c(TRUE,FALSE),
+                    mu11=.3,#effs=c(TRUE,FALSE),
                     gumbs=c(TRUE,FALSE),
                     b1s=c(0,0.2,0.5,1),
+                    ext='',
                     cl=NULL
                     ){
 
@@ -175,17 +176,17 @@ fullsim <- function(nsim,
     #cases%>%
     #    rowwise()%>%
     #    mutate(res=list(try(oneCase(nsim=nsim,n=n,mu00=0,mu01=mu01,mu10=mu10,mu11=mu11,gumb=gumb,b1=b1,cl=cl))))
-    
+
     #cases$nsim <- nsim
     #cases$cl <- cl
-    
-    save(cases,file='simResults/cases.RData')
+
+    save(cases,file=paste0('simResults/cases',ext,'.RData'))
 
     for(i in 1:nrow(cases)){
     	  cat(round(i/nrow(cases)*100),'%\n')
 	  facs <- cases[i,]
     	  res <- oneCase(nsim=nsim,cl=cl,facs=facs)#  try(do.call('oneCase',facs))
-	  save(res,facs,file=paste0('simResults/sim',i,'.RData'))
+	  save(res,facs,file=paste0('simResults/sim',i,ext,'.RData'))
 	  }
 
     return(0)
@@ -202,5 +203,7 @@ fullsim <- function(nsim,
 ## }
 
 fullsim(1000,cl=cl)
+
+fullsim(1000,mu11=0,mu01=0.3,mu10=0.3,ext='reverse',cl=cl)
 
 stopCluster(cl)
