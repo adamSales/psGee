@@ -221,3 +221,9 @@ loadRes <- function(){
     do.call('rbind',results)
 
 }
+
+
+results%>%
+    filter(n==1000,gumb==0,mu01==0.3,mu10==0.3,mu11==0.3)%>%
+    group_by(b1,mu01,mu10,mu11)%>%
+    summarize(across(c(true0,true1),mean),across(c(mom0,mle0),~mean(.-true0)),across(c(mom1,mle1),~mean(.-true1)))
