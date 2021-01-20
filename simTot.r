@@ -254,7 +254,7 @@ fullsim <- function(nsim,
 
 
 ## if(!exists('cl')){
-     cl <- makeCluster(20)
+     cl <- makeCluster(50)
      clusterEvalQ(cl,library(tidyverse))
      clusterEvalQ(cl,library(rstan))
      clusterEvalQ(cl,library(geex))
