@@ -175,14 +175,19 @@ sim2Step <- function(n,...){
 
 simStan2step <- function(n,...,se=TRUE){
     dat <- makeDat(n,...)
-    two <- if(se) oneStep(dat) else twoStep(dat)
-    MLE <- mle(dat,se=se)
+    two <- if(se) try(oneStep(dat)) else twoStep(dat)
+    MLE <- try(mle(dat,se=se))
 
-    out <- setNames(c(attr(dat,'trueEffs'),two,MLE),
+    if(inherits(two,'try-error') | inherits(MLE, 'try-error')){
+      out <- rep(NA, ifelse(se,10,6))
+    } else {
+
+        out <- setNames(c(attr(dat,'trueEffs'),two,MLE),
                     if(se){
                         c('true0','true1','mom0','mom0se','mom1','mom1se','mle0','mle0se','mle1','mle1se')
                         } else c('true0','true1','mom0','mom1','mle0','mle1')
              )
+    }
 
     out <- c(out,n,unlist(list(...)))
     #if(any(abs(out)>2)) return(list(out,dat))
@@ -210,12 +215,13 @@ oneCase <- function(nsim,cl, facs,se=TRUE){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
     res <-
       parLapply(cl, #mclapply( #pbreplicate(
         1:nsim,
-        function(i) do.call('simStan2step',facs) #(n=n,mu00=0,mu01=mu01,mu10=mu10,mu11=mu11,gumb=gumb,b1=b1),
-#        mc.cores=cl
+        function(i) try(do.call('simStan2step',facs))
       )
    )
   print(time)
-  res <- do.call('rbind',res)
+  resMat <- try(do.call('rbind',res))
+  if(!inherits(resMat,'try-error')) res <- resMat
+
   attr(res,"time") <- time
   res
 }
