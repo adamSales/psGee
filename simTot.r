@@ -1,8 +1,13 @@
 #library(dplyr)
-library(rstan)
+#library(rstan)
+print('here')
 library(geex)
 library(parallel)
 #library(pbapply)
+
+load('stanMod.RData')
+
+print('here')
 
 
 #rstan_options("auto_write" = TRUE)
@@ -22,7 +27,7 @@ mle <- function(data,se=TRUE){
                        )
                  )
                                         #fit1 <-
-    fit <- optimizing(stanMod,data=sdat,hessian=se)
+    fit <- rstan::optimizing(stanMod,data=sdat,hessian=se)
 #    fit2 <- optimizing(stanMod,data=sdat)
 
  #   fit <- if(fit1$value>fit2$value) fit1 else fit2
@@ -44,7 +49,7 @@ mle <- function(data,se=TRUE){
       )
 }
 
-stanMod <- stan_model('ps.stan')#,auto_write=TRUE)
+#stanMod <- rstan::stan_model('ps.stan')#,auto_write=TRUE)
 
 
 twoStep <- function(data,justEst=TRUE){
@@ -254,7 +259,7 @@ fullsim <- function(nsim,
 
 
 ## if(!exists('cl')){
-     cl <- makeCluster(50)
+     cl <- makeCluster(20)
      clusterEvalQ(cl,library(tidyverse))
      clusterEvalQ(cl,library(rstan))
      clusterEvalQ(cl,library(geex))
