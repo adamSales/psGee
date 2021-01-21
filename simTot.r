@@ -1,4 +1,4 @@
-library(dplyr)
+#library(dplyr)
 library(rstan)
 library(geex)
 library(parallel)
@@ -120,7 +120,11 @@ oneStep <- function(dat){
         }
     }
 
-    res <- m_estimate(estFun,dat,root_control = setup_root_control(start = rep(0.1,11)))
+    res <- try(m_estimate(estFun,dat,root_control = setup_root_control(start = rep(0.1,11))))
+    if(inherits(res,'try-error'))
+        res <- try(m_estimate(estFun,dat,root_control = setup_root_control(start = rep(1,11))))
+    if(inherits(res,'try-error'))
+        return(rep(NA,4))
 
     est <- coef(res)
     se <- sqrt(diag(vcov(res)))
@@ -250,7 +254,7 @@ fullsim <- function(nsim,
 
 
 ## if(!exists('cl')){
-     cl <- makeCluster(20)
+     cl <- makeCluster(50)
      clusterEvalQ(cl,library(tidyverse))
      clusterEvalQ(cl,library(rstan))
      clusterEvalQ(cl,library(geex))
