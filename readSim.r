@@ -43,36 +43,80 @@ plotRes <- function(rrr,fac,S){
 }
 
 
+getSumms <- function(res,S,EST){
+    #cases <- results%>%select(starts_with('mu'),n,b1,gumb)%>%distinct()
+    true <- res[[paste0('true',S)]]
+    est <- res[[paste0(EST,S)]]
+    se <- res[[paste0(EST,S,'se')]]
+
+    cbind(
+        res[1,which(sapply(res,n_distinct)==1)],
+        data.frame(
+            EST=EST,
+            S=S,
+            getEst=mean(is.finite(est)),
+            getSE=mean(is.finite(se)),
+            bias=mean(est-true),
+            rmse=sqrt(mean((est-true)^2)),
+            biasV=mean(se^2)-var(est-true),
+            avgSE=mean(se),
+            reject=mean(est>=2*se)+mean(est<=2*se),
+            cover=mean(true> est-2*se & true< est+2*se)
+        )
+    )
+}
+
+
+
 loadRes <- function(){
     load('simResults/cases.RData')
 
     results <- list()
+#    summ <- NULL
     #fn <- list.files('./simResults','sim[[:alnum:]]+.RData')
     for(i in 1:nrow(cases)){#length(fn)){
         if(i %% 10==0) cat(round(i/nrow(cases)*100),'%')#length(fn)*100), '% ')
         load(paste0('simResults/sim',i,'.RData'))#fn[i]))
         stopifnot(identical(facs,cases[i,]))
-        results[[i]] <- as.data.frame(res)
-        results[[i]]$n <- facs$n
+        res <- as.data.frame(res)
+        res$n <- facs$n
+        res$run <- i
+        results[[i]] <- res
         rm(res,facs)
     }
 
-    I <- length(results)
-
-    load('simResults/casesreverse.RData')
-
-    for(i in 1:nrow(cases)){#length(fn)){
-        if(i %% 10==0) cat(round(i/nrow(cases)*100),'%')#length(fn)*100), '% ')
-        load(paste0('simResults/sim',i,'reverse.RData'))#fn[i]))
-        stopifnot(identical(facs,cases[i,]))
-        results[[i+I]] <- as.data.frame(res)
-        results[[i+I]]$n <- facs$n
-        rm(res,facs)
-    }
-
-    do.call('rbind',results)
-
+    results
 }
+
+allSums <- function(results){
+    res1 <- results[[1]]
+    eee <- names(select(res1,ends_with('0se')))%>%gsub('0se','',.)
+
+    summs <- list()
+    for(EST in eee)
+        for(S in c(0,1))
+            summs[[paste(EST,S)]] <-
+                map_dfr(results,getSumms,EST=EST,S=S)
+
+    do.call('rbind',summs)
+}
+
+    ## I <- length(results)
+
+##     load('simResults/casesreverse.RData')
+
+##     for(i in 1:nrow(cases)){#length(fn)){
+##         if(i %% 10==0) cat(round(i/nrow(cases)*100),'%')#length(fn)*100), '% ')
+##         load(paste0('simResults/sim',i,'reverse.RData'))#fn[i]))
+##         stopifnot(identical(facs,cases[i,]))
+##         results[[i+I]] <- as.data.frame(res)
+##         results[[i+I]]$n <- facs$n
+##         rm(res,facs)
+##     }
+
+##     do.call('rbind',results)
+
+## }
 
 
 results%>%
@@ -107,7 +151,7 @@ results%>%
 results%>%
     filter(gumb==0,b1>0,mu11>0)%>%
     group_by(n,b1,mu01,mu10)%>%
-    summarize(across(c(true0,true1),mean),across(c(mom0,mle0),list(est=~sqrt(mean((.-true0)^2)),ci=~sqrt(t.test((.-true0)^2)$conf.int))))%>%#,across(c(mom1,mle1),~mean(.-true1)))#%>%
+    summarize(across(c(mom0,mle0),list(est=~sqrt(mean((.-true0)^2)),ci=~sqrt(t.test((.-true0)^2)$conf.int))),across(c(true0,true1),mean))%>%#,across(c(mom1,mle1),~mean(.-true1)))#%>%
     ungroup()%>%
     mutate(ci=rep(c('L','H'),n()/2))%>%
     select(-starts_with("true"))%>%#b1,n,starts_with('mom0'),starts_with('mle0'),ci)%>%
@@ -126,7 +170,7 @@ results%>%
 results%>%
     filter(gumb==1,b1>0,mu11>0)%>%
     group_by(n,b1,mu01,mu10)%>%
-    summarize(across(c(true0,true1),mean),across(c(mom0,mle0),list(est=~sqrt(mean((.-true0)^2)),ci=~sqrt(t.test((.-true0)^2)$conf.int))))%>%#,across(c(mom1,mle1),~mean(.-true1)))#%>%
+    summarize(across(c(mom0,mle0),list(est=~sqrt(mean((.-true0)^2)),ci=~sqrt(t.test((.-true0)^2)$conf.int))),across(c(true0,true1),mean))%>%#,across(c(mom1,mle1),~mean(.-true1)))#%>%
     ungroup()%>%
     mutate(ci=rep(c('L','H'),n()/2))%>%
     select(-starts_with("true"))%>%#b1,n,starts_with('mom0'),starts_with('mle0'),ci)%>%
