@@ -37,11 +37,11 @@ mu0hat <- mean(ps)*mean(Y*ps)/((mean(Y)-1)*mean(ps^2)+mean(ps)^2)
 results <- m_estimate(estFun,data=data,    root_control = setup_root_control(start = c(1,1)))
 
 
-sim <- function(){
+sim <- function(n,a){
     mu0 <- 0
     mu1 <- 0.2
 
-    ps <- runif(n)
+    ps <- rbeta(n,a,a)
 
     S <- rbinom(n,1,ps)
 
