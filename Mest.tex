@@ -20,6 +20,10 @@
 \begin{document}
 \maketitle
 
+[NOTE: I updated this taking **out** references to \emph{estimated}
+principal scores, cuz I realized the math was wrong. I'm following the
+propensity score literature and ignoring estimation error, for the moment]\\
+
 Say members of the control group of an RCT have no access to the treatment, but among the treatment group there are compliers and non-compliers---i.e. one-sided non-compliance.
 (Of course, this could be, e.g., compliance in two different ways, etc.)
 Then there are two principal strata $S$, never-takers and compliers. 
@@ -43,10 +47,10 @@ For subject $i$, $i=1,\dots,n$, we have:
 \begin{itemize}
 \item $Y_i$ observed outcome
 \item $S_i \in \{0,1\}$ unobserved stratum
-\item $\ppi=Pr(S_i=1|\bm{X}_i)$ %take as given (like, estimated from
+\item $\ppi=Pr(S_i=1|\bm{X}_i)$ take as given (like, estimated from
   % treatment group)
-\item $\hppi$ is an estimate of $\ppi$ from a separate sample
-  (treatment group?) with $\EE[\hppi|\ppi]=\ppi$
+%\item $\hppi$ is an estimate of $\ppi$ from a separate sample
+%  (treatment group?) with $\EE[\hppi|\ppi]=\ppi$
 \end{itemize}
 
 Let $\mu_0=\EE[Y|S=0]$ and $\mu_1=\EE[Y|S=1]$.
@@ -64,49 +68,49 @@ Note, it is kinda related to ``principal ignorability`` of \citet{feller2017prin
 
 \section{M-Estimator}
 As a preliminary, note that
-\begin{align*}
-  \EE[S|\hpp]&=\EE\left\{\EE[S|\pp,\hpp]|\hpp\right\}\\
-             &=\EE\left\{\EE[S|\pp]|\hpp\right\}\\
-             &=\EE[\pp|\hpp]=\hpp
-\end{align*}
+% \begin{align*}
+%   \EE[S|\hpp]&=\EE\left\{\EE[S|\pp,\hpp]|\hpp\right\}\\
+%              &=\EE\left\{\EE[S|\pp]|\hpp\right\}\\
+%              &=\EE[\pp|\hpp]=\hpp
+% \end{align*}
 
-Then, note
+%Then, note
 \begin{align*}
-  \EE[Y|\hpp]&=\EE\left\{\EE[Y|\hpp,S]|\hpp\right\}\\
-             &=\EE\left\{\EE[Y|S]|\hpp\right\}\\
-             &=\EE[\mu_1S+\mu_0(1-S)|\hpp]\\
-             &=\mu_1\hpp+\mu_0(1-\hpp)
+  \EE[Y|\pp]&=\EE\left\{\EE[Y|\pp,S]|\pp\right\}\\
+             &=\EE\left\{\EE[Y|S]|\pp\right\}\text{ by \eqref{eq:assumption}}\\
+             &=\EE[\mu_1S+\mu_0(1-S)|\pp]\\
+             &=\mu_1\pp+\mu_0(1-\pp)
 \end{align*}
 
 Then we have
 \begin{equation*}
-  \EE[Y]=\EE\EE[Y|\hpp]=\mu_1\EE\hpp+\mu_0(1-\EE\hpp)
+  \EE[Y]=\EE\EE[Y|\pp]=\mu_1\EE\pp+\mu_0(1-\EE\pp)
 \end{equation*}
 
 Next we have
 
 \begin{align*}
-  \EE[Y\hpp]&=\EE\left\{\EE[Y\hpp|\hpp]\right\}\\
-            &=\EE\left\{\hpp\EE[Y|\hpp]\right\}\\
-            &=\EE\left\{\hpp\left[\mu_1\hpp+\mu_0(1-\hpp)\right]\right\}\\
-            &=\mu_1\EE[\hpp^2]+\mu_0\left(\EE[\hpp]-\EE[\hpp^2]\right)
+  \EE[Y\pp]&=\EE\left\{\EE[Y\pp|\pp]\right\}\\
+            &=\EE\left\{\pp\EE[Y|\pp]\right\}\\
+            &=\EE\left\{\pp\left[\mu_1\pp+\mu_0(1-\pp)\right]\right\}\\
+            &=\mu_1\EE[\pp^2]+\mu_0\left(\EE[\pp]-\EE[\pp^2]\right)
 \end{align*}
 
 
 That gives us four parameters:
 \begin{align*}
-  \theta_1&=\EE[\hpp]\\
-  \theta_2&=\EE[\hpp^2]\\
+  \theta_1&=\EE[\pp]\\
+  \theta_2&=\EE[\pp^2]\\
   \theta_3&=\mu_0\\
   \theta_4&=\mu_1
 \end{align*}
 
 and four estimating equations:
 \begin{align*}
-  \sum_i \hppi-\theta_1&=0\\
-  \sum_i \hppi^2-\theta_2&=0\\
+  \sum_i \ppi-\theta_1&=0\\
+  \sum_i \ppi^2-\theta_2&=0\\
   \sum_i Y_i-\theta_4\theta_1-\theta_3(1-\theta_1)&=0\\
-  \sum_i Y_i\hppi-\theta_4\theta_2-\theta_3(\theta_1-\theta_2)&=0
+  \sum_i Y_i\ppi-\theta_4\theta_2-\theta_3(\theta_1-\theta_2)&=0
 \end{align*}
 
 
@@ -115,12 +119,21 @@ There's no particular reason to assume \eqref{eq:assumption} and it seems like i
 
 But say you believe the model
 \begin{equation}\label{eq:regression}
-Y_i=\bm{x}_i'\bm{\beta}+\gamma S_i+\epsilon_i
+Y_i=\mu_1S_i+\mu_0(1-S_i)+\bm{x}_i'\bm{\beta}+\epsilon_i
 \end{equation}
  Then instead of \eqref{eq:assumption} we could assume something like
 \begin{equation*}
 \EE[Y_i-\bm{x}_i'\bm{\beta}|\bm{X}_i,S_i]=\EE[Y_i-\bm{x}_i'\bm{\beta}|S_i]
 \end{equation*}
+
+Under model \eqref{eq:regression}, we have new estimating equations.
+
+
+\begin{align*}
+  \EE[Y]&=\EE\left[\mu_1\pp+\mu_0(1-\pp)+\bm{X}\bm{\beta}\right]\\
+  \EE[Y\pp]&=\EE\left[\pp\left(\mu_1\pp+\mu_0(1-\pp)+\bm{X}\bm{\beta}\right)\right]\\
+  \EE[\bm{X}Y]&\EE\left[\bm{X}\left(\mu_1\pp+\mu_0(1-\pp)+\bm{X}\bm{\beta}\right)\right]\\
+\end{align*}
 
 in other words, no interaction between $\bm{X}$ and $S$ in \eqref{eq:assumption}. 
 Then, if you had an estimate for $\beta$, you could just substitute $Y_i-\bm{x}_i'\bm{\beta}$ for $Y_i$ in the estimates. 
