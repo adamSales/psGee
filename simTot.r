@@ -94,14 +94,75 @@ twoStep <- function(data,justEst=TRUE){
 }
 
 
-oneStep <- function(dat){
+oneStep <- function(dat,int=FALSE){
+    estFun <- function(data,int){
+
+        function(theta){
+            ## ols z=1
+            xb1 <- with(data,(cbind(1,S,x1,x2)%*%theta[1:4])[,1])
+
+            ## xb for z=0
+            xb2 <- if(int){
+                       with(data,(cbind(x1,x2)%*%theta[12:13])[,1]) ##  (b differs btw trt grps)
+                   } else{
+                       with(data,(cbind(x1,x2)%*%theta[3:4])[,1]) ## (b is same in trt groups)
+                   }
+
+            ## logit z=1
+            xb3 <- with(data,(cbind(1,x1,x2)%*%theta[5:7])[,1])
+            ps <- plogis(xb3)
+
+            out <- c(
+### regression for treatment group
+                ifelse(data$Z==1,data$Y-xb1,0),
+                ifelse(data$Z==1,data$S*(data$Y-xb1),0),
+                ifelse(data$Z==1,data$x1*(data$Y-xb1),0),
+                ifelse(data$Z==1,data$x2*(data$Y-xb1),0),
+### logistic regression
+                ifelse(data$Z==1,data$S-ps,0),
+                ifelse(data$Z==1,data$x1*(data$S-ps),0),
+                ifelse(data$Z==1,data$x2*(data$S-ps),0),
+### mixture model in control group
+                ifelse(data$Z==0,theta[9]*ps+theta[8]*(1-ps)-data$Y+xb2,0),
+                ifelse(data$Z==0,theta[9]*ps^2+theta[8]*(ps-ps^2)-(data$Y-xb2)*ps,0),
+                theta[10]-(theta[1]-theta[8]),
+                theta[11]-(theta[1]+theta[2]-theta[9])
+            )
+
+            if(int)
+                out <- c(out,
+                         ifelse(data$Z==0,data$x1*(data$Y-xb2-theta[9]*ps-theta[8]*(1-ps)),0),
+                         ifelse(data$Z==0,data$x2*(data$Y-xb2-theta[9]*ps-theta[8]*(1-ps)),0)
+                         )
+            out
+        }
+    }
+
+    res <- try(m_estimate(estFun,dat,outer_args=list(int=int),root_control = setup_root_control(start = rep(0.1,ifelse(int,13,11)))))
+    if(inherits(res,'try-error'))
+        res <- try(m_estimate(estFun,dat,root_control = setup_root_control(start = rep(1,ifelse(int,13,11)))))
+    if(inherits(res,'try-error'))
+        return(rep(NA,4))
+
+    est <- coef(res)
+    se <- sqrt(diag(vcov(res)))
+
+    c(eff0=est[10],se0=se[10],eff1=est[11],se1=se[11])
+}
+
+
+oneStepInt <- function(dat){
     estFun <- function(data){
 
         function(theta){
-            xb1 <- with(data,(cbind(1,S,x1,x2)%*%theta[1:4])[,1]) ## ols z=1
-            xb2 <- with(data,(cbind(x1,x2)%*%theta[3:4])[,1]) ## just xb for z=0 (b is same in trt groups)
-            xb3 <- with(data,(cbind(1,x1,x2)%*%theta[5:7])[,1]) ## logit z=1
+            ## ols z=1
+            xb1 <- with(data,(cbind(1,S,x1,x2)%*%theta[1:4])[,1])
 
+            ## xb for z=0
+            xb2 <- with(data,(cbind(x1,x2)%*%theta[12:13])[,1]) ##  (b differs btw trt grps)
+
+            ## logit z=1
+            xb3 <- with(data,(cbind(1,x1,x2)%*%theta[5:7])[,1])
             ps <- plogis(xb3)
 
             c(
@@ -116,18 +177,18 @@ oneStep <- function(dat){
                 ifelse(data$Z==1,data$x2*(data$S-ps),0),
 ### mixture model in control group
                 ifelse(data$Z==0,theta[9]*ps+theta[8]*(1-ps)-data$Y+xb2,0),
-                                        #ifelse(data$Z==0,data$x1*(theta[9]*ps+theta[8]*(1-ps)-data$Y+xb2),0),
-                                        #ifelse(data$Z==0,data$x2*(theta[9]*ps+theta[8]*(1-ps)-data$Y+xb2),0),
                 ifelse(data$Z==0,theta[9]*ps^2+theta[8]*(ps-ps^2)-(data$Y-xb2)*ps,0),
                 theta[10]-(theta[1]-theta[8]),
-                theta[11]-(theta[1]+theta[2]-theta[9])
+                theta[11]-(theta[1]+theta[2]-theta[9]),
+                ifelse(data$Z==0,data$x1*(data$Y-xb2-theta[9]*ps-theta[8]*(1-ps)),0),
+                ifelse(data$Z==0,data$x2*(data$Y-xb2-theta[9]*ps-theta[8]*(1-ps)),0)
             )
         }
     }
 
-    res <- try(m_estimate(estFun,dat,root_control = setup_root_control(start = rep(0.1,11))))
+    res <- try(m_estimate(estFun,dat,root_control = setup_root_control(start = rep(0.1,13))))
     if(inherits(res,'try-error'))
-        res <- try(m_estimate(estFun,dat,root_control = setup_root_control(start = rep(1,11))))
+        res <- try(m_estimate(estFun,dat,root_control = setup_root_control(start = rep(1,13))))
     if(inherits(res,'try-error'))
         return(rep(NA,4))
 
@@ -136,6 +197,8 @@ oneStep <- function(dat){
 
     c(eff0=est[10],se0=se[10],eff1=est[11],se1=se[11])
 }
+
+
 
 ### mu00=0
 makeDat <- function(n,mu01=0.2,mu10=0,mu11=0.5,b1=1,gumb=FALSE){
@@ -244,19 +307,12 @@ fullsim <- function(nsim,
 
     cat(nrow(cases),' conditions\n')
 
-    #cases%>%
-    #    rowwise()%>%
-    #    mutate(res=list(try(oneCase(nsim=nsim,n=n,mu00=0,mu01=mu01,mu10=mu10,mu11=mu11,gumb=gumb,b1=b1,cl=cl))))
-
-    #cases$nsim <- nsim
-    #cases$cl <- cl
-
     save(cases,file=paste0('simResults/cases',ext,'.RData'))
 
     for(i in 1:nrow(cases)){
     	  cat(round(i/nrow(cases)*100),'%\n')
 	  facs <- cases[i,]
-    	  res <- oneCase(nsim=nsim,cl=cl,facs=facs,se=se)#  try(do.call('oneCase',facs))
+    	  res <- oneCase(nsim=nsim,cl=cl,facs=facs,se=se)
 	  save(res,facs,file=paste0('simResults/sim',i,ext,'.RData'))
 	  }
 
