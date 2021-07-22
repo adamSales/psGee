@@ -1,0 +1,299 @@
+
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\pp}{e(\bm{X})}
+\newcommand{\ppi}{e(\bm{X_i})}
+\newcommand{\hpp}{\hat{e}(\bm{X})}
+\newcommand{\hppi}{\hat{e}(\bm{X_i})}
+
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
+\title{MOM PS Estimator under Strong Monotonicity}
+
+\begin{document}
+\maketitle
+
+Say members of the control group of an RCT have no access to the treatment, but among the treatment group there are compliers and non-compliers---i.e. one-sided non-compliance.
+(Of course, this could be, e.g., compliance in two different ways, etc.)
+Then there are two principal strata $S$, never-takers and compliers. 
+Say the exclusion restriction doesn't hold. 
+
+\citet{feller2017principal} and \citet{dingLu} and others discuss estimating principal effects in one-sided noncompliance (which they call ``strong monotonicity'') under the assumption of principal ignorability, viz. $Y_C\independent S |\bm{X}$.
+This has two problems, to my mind:
+\begin{enumerate}
+\item Sometimes principal ignorability is not plausible
+\item If you assume the principal ignorability for $Y_T$ (``strong'' principal ignorability) then, as \citet{feller2017principal} points out, the principal effects conditional on covariates are equal to the ITT conditional on covariates---the stratum plays no role. But sometimes the role of the strata is what we're trying to estimate!
+\end{enumerate}
+
+The approach here takes a different tack, based on a different assumption which is maybe even less plausible---but which, I think, can be relaxed.
+
+\section{Setup}
+Estimating $\EE[Y_T|S]$ is straightforward, so for the remainder 
+just consider the ``control'' group, $Z=0$, with $n$ (control) subjects and drop the $C$ subscript. 
+The control group is a mixture of compliers and never-takers.
+
+For subject $i$, $i=1,\dots,n$, we have:
+\begin{itemize}
+\item $Y_i$ observed outcome
+\item $S_i \in \{0,1\}$ unobserved stratum
+\item $\ppi=Pr(S_i=1|\bm{X}_i)$ take as given  
+%\item $\hppi$ is an estimate of $\ppi$ from a separate sample
+%  (treatment group?) with $\EE[\hppi|\ppi]=\ppi$
+\end{itemize}
+
+Let $\mu_0=\EE[Y|S=0]$ and $\mu_1=\EE[Y|S=1]$.
+The goal is to estimate $\mu_0$ and $\mu_1$.
+
+\textbf{Assumption:}\\
+\begin{equation}\label{eq:assumption}
+\EE[Y_i|\bm{X}_i,S_i]=\EE[Y_i|S_i]=\mu_0\text{ or }\mu_1
+\end{equation}
+i.e. $Y$ is mean-independent of $\bm{X}$ conditional on $S$. 
+This is problematic---why should $S$ contain all information about $Y$?
+
+Note, it is kinda related to ``principal ignorability`` of \citet{feller2017principal} and \citet{dingLu}, $Y\independent S |\bm{X}_i$ but, obviously, different too. 
+
+The principal scores will typically
+  be estimated using data from the treatment group. Lemmas 1 \& 2 of
+  \citealt{fellerEtAl2016} imply that
+  $Pr(S=1|\bm{X},Z)=Pr(S=1|\bm{X})$, so that's cool.
+The math below ignores estimation error in principal scores, treating $\pp$ as
+known. However, as long as principal scores are estimated
+consistently, the asymptotics work out by Slutsky's theorem.
+
+\section{M-Estimator}
+As a preliminary, note that
+% \begin{align*}
+%   \EE[S|\hpp]&=\EE\left\{\EE[S|\pp,\hpp]|\hpp\right\}\\
+%              &=\EE\left\{\EE[S|\pp]|\hpp\right\}\\
+%              &=\EE[\pp|\hpp]=\hpp
+% \end{align*}
+
+%Then, note
+\begin{align*}
+  \EE[Y|\pp]&=\EE\left\{\EE[Y|\pp,S]|\pp\right\}\\
+             &=\EE\left\{\EE[Y|S]|\pp\right\}\text{ by \eqref{eq:assumption}}\\
+             &=\EE[\mu_1S+\mu_0(1-S)|\pp]\\
+             &=\mu_1\pp+\mu_0(1-\pp)
+\end{align*}
+
+Then we have
+\begin{equation*}
+  \EE[Y]=\EE\EE[Y|\pp]=\mu_1\EE\pp+\mu_0(1-\EE\pp)
+\end{equation*}
+
+Next we have
+
+\begin{align*}
+  \EE[Y\pp]&=\EE\left\{\EE[Y\pp|\pp]\right\}\\
+            &=\EE\left\{\pp\EE[Y|\pp]\right\}\\
+            &=\EE\left\{\pp\left[\mu_1\pp+\mu_0(1-\pp)\right]\right\}\\
+            &=\mu_1\EE[\pp^2]+\mu_0\left(\EE[\pp]-\EE[\pp^2]\right)
+\end{align*}
+
+
+That gives us four parameters:
+\begin{align*}
+  \theta_1&=\EE[\pp]\\
+  \theta_2&=\EE[\pp^2]\\
+  \theta_3&=\mu_0\\
+  \theta_4&=\mu_1
+\end{align*}
+
+and four estimating equations:
+\begin{align*}
+  \sum_i \ppi-\theta_1&=0\\
+  \sum_i \ppi^2-\theta_2&=0\\
+  \sum_i Y_i-\theta_4\theta_1-\theta_3(1-\theta_1)&=0\\
+  \sum_i Y_i\ppi-\theta_4\theta_2-\theta_3(\theta_1-\theta_2)&=0
+\end{align*}
+
+
+\section{Relaxing \eqref{eq:assumption} with regression}
+There's no particular reason to assume \eqref{eq:assumption} and it seems like it would typically be pretty implausible. 
+
+But say you believe the model
+\begin{equation}\label{eq:regression}
+Y_i=\mu_1S_i+\mu_0(1-S_i)+\bm{x}_i'\bm{\beta}+\epsilon_i
+\end{equation}
+ Then instead of \eqref{eq:assumption} we could assume something like
+\begin{equation*}
+\EE[Y_i-\bm{x}_i'\bm{\beta}|\bm{X}_i,S_i]=\EE[Y_i-\bm{x}_i'\bm{\beta}|S_i]
+\end{equation*}
+
+Under model \eqref{eq:regression}, we have new estimating equations.
+
+
+\begin{align*}
+  \EE[Y]&=\EE\left[\mu_1\pp+\mu_0(1-\pp)+\bm{X}\bm{\beta}\right]\\
+  \EE[Y\pp]&=\EE\left[\pp\left(\mu_1\pp+\mu_0(1-\pp)+\bm{X}\bm{\beta}\right)\right]\\
+  \EE[\bm{X}Y]&\EE\left[\bm{X}\left(\mu_1\pp+\mu_0(1-\pp)+\bm{X}\bm{\beta}\right)\right]\\
+\end{align*}
+
+in other words, no interaction between $\bm{X}$ and $S$ in \eqref{eq:assumption}. 
+Then, if you had an estimate for $\beta$, you could just substitute $Y_i-\bm{x}_i'\bm{\beta}$ for $Y_i$ in the estimates. 
+Alternatively, you could use a stacked estimating equation approach and estimate it all together.
+
+\section{Simulation}
+\subsection{Design}
+
+\subsubsection{Data Generation}
+
+Three indpendent standard normal covariates, $x_k$ $k=1,\dots,3$.
+Principal scores are set as:
+\begin{equation*}
+  \ppi=logit^{-1}\left[\beta(x_{1i}+x_{2i}+x_{3i})\right]
+\end{equation*}
+Principal stratum $S_i\in \{0,1\}$ generated as:
+\begin{equation*}
+S_i\sim Bern(\ppi)
+\end{equation*}
+where $\beta$ is a manipuated factor.
+When $\beta$ was higher, $S$ was more easily predicted by covariates
+$x_k$. 
+
+Outcomes are generated as
+\begin{equation*}
+  Y_i=0.5(x_{1i}+x_{2i}+x_{3_i})+\mu_{01}S_i+\tau_iZ_i+\epsilon_i
+\end{equation*}
+where $Z_i$ is treatment assignment $Z_i=i\%2$, so that half of
+subjects are in the treatment group, $\tau_i$ is the treatment effect,
+\begin{equation*}
+  \tau_i=\begin{cases}
+    \mu_{10}-0&\text{ if }S_i=0\\
+    \mu_{11}-\mu_{01}&\text{ if }S_i=1
+  \end{cases}
+\end{equation*}
+and $\epsilon_i\sim \mathcal{N}(0,0.2)$ or $\epsilon_i$ has a Gumbel
+distribution with location parameter 0 and scale parameter 0.16
+(corresponding to a standard deviation of approximately 0.2).
+Errors $\epsilon$ and covariates $x_k$ are centered, so each has
+sample mean exactly 0.
+
+\subsubsection{Manipulated Factors}
+We manipulated four factors in the simulation:
+\begin{itemize}
+\item Sample size $n\in\{100,500,1000\}$
+\item $\mu_{01}\in\{0,0.3\}$
+\item $\mu_{10}\in\{0,0.3\}$
+\item $\beta \in \{0,0.2,0.5,1\}$
+\end{itemize}
+$\mu_{11}=0.3$ in all cases.
+
+When $\mu_{01}=0$ there is only one mixture component in the control
+group---i.e. no separation. When $\mu_{01}=\mu_{01}=0$ the treatment effect is
+0.3 for $S=1$ and 0 for $S=0$.  When $\mu_{01}=\mu_{10}=0.3$, the
+treatment effect is 0.3 for $S=0$ and 0 for $S=1$. When $\mu_{01}=0.3$
+and $\mu_{10}=0$, the treatment effect is 0 for both strata, and
+when $\mu_{01}=0$ and $\mu_{10}=0.3$ the effect is 0.3 for both
+strata.
+
+
+\subsubsection{Analysis Models}
+Analysis models had access to treatment assignment $Z$, outcomes $Y$,
+principal stratum $S$ for members of the treatment group, and
+covariates.
+Even though three covariates, $x_1$, $x_2$ and $x_3$ were included as
+predictors of principal stratum $S$ and outcome $Y$ in the data
+generating model, both analysis approaches only had access to the
+first two covariates, $x_1$ and $x_2$.
+Hence, principal ignorability was violated---$S$ and $Y$ were
+``confounted'' by unobserved variable $x_3$. 
+
+Simulated data were analyzed first with a ``stacked equations''/M-Estimation/GEE
+approach, using the \texttt{geex} package in \texttt{R}
+\citep{geex,rcite}, and then with a more conventional maximum
+likelihood approach via \texttt{rstan} \citep{rstan}.
+
+Both methods assumed (correctly) that there were no interactions
+between covariates $x_1$ and $x_2$ and treatment assignment (after
+accounting for $S$). 
+
+In the GEE approach included a set of nine estimating equations.
+First, a GEE logistic regression fit to the treatment group to
+estimate principal scores
+$\ppi=logit^{-1}(\beta_0+\beta_1x_{1i}+\beta_2x_{2i})$ (three parameters):
+\begin{align*}
+  \sum_iZ_i\left[S_i-\ppi\right]&=0\\
+  \sum_iZ_ix_{1i}\left[S_i-\ppi\right]&=0\\
+  \sum_iZ_ix_{2i}\left[S_i-\ppi\right]&=0
+\end{align*}
+Next, four equations to estimate the outcome regression in the
+treatment group, including terms for $S$:
+\begin{align*}
+  \sum_i
+  Z_i\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+S_i\mu_{11}+(1-S_i)\mu_{10})\right]&=0\\
+  \sum_i
+  Z_ix_{1i}\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+S_i\mu_{11}+(1-S_i)\mu_{10})\right]&=0\\
+  \sum_i
+  Z_ix_{2i}\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+S_i\mu_{11}+(1-S_i)\mu_{10})\right]&=0\\
+  \sum_i
+  Z_iS_i\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+S_i\mu_{11}+(1-S_i)\mu_{10})\right]&=0
+\end{align*}
+
+Finally, two equations to estimate the mixture model in the control
+group, for whom $S$ is unobserved:
+\begin{align*}
+  \sum_i
+  (1-Z_i)\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+\ppi\mu_{01}+(1-\ppi)\mu_{00})\right]&=0\\
+  \sum_i
+  (1-Z_i)\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+\ppi^2\mu_{01}+(\ppi-\ppi^2)\mu_{00})\right]&=0
+\end{align*}                                                                            
+The average treatment effect for $S=0$ was $\mu_{10}-\mu_{00}$ and for
+$S=1$ was $\mu_{11}-\mu_{01}$.
+
+Next, we estimated effects with MLE, using the built-in optimizer of
+\texttt{rstan}.
+
+In this model we regressed $S$ and $Y$ for the treatment group on an
+intercept, $x_1$, and $x_2$ using a logistic and normal linear
+specification, respectively.
+Then, we specified a two-component mixture model for control
+outcomes.
+
+Code for both models and for the data generating process can be found
+at \url{https://github.com/adamSales/psGee}.
+  
+\subsection{Results}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\textwidth]{biasBetaN.jpg}
+  \caption{Bias as a function of $\beta$, $n$, and analysis model,
+    pooling over $\mu_{10}$ and $\mu_{01}$.}
+  \label{fig:bias}
+\end{figure}
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\textwidth]{rmseBetaN.jpg}
+  \caption{Root mean sequared error (RMSE) as a function of $\beta$, $n$, and analysis model,
+    pooling over $\mu_{10}$ and $\mu_{01}$.}
+  \label{fig:rmse}
+\end{figure}
+
+
+\begin{figure}
+  \centering
+  \includegraphics[width=0.95\textwidth]{coverBetaN.jpg}
+  \caption{Coverage of nominal 95\% confidence intervals as a function of $\beta$, $n$, and analysis model,
+    pooling over $\mu_{10}$ and $\mu_{01}$.}
+  \label{fig:coverage}
+\end{figure}
+
+
+
+\bibliographystyle{unsrtnat}
+\bibliography{MOM}
+
+\end{document}

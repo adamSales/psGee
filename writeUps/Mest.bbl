@@ -1,0 +1,50 @@
+\begin{thebibliography}{6}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Feller et~al.(2017)Feller, Mealli, and Miratrix]{feller2017principal}
+Avi Feller, Fabrizia Mealli, and Luke Miratrix.
+\newblock Principal score methods: Assumptions, extensions, and practical
+  considerations.
+\newblock \emph{Journal of Educational and Behavioral Statistics}, 42\penalty0
+  (6):\penalty0 726--758, 2017.
+
+\bibitem[Ding and Lu(2017)]{dingLu}
+P.~Ding and J.~Lu.
+\newblock Principal stratification analysis using principal scores.
+\newblock \emph{Journal of the Royal Statistical Society: Series B (Statistical
+  Methodology)}, 79:\penalty0 757--777, 2017.
+
+\bibitem[Feller et~al.(2016)Feller, Grindal, Miratrix, and
+  Page]{fellerEtAl2016}
+Avi Feller, Todd Grindal, Luke Miratrix, and Lindsay~C. Page.
+\newblock {Compared to what? Variation in the impacts of early childhood
+  education by alternative care type}.
+\newblock \emph{The Annals of Applied Statistics}, 10\penalty0 (3):\penalty0
+  1245 -- 1285, 2016.
+\newblock \doi{10.1214/16-AOAS910}.
+\newblock URL \url{https://doi.org/10.1214/16-AOAS910}.
+
+\bibitem[Saul and Hudgens(2020)]{geex}
+Bradley~C. Saul and Michael~G. Hudgens.
+\newblock The calculus of m-estimation in {R} with {geex}.
+\newblock \emph{Journal of Statistical Software}, 92\penalty0 (2):\penalty0
+  1--15, 2020.
+\newblock \doi{10.18637/jss.v092.i02}.
+
+\bibitem[{R Core Team}(2020)]{rcite}
+{R Core Team}.
+\newblock \emph{R: A Language and Environment for Statistical Computing}.
+\newblock R Foundation for Statistical Computing, Vienna, Austria, 2020.
+\newblock URL \url{https://www.R-project.org/}.
+
+\bibitem[{Stan Development Team}(2020)]{rstan}
+{Stan Development Team}.
+\newblock {RStan}: the {R} interface to {Stan}, 2020.
+\newblock URL \url{http://mc-stan.org/}.
+\newblock R package version 2.21.2.
+
+\end{thebibliography}
