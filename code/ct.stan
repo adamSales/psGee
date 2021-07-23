@@ -53,6 +53,9 @@ model{
  a10~std_normal();
  a01~std_normal();
  a11~std_normal();
+ a2~std_normal();
+ b0~std_normal();
+ b1~std_normal();
 
  sclEffY~normal(0,sigSclY);
  sclEffS~normal(0,sigSclS);
@@ -62,17 +65,17 @@ model{
  xb3=b0+xt*b1;
 
  for(i in 1:ntrt){
-  xb1[i]+=sclEffY[sclt[i]];
-  xb3[i]+=sclEffS[sclt[i]];
+  xb1[i]=xb1[i]+sclEffY[sclt[i]];
+  xb3[i]=xb3[i]+sclEffS[sclt[i]];
  }
  for(i in 1:nctl){
-  xb2[i]+=sclEffY[sclc[i]];
+  xb2[i]=xb2[i]+sclEffY[sclc[i]];
  }
   
  St~bernoulli_logit(xb3);
  Ytrt~normal(xb1,sigt);
 
- prob=b0+xc*b1;
+ prob=inv_logit(b0+xc*b1);
 
  for(i in 1:nctl){
        target+=log_sum_exp(
