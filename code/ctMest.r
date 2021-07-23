@@ -66,7 +66,7 @@ mest <- function(data){
     }
 
     t1 <- Sys.time()
-    res <- try(m_estimate(estFun,newDat,#units="scl",
+    res <- try(m_estimate(estFun,newDat,units="scl",
                           root_control = setup_root_control(start = rep(0.1,2*p+8))))
     if(inherits(res,'try-error'))
         res <- try(m_estimate(estFun,newDat,units="scl",root_control = setup_root_control(start = rep(1,2*p+8))))
@@ -78,7 +78,13 @@ mest <- function(data){
     res
 }
 
-ests <- function(res){
+ests <- function(res,data){
+
+    form <- Y~state+grade+race+sex+frl+xirt+esl
+    data <- droplevels(data)
+    XX <- model.matrix(form,data=data)[,-1]
+
+
     est <- coef(res)
     se <- sqrt(diag(vcov(res)))
 
