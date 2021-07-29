@@ -28,12 +28,12 @@ parameters {
  vector[p] b1;
 
  real sclEffY[nscl];
- real sclEffS[nscl];
+ //real sclEffS[nscl];
  
  real<lower=0> sigSclY;
- real<lower=0> sigSclS;
+ //real<lower=0> sigSclS;
  real<lower=0> sigt;
- real<lower=0> sigc;
+ //real<lower=0> sigc;
 }
 
 transformed parameters{
@@ -58,7 +58,7 @@ model{
  b1~std_normal();
 
  sclEffY~normal(0,sigSclY);
- sclEffS~normal(0,sigSclS);
+ //sclEffS~normal(0,sigSclS);
 
  xb1=a10+a11*to_vector(St)+xt*a2;
  xb2=xc*a2;
@@ -66,7 +66,7 @@ model{
 
  for(i in 1:ntrt){
   xb1[i]=xb1[i]+sclEffY[sclt[i]];
-  xb3[i]=xb3[i]+sclEffS[sclt[i]];
+  //xb3[i]=xb3[i]+sclEffS[sclt[i]];
  }
  for(i in 1:nctl){
   xb2[i]=xb2[i]+sclEffY[sclc[i]];
@@ -79,8 +79,8 @@ model{
 
  for(i in 1:nctl){
        target+=log_sum_exp(
-        log(prob[i])+normal_lpdf(Yctl[i]|a01+xb2[i],sigc),
-        log(1-prob[i])+normal_lpdf(Yctl[i]|a00+xb2[i],sigc)
+        log(prob[i])+normal_lpdf(Yctl[i]|a01+xb2[i],sigt),
+        log(1-prob[i])+normal_lpdf(Yctl[i]|a00+xb2[i],sigt)
 	);
  }
 }

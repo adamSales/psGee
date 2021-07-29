@@ -18,9 +18,16 @@ numCP <- advance%>%group_by(field_id,year)%>%summarize(ncp=sum(status=='changed 
 
 hs <- left_join(hs,numCP)
 
+hs <- hs%>%group_by(pair,year)%>%
+    mutate(na=mean(is.na(ncp[treatment==1])))%>%
+    filter(na<0.5)%>%
+    ungroup()
+
+
 hs$everCP <- hs$ncp>0
 hs$everCP[hs$treatment==0] <- NA
-hs$everCP[hs$treatment==1&is.na(hs$ncp)] <- FALSE
+hs <- filter(hs,treatment==0|!is.na(ncp))
+                                        #hs$everCP[hs$treatment==1&is.na(hs$ncp)] <- FALSE
 
 ## model cp?
 library(lme4)
@@ -30,8 +37,8 @@ mod2 <- glmer(everCP~state+grade+race+sex+frl+xirt+esl+(1|schoolid2),data=hs,sub
 ## X is a design matrix without an intercept
 ## columns should have mean 0
 
-hs1 <- subset(hs,year==1)
-hs2 <- subset(hs,year==2)
+hs1 <- filter(hs,year==1)
+hs2 <- filter(hs,year==2)
 
 
 res1 <- mest(hs1)

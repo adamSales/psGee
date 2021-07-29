@@ -1,5 +1,5 @@
 options(mc.cores=6)
-bayes <- function(data){
+bayes <- function(data,...){
     require(rstan)
 
     form <- Y~state+grade+race+sex+frl+xirt+esl
@@ -42,5 +42,5 @@ bayes <- function(data){
                   b1=coef(mm2)[-1]
                   )
 
-    stan('code/ct.stan',data=sdat,chains=6,init=list(init1,init1,init1,init1,init1,init1))
+    stan('code/ct.stan',data=sdat,chains=6,init=list(init1,init1,init1,init1,init1,init1),...)
 }

@@ -20,7 +20,7 @@ print('here')
 #pboptions(type='none')
 
 ## if(!exists('cl')){
-     cl <- makeCluster(50)
+     cl <- makeCluster(10)
      clusterEvalQ(cl,library(tidyverse))
      clusterEvalQ(cl,library(rstan))
      clusterEvalQ(cl,library(geex))
@@ -28,15 +28,7 @@ print('here')
      clusterExport(cl,c('simStan2step','makeDat','mle','twoStep','oneStep','stanMod'))
 ## }
 
-### see what simulations have run already
-fl <- list.files('./simResults',pattern="sim[0-9]+\\.RData")
-nums <- readr::parse_number(fl)
-
-print(paste("starting at case",max(nums,na.rm=TRUE)+1))
-
-fullsim(1000,cl=cl,start=max(nums,na.rm=TRUE)+1)
-
-fullsim(1000,mu11=0,mu01=0.3,mu10=0.3,ext='reverse',cl=cl)
+fullsim(1000,cl=cl,ns=500,mu01=0,mu10=0,gumbs=FALSE,b1s=0.5,ext='smaller')
 
 stopCluster(cl)
 

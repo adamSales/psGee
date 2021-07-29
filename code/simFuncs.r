@@ -279,7 +279,8 @@ fullsim <- function(nsim,
                     b1s=c(0,0.2,0.5,1),
                     ext='',
                     se=TRUE,
-                    cl=NULL
+                    cl=NULL,
+		    start=1
                     ){
 
     cases=expand.grid(ns,mu01,mu10,mu11,gumbs,b1s)
@@ -289,7 +290,7 @@ fullsim <- function(nsim,
 
     save(cases,file=paste0('simResults/cases',ext,'.RData'))
 
-    for(i in 1:nrow(cases)){
+    for(i in start:nrow(cases)){
     	  cat(round(i/nrow(cases)*100),'%\n')
 	  facs <- cases[i,]
     	  res <- oneCase(nsim=nsim,cl=cl,facs=facs,se=se)
