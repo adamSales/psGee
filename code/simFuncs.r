@@ -37,6 +37,26 @@ mle <- function(data,se=TRUE){
 
 #stanMod <- rstan::stan_model('ps.stan')#,auto_write=TRUE)
 
+bayes <- function(data,...){
+    sdat <- with(data, list(
+                           nctl=sum(1-Z),
+                           ntrt=sum(Z),
+                           x1t=x1[Z==1],
+                           x1c=x1[Z==0],
+                           x2t=x2[Z==1],
+                           x2c=x2[Z==0],
+                           Ytrt=Y[Z==1],
+                           Yctl=Y[Z==0],
+                           St=S[Z==1]
+                       )
+                 )
+                                        #fit1 <-
+    fit <- stan('code/ps.stan',data=sdat)
+
+    summary(fit, par=c('eff0','eff1','effDiff'))$summary
+}
+
+
 
 twoStep <- function(data,justEst=TRUE){
     mod1 <- lm(Y~x1+x2+S,data=data,subset=Z==1)
@@ -181,7 +201,7 @@ oneStepInt <- function(dat){
 
 
 ### mu00=0
-makeDat <- function(n,mu01=0.2,mu10=0,mu11=0.5,b1=1,gumb=FALSE){
+makeDat <- function(n,mu01=0.2,mu10=0,mu11=0.5,b1=1,gumb=FALSE,...){
 
     x1 <- rnorm(2*n)
     x2 <- rnorm(2*n)
@@ -245,8 +265,21 @@ summ <- function(sss){
           )
     }
 
+simOneBayes <- function(n,...){
+    dat <- makeDat(n,...)
+    mest <- twoStep(dat)
+    BAYES <- bayes(dat)
 
-oneCase <- function(nsim,cl, facs,se=TRUE){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
+    list(
+        true=attr(dat,'trueEffs'),
+        mest=mest,
+        bayes=BAYES,
+        facs=c(n=n,unlist(list(...)))
+    )
+}
+
+
+oneCase <- function(nsim,cl, facs,Bayes=FALSE,se=TRUE){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
 
     print(Sys.time())
 
@@ -258,13 +291,14 @@ oneCase <- function(nsim,cl, facs,se=TRUE){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
     res <-
       parLapply(cl, #mclapply( #pbreplicate(
         1:nsim,
-        function(i) try(do.call('simStan2step',facs))
+        function(i) if(Bayes) try(do.call('simOneBayes',facs)) else try(do.call('simStan2step',facs))
       )
    )
   print(time)
-  resMat <- try(do.call('rbind',res))
-  if(!inherits(resMat,'try-error')) res <- resMat
-
+    if(!Bayes){
+        resMat <- try(do.call('rbind',res))
+        if(!inherits(resMat,'try-error')) res <- resMat
+    }
   attr(res,"time") <- time
   res
 }
@@ -280,6 +314,7 @@ fullsim <- function(nsim,
                     ext='',
                     se=TRUE,
                     cl=NULL,
+                    Bayes=FALSE,
 		    start=1
                     ){
 
@@ -293,7 +328,7 @@ fullsim <- function(nsim,
     for(i in start:nrow(cases)){
     	  cat(round(i/nrow(cases)*100),'%\n')
 	  facs <- cases[i,]
-    	  res <- oneCase(nsim=nsim,cl=cl,facs=facs,se=se)
+    	  res <- oneCase(nsim=nsim,cl=cl,facs=facs,se=se,Bayes=Bayes)
 	  save(res,facs,file=paste0('simResults/sim',i,ext,'.RData'))
 	  }
 
@@ -301,3 +336,14 @@ fullsim <- function(nsim,
 }
 
 
+datNewForm <- function(dat){
+    X <- as.matrix(dat[,startsWith(names(dat),'x')])
+    with(dat,list(
+                 Y0=Y[Z==0],
+                 Y1=Y[Z==1],
+                 S1=S[Z==1],
+                 X0=X[Z==0,],
+                 X1=X[Z==1,]
+             )
+         )
+}
