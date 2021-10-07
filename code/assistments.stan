@@ -2,17 +2,16 @@ data {
      int<lower=1> nctl;
      int<lower=1> ntrt;
      int<lower=1> p;
-     int<lower=1> nscl;
      matrix[ntrt,p] xt;
      matrix[nctl,p] xc;	
 
-     int<lower=1,upper=nscl> sclt[ntrt];
-     int<lower=1,upper=nscl> sclc[nctl];     
-
-     vector[ntrt] Ytrt;
-     vector[nctl] Yctl;
+     int<lower=0,upper=1> Ytrt[ntrt];
+     int<lower=0,upper=1> Yctl[nctl];	
 
      int<lower=0,upper=1> St[ntrt];
+
+     real<lower=0> lowBound;
+     real<upper=1> upBound;
 
 }
 parameters {
@@ -41,8 +40,11 @@ model{
  vector[nctl] xb2;
  vector[ntrt] xb3;
  vector[nctl] probS0;
- vector[nctl] probY00;
- vector[nctl] probY01;	
+ //vector[nctl] probY00;
+ //vector[nctl] probY01;	
+ //real probS0;
+ real probY00;
+ real probY01;
 
  a00~std_normal();
  a10~std_normal();
@@ -58,18 +60,20 @@ model{
 
   
  St~bernoulli_logit(xb3);
- Ytrt~bernoulli(xb1<0?0:xb1>1?1:xb1);
 
- probS0=inv_logit(b0+xc*b1);
- probY00=(a00+xb2)<0?0:(a00+xb2)>1?1:(a00+xb2);
- probY01=(a01+xb2)<0?0:(a01+xb2)>1?1:(a01+xb2);	
+ for(i in 1:ntrt)
+  Ytrt[i]~bernoulli(xb1[i]<lowBound?lowBound:xb1[i]>upBound?upBound:xb1[i]);
 
+ probS0=inv_logit(b0+xc*b1);	
 
  for(i in 1:nctl){
-       target+=log_sum_exp(
-        log(prob[i])+bernoulli_lpdf(Yctl[i]|probY01),
-        log(1-prob[i])+normal_lpdf(Yctl[i]|probY00)
-	);
+  probY00=(a00+xb2[i])<lowBound?lowBound:(a00+xb2[i])>upBound?upBound:(a00+xb2[i]);
+  probY01=(a01+xb2[i])<lowBound?lowBound:(a01+xb2[i])>upBound?upBound:(a01+xb2[i]);	
+
+  target+=log_sum_exp(
+   log(probS0[i])+bernoulli_lpmf(Yctl[i]|probY01),
+   log(1-probS0[i])+bernoulli_lpmf(Yctl[i]|probY00)
+  );
  }
 }
 
