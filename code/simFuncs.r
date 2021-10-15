@@ -347,3 +347,68 @@ datNewForm <- function(dat){
              )
          )
 }
+
+
+fullsimJustM <- function(nsim,
+                    ns=c(100,500,1000),
+                    mu01=c(0,.3),#sepTs=c(TRUE,FALSE),
+                    mu10=c(0,.3),#sepCs=c(TRUE,FALSE),
+                    mu11=.3,#effs=c(TRUE,FALSE),
+                    gumbs=c(TRUE,FALSE),
+                    b1s=c(0,0.2,0.5,1),
+                    ext='',
+                    se=TRUE,
+                    cl=NULL,
+                    Bayes=FALSE,
+		    start=1
+                    ){
+
+    cases=expand.grid(ns,mu01,mu10,mu11,gumbs,b1s)
+    names(cases) <- c('n','mu01','mu10','mu11','gumb','b1')
+
+    if(nsim==0) return(cases)
+
+    cat('% done:')
+    list(cases=cases,
+         res=lapply(
+             1:nrow(cases),
+             function(i){
+                 cat(round(i/nrow(cases)*100))
+                 replicate(nsim,effs(do.call("makeData",cases[i,])))
+             }
+         )
+         )
+}
+
+
+
+
+
+summarizeSimReg <- function(simRes){
+    require(dplyr)
+    cases <- simRes$cases%>%
+        mutate(
+            eff0=mu10,
+            eff1=mu11-mu01,
+            diff=eff1-eff0
+        )
+
+    sss <- simRes$res
+    cases <- cbind(cases,
+                   est=t(vapply(1:length(sss),function(i) rowMeans(sss[[i]][,1,]),numeric(3))))
+
+    cover <- function(x,b) vapply(rownames(x),function(y) mean((x[y,1,]-2*sqrt(x[y,2,])<b[y])&(x[y,1,]+2*sqrt(x[y,2,])>b[y])),numeric(1))
+
+    cases <- cbind(cases,trueVar=t(vapply(1:length(sss),function(i) apply(sss[[i]][,1,],1,var),numeric(3))))
+    cases <- cbind(cases,estVar=t(vapply(1:length(sss),function(i) rowMeans(sss[[i]][,2,]^2),numeric(3))))
+    cases <- cbind(cases,coverage=t(vapply(1:length(sss),function(i) cover(sss[[i]],cases[i,c('eff0','eff1','diff')]),numeric(3))))
+
+
+
+    cases <- cbind(cases,biasEst=do.call("cbind",setNames(lapply(c('eff0','eff1','diff'),function(x) cases[,paste0('est.',x)]-cases[,x]),c('eff0','eff1','diff'))))
+    cases <- cbind(cases,biasVar=do.call("cbind",setNames(lapply(c('eff0','eff1','diff'),function(x) cases[,paste0('estVar.',x)]-cases[,paste0('trueVar.',x)]),c('eff0','eff1','diff'))))
+
+    cases <- cbind(cases,coverage=t(vapply(1:length(sss),setNames(lapply(c('eff0','eff1','diff'),function(x) cover(sss,paste0('estVar.',x)]-cases[,paste0('trueVar.',x)]),c('eff0','eff1','diff'))))
+
+    cases
+}
