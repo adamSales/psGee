@@ -79,10 +79,12 @@ estTot <- function(Y0,X0,S1,X1,...){
     #b11 <- meat(smod,adjust=TRUE)
     b22 <- crossprod(est$ef)/(n-nrow(a22))
 
+    vcv1 <- sandwich(smod,adjust=TRUE)
+
     vcv <- VCV(
                a21=a21,
                a22=a22,
-               vcv1=sandwich(smod,adjust=TRUE),
+               vcv1=vcv1,
                b22=b22,
         n=n)
 
@@ -90,7 +92,10 @@ estTot <- function(Y0,X0,S1,X1,...){
         strsplit(names(unlist(est$est)),"\\.")|>
         vapply(function(x) x[2],'a')
 
-    list(est=est$est,vcv=vcv)
+
+    matrices <- list(a21=a21,a22=a22,vcv1=vcv1,b22=b22)
+
+    list(est=est$est,vcv=vcv,matrices=matrices)
 }
 
 effectFit <- function(dat){
