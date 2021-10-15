@@ -29,6 +29,12 @@ parameters {
  real<lower=0> sigc;
 }
 
+transformed parameters{
+ real eff0=mu10-mu00;
+ real eff1=mu11-mu01;
+ real effDiff=eff1-eff0;
+}
+
 model{
 
  mu00~std_normal();

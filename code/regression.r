@@ -116,11 +116,9 @@ est <- function(data,covForm=~x1+x2,int=FALSE){
     list(outMod=outMod,psMod=psMod,vcv=vcv)
 }
 
-### estimates effects of interest, starting from data
-effs <- function(data,covForm=~x1+x2,int=FALSE){
-    ests <- est(data=data,covForm=covForm,int=int)
-
-    estimates <- with(as.list(coef(ests$outMod)),
+### estimates effects of interest, starting from est() output
+effsFromFit <- function(ests){
+        estimates <- with(as.list(coef(ests$outMod)),
                       list(
                           eff1=Z+`Z:Sp`,
                           diff=`Z:Sp`))
@@ -135,6 +133,13 @@ effs <- function(data,covForm=~x1+x2,int=FALSE){
         estimates=unlist(estimates),
         SE=sqrt(unlist(vars))
     )
+}
+
+### estimates effects of interest, starting from data
+effs <- function(data,covForm=~x1+x2,int=FALSE){
+    ests <- est(data=data,covForm=covForm,int=int)
+
+    effsFromFit(ests)
 }
 
 ### estimates lower left of A (bread) matrix in A^{-1}BA^{-t}

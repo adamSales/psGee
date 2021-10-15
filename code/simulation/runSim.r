@@ -20,7 +20,9 @@ print('here')
 #pboptions(type='none')
 
 ## if(!exists('cl')){
-     cl <- makeCluster(50)
+
+ncore <-  detectCores()/2
+cl <- makeCluster(ncore)
      clusterEvalQ(cl,library(tidyverse))
      clusterEvalQ(cl,library(rstan))
      clusterEvalQ(cl,library(geex))
