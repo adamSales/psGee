@@ -413,33 +413,3 @@ summarizeSimReg <- function(simRes){
     cases
 }
 
-
-
-AUC = function(probs, true_Y){
-    probsSort = sort(probs, decreasing = TRUE, index.return = TRUE)
-    val = unlist(probsSort$x)
-    idx = unlist(probsSort$ix)
-
-    roc_y = true_Y[idx];
-    stack_x = cumsum(roc_y == 0)/sum(roc_y == 0)
-    stack_y = cumsum(roc_y == 1)/sum(roc_y == 1)
-
-    auc = sum((stack_x[2:length(roc_y)]-stack_x[1:length(roc_y)-1])*stack_y[2:length(roc_y)])
-    return(auc)
-}
-
-AUC2 <- function(probs,true_Y){
-    mmm <- outer(probs[true_Y==1],probs[true_Y==0],FUN=function(x,y) x>y)
-    mean(mmm)
-}
-
-AUCmod <- function(mod){
-    AUC(mod$linear,mod$y)
-}
-
-AUCdat <- function(n,b1){
-    dat <- makeDat(n=n,b1=b1)
-    dat1 <- subset(dat,Z==1)
-    mod <- glm(S~x1+x2,family=binomial,data=dat1)
-    AUC(mod$linear,dat1$S)
-}

@@ -156,7 +156,7 @@ effects <- function(dat){
 
 ### quick simulation to see if code is working
 simTest <- function(n=1000,B=1000){
-    source('code/simFuncs.r')
+    source('code/simulation/simFuncs.r')
     sss <<- replicate(B,
               makeDat(1000)|>
               datNewForm()|>

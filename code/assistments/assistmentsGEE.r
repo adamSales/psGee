@@ -1,90 +1,80 @@
+if(!all(c('dat1')%in%ls())) load('assistmentsData/assistmentsAnalysisData.RData')
+
+covForm <- ~ splines::ns(log(student_prior_median_time_on_task),
+    knots = c(quantile(log(student_prior_median_time_on_task),
+         probs = c((1:10)/11)), 6))
+
+estimate <- est(dat1,covForm=covForm,int=FALSE)
+effsFromFit(estimate)
+
+binnedplot(estimate$psMod$fitted,residuals(estimate$psMod,type='response'))
 
 
+est2 <- est(dat1,covForm,int=TRUE)
+effsFromFit(est2)
 
-estFun <- function(data){
-    XX <- as.matrix(select(data,-Y,-S,-Z))
+save(estimate,file=paste0('assistmentsResults/Mestimate',Sys.Date(),'.RData')
 
-    YY <- data$Y
+try(system('drive push --quiet assistmentsResult.RData'))
 
-    ZZ <- data$Z
-    SS <- data$S
 
-    p <- ncol(XX)
-    function(theta){
-        ## YY model (ZZ=1): YY=a10+a11SS+a2XX
-        ##         (ZZ=0): YY={a00 or a01}+a2XX
-        ## SS model (ZZ=1): logit(SS)=b0+b1XX
-        ## effects: a10-a00 and a10+a11-a01
+## try random forest ps model
+rf <- randomForest(factor(S)~student_prior_started_problem_count + student_prior_average_attempt_count +
+    student_prior_completed_problem_fraction + student_prior_answer_first_fraction +
+    student_prior_median_first_response_time + student_prior_average_correctness
+     + problem_prior_started_problem_count + problem_prior_average_attempt_count +
+    problem_prior_completed_problem_fraction + problem_prior_answer_first_fraction +
+    problem_prior_median_first_response_time + problem_prior_average_correctness
+     + problem_prior_median_time_on_task
+    + student_prior_median_time_on_task,data=subset(dat1,Z==1))
 
-        a10 <- theta[1]
-        a11 <- theta[2]
-        a00 <- theta[3]
-        a01 <- theta[4]
-        eff0 <- theta[5] ## a10-a00
-        eff1 <- theta[6] ## a10+a11-a01
-        effDiff <- theta[7] ## a11+a00-a01
-        a2 <- theta[8:(p+7)]
-        b0 <- theta[p+8]
-        b1 <- theta[(p+9):(2*p+8)]
+ps1 <- predict(rf,type='prob')[,'1']
 
-        ## ols z=1
-        ## print(length(SS))
-        ## print(dim(XX))
-        xb1 <- (cbind(1,SS,XX)%*%c(a10,a11,a2))[,1]
+arm::binnedplot(ps1,(rf$y=='1')-ps1)
 
-        ## xb for z=0
-        xb2 <- (XX%*%a2)[,1] ## (a2 is same in trt groups)
+plot(ps1,estimate$psMod$fitted.values)
 
-        ## logit z=1
-        xb3 <- (cbind(1,XX)%*%c(b0,b1))[,1]
-        ps <- plogis(xb3)
+ps <- predict(rf,dat1,type='prob')
+Sp <- ifelse(dat1$Z==1,dat1$S,ps)
 
-        c(
-### regression for treatment group
-            sum(ZZ*(YY-xb1)),
-            sum(ZZ*SS*(YY-xb1)),
-            (t(XX)%*%(YY-(ZZ*xb1+(1-ZZ)*(xb2+a01*ps+a00*(1-ps)))))[,1],
-### logistic regression
-            sum(ZZ*(SS-ps)),
-            ZZ*(t(XX)%*%(SS-ps))[,1],
-### mixture model in control group
-            sum((1-ZZ)*(a01*ps+a00*(1-ps)-YY+xb2)),
-            sum((1-ZZ)*(a01*ps^2+a00*(ps-ps^2)-(YY-xb2)*ps)),
-            length(ZZ)*(eff0-(a10-a00)),
-            length(ZZ)*(eff1-(a11+a10-a01)),
-            length(ZZ)*(effDiff-(eff1-eff0))
-        )
-    }
+outMod2 <- lm(formula(estimate$outMod),data=within(dat1,Sp <- Sp))
+
+#effsFromFit(list(outMod=outMod2,vcv=sandwich(outMod2)))arm::binnedplot(predict
+
+outlier <- function(x,thresh=1.5){
+    qq <- quantile(x,c(0.25,0.75),na.rm=TRUE)
+    iqr <- qq[2]-qq[1]
+    (x>qq[2]+thresh*iqr)|(x<qq[1]-thresh*iqr)
 }
 
-system.time(
-    result1 <- m_estimate(estFun,newDat,root_control=setup_root_control(start=runif(2*ncol(X)+8,-.2,.2)))
-)
 
-est1 <- coef(result1)
-vcv1 <- vcov(result1)
-sand1 <- result1@sandwich_components
+psMod3 <- glm(S~
+                log(student_prior_started_problem_count)+
+                log(student_prior_median_first_response_time)+
+                log(problem_prior_average_attempt_count)+
+                problem_prior_completed_problem_fraction+
+                log(problem_prior_median_first_response_time)+
+                outlier(log(student_prior_started_problem_count))+
+                outlier(log(student_prior_median_first_response_time))+
+                outlier(log(problem_prior_average_attempt_count))+
+                outlier(problem_prior_completed_problem_fraction)+
+                outlier(log(problem_prior_median_first_response_time)),
+            dat=subset(dat1,Z==1),family=binomial(cloglog))
+estimate3 <- est(dat1,psMod=psMod3)
+effs3 <- effsFromFit(estimate3)
 
-save(ate1,ate2,ate3,est1,vcv1,sand1,estFun,newDat,file='assistmentsResult.RData')
-try(system('drive push --quiet assistmentsResult.RData'))
+with(estimate3,arm::binnedplot(fitted(outMod),resid(outMod)))
+with(estimate3,arm::binnedplot(psMod$fitted,psMod$y-psMod$fitted))
 
-mod1 <- lm(Y~.-Z,data=newDat,subset=Z==1)
-mod2 <- glm(S~.-Z-Y,data=newDat,subset=Z==1,family=binomial)
 
-system.time(
-    result2 <- m_estimate(estFun,newDat,root_control = setup_root_control(
-                                           start = c(coef(mod1)[1],
-                                                     coef(mod1)['S'],
-                                                     rep(.1,5), #a0*, effects, effDiff
-                                                     coef(mod1)[-c(1,which(names(coef(mod1))=='S'))],
-                                                     coef(mod2))
-                                       )
-                         )
-)
+binnedLink <- function(x,y,linkfun,RESID=TRUE,...){
+    br <- arm::binned.resids(x,y)[[1]]
 
-est2 <- coef(result2)
-vcv2 <- vcov(result2)
-sand2 <- result2@sandwich_components
-save(ate1,ate2,ate3,est1,vcv1,sand1,est2,vcv2,sand2,estFun,newDat,file='assistmentsResult.RData')
+    newX <- br[,'xbar']
+    newY <- linkfun(br[,'ybar'])
+    if(RESID) newY <- newY-newX
 
-try(system('drive push --quiet assistmentsResult.RData'))
+    data.frame(x=newX,y=newY)
+}
+
+

@@ -4,75 +4,70 @@ dat <- read_csv('assistmentsData/principal_stratification_dataset.csv')
 ### I THINK: students randomized within problem to different "assigned_tsid"s, some of which contain videos and others don't
 ## we want problems in which half of the available tsids contain videos
 
-psThirdVid <- dat%>%
-    group_by(problem_id,assigned_tsid)%>%
-    summarize(vid=mean(contains_video))%>%
+dat%>%group_by(problem_id)%>%summarize(nCond=n_distinct(assigned_tsid))%>%pull(nCond)%>%table()
+
+dat%>%group_by(problem_id,assigned_tsid)%>%summarize(vid=n_distinct(contains_video))%>%pull(vid)%>%table()
+
+table(dat$contains_video)
+
+mean(dat$contains_video)
+
+dat <-
+    dat%>%
     group_by(problem_id)%>%
-    summarize(ntsid=n_distinct(assigned_tsid),pVid=mean(vid))%>%
-    filter(pVid==1/3)%>%
-    pull(problem_id)
-
-sum(dat$problem_id%in%psThirdVid)
-
-
-### go with Pr(vid)=1/3
-
-dat <- dat%>%
-    filter(problem_id%in%psThirdVid)
-
-
+    mutate(nExp=n())%>%
+    group_by(assigned_tsid)%>%
+    mutate(nCond=n(),perCond=nCond/nExp)%>%
+    ungroup()%>%
+    filter(nCond>19,perCond>0.2,nExp>100)%>%
+    group_by(problem_id)%>%
+    mutate(
+        nstud=n(),
+        nstudVid=sum(contains_video),
+        vidCond=n_distinct(assigned_tsid[contains_video]),
+        totCond=n_distinct(assigned_tsid),
+        perVid=vidCond/totCond,
+        vidAss=nstudVid/nstud)%>%
+## group_by(perVid)%>%
+##      summarize(
+##          nStud=sum(nstud),
+##          nProb=n(),
+##          probAss=weighted.mean(vidAss,nstud)
+##          )
+    filter(perVid==0.5)%>%
+filter(btw(nstudVid,qbinom(c(0.025,0.975),nstud,0.5)))%>%
+ungroup()
 
 
 ## differential attrition
 
+dat%>%group_by(contains_video)%>%summarize(mean(is.na(next_problem_correct)))
+
 ### drop problem ids with >50% attrition
 dat <- dat%>%group_by(problem_id)%>%mutate(pAtt=mean(is.na(next_problem_correct)))%>%filter(pAtt<0.5)%>%ungroup()
 
+dat%>%group_by(contains_video)%>%summarize(mean(is.na(next_problem_correct)))
+
 ## whatever
-dat$S <- dat$time_on_task<dat$video_length
+
+dat$S <- dat$time_on_task>=dat$video_length
 
 dat <- subset(dat,!is.na(time_on_task))
 
-### try out ols modeling
-form2 <- next_problem_correct~log(student_prior_started_problem_count)+log(student_prior_average_attempt_count)+
-    student_prior_completed_problem_fraction+student_prior_answer_first_fraction+log(student_prior_median_first_response_time)+
-    log(student_prior_median_time_on_task)+splines::ns(student_prior_average_correctness,10)+log(problem_prior_started_problem_count)+
-    log(problem_prior_average_attempt_count)+
-    problem_prior_completed_problem_fraction+problem_prior_answer_first_fraction+log(problem_prior_median_first_response_time)+
-    splines::ns(problem_prior_average_correctness,10)+S
+dat%>%group_by(contains_video)%>%summarize(mean(is.na(next_problem_correct)))
+with(dat,prop.test(table(contains_video,is.na(next_problem_correct))))
 
-### S model
+prop.test(table(dat$contains_video))
 
-form3 <- update(form2,.~.-log(problem_prior_median_time_on_task)-log(student_prior_median_time_on_task)+splines::ns(log(problem_prior_median_time_on_task),10)+splines::ns(log(student_prior_median_time_on_task),10))
-
-dat <- droplevels(dat)%>%
-    filter((student_prior_average_attempt_count>0),(problem_prior_average_attempt_count>0))
-
-X <- model.matrix(update(form3,.~.-S),data=dat)[,-1]
-X <- scale(X)
-
-dat1 <- dat[as.numeric(rownames(X)),]
+dat1 <- dat%>%
+    filter(!is.na(student_prior_median_time_on_task),student_prior_median_time_on_task>0)%>%
+    mutate(Y=ifelse(next_problem_correct,1,0), ### name Y, Z, S, make numeric
+           Z=ifelse(contains_video,1,0),
+           S=ifelse(S&(Z==1),1,0))%>%
+    filter(!is.na(Y),!is.na(Z))
 
 
-newDat <- data.frame(cbind(Y=ifelse(dat1$next_problem_correct,1,0),
-                           S=ifelse(dat1$S,1,0),
-                           Z=ifelse(dat1$contains_video,1,0),
-                           X))
+RItools::xBalance(contains_video~student_prior_started_problem_count+student_prior_average_attempt_count+student_prior_completed_problem_fraction+student_prior_answer_first_fraction+student_prior_average_correctness+student_prior_median_first_response_time+student_prior_median_time_on_task,strata=list(prob=~problem_id),report='all',data=dat1)
 
-newDat$S[newDat$Z==0] <- 0
+save(dat1,file='assistmentsData/assistmentsAnalysisData.RData')
 
-### overall ATE
-ate1 <- with(newDat,
-             prop.test(c(sum(Y[Z==1]),sum(Y[Z==0])),c(sum(Z),sum(Z==0))))
-
-### with regression
-ate2 <- tidy(lm_robust(Y~.-S,data=newDat))%>%filter(term=='Z')
-
-ate3 <- tidy(lm_lin(Y~Z,
-                    covariates=as.formula(paste('~',paste(names(newDat)[-c(1:3)],collapse='+'))),
-                    data=newDat)
-             )%>%filter(term=='Z')
-
-
-
-save(X,dat1,newDat,ate1,ate2,ate3,file='assistmentsData/assistmentsAnalysisData.RData')

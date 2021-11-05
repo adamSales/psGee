@@ -20,12 +20,13 @@ Attach <- function(.list,.names=names(.list),env=environment()){
 }
 
 ### computes/returns regression models
-pointEst <- function(data,covForm=~x1+x2,int=FALSE){
-    psMod <- glm(update(covForm,S~.),data=data,family=binomial,subset=Z==1)
+pointEst <- function(data,covForm=~x1+x2,int=FALSE,psMod=NULL){
+    if(is.null(psMod)) psMod <- glm(update(covForm,S~.),data=data,family=binomial,subset=Z==1&!is.na(S))
+    else covForm <- formula(psMod)[c(1,3)]
 
     ps <- predict(psMod,data,type='response')
     if('Sp'%in%names(data)) warning('replacing Sp')
-    data <- within(data,Sp <- ifelse(Z==1,S,ps))
+    data <- within(data,Sp <- ifelse(Z==1&!is.na(S),S,ps))
 
     outMod <- lm(
         update(covForm,if(int) Y~Z*(Sp+.) else Y~Z*Sp+.),
@@ -44,8 +45,8 @@ EFps <- function(psMod,data){
 }
 
 ### estimates bread and meat for sandwich variance
-sandwichMats <- function(psMod,outMod,int=any(grepl(":x",names(coef(outMod))))){
-    data <- model.frame(outMod)
+sandwichMats <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(coef(outMod))))){
+    #data <- model.frame(outMod)
     ### estimating equations
     efPS <- EFps(psMod,data)
     efOut <- estfun(outMod)
@@ -53,15 +54,17 @@ sandwichMats <- function(psMod,outMod,int=any(grepl(":x",names(coef(outMod))))){
     out <- list(
         a11inv = bread(psMod)/sum(data$Z),
         a22inv = bread(outMod)/nrow(data),
-        a21 = A21(psMod,outMod),
-        b11=meat(psMod)*nrow(model.frame(psMod)),
-        b22 = meat(outMod)*nrow(data)#,adjust=TRUE)
+        a21 = A21(psMod,outMod,data),
+        b11=(if(is.null(clust)) meat(psMod) else meatCL(psMod,cluster=clust[data$Z==1]))*nrow(model.frame(psMod)),
+        b22 = (if(is.null(clust)) meat(outMod) else meatCL(outMod,cluster=clust))*nrow(data)#,adjust=TRUE)
     )
-    out$b12 <-
+    out <- within(out,b12 <-
         if(int){
             matrix(0,nrow(b11),ncol(b22))
-        } else crossprod(efPS,efOut) #/sum(data$Z==0)
-
+        } else if(is.null(clust)) crossprod(efPS,efOut)
+        else crossprod(apply(efPS,2L,rowsum,clust),
+                       apply(efOut,2L,rowsum,clust))#/sum(data$Z==0)
+        )
     out
 }
 
@@ -73,8 +76,14 @@ bigM <- function(m11,m12,m22)
     )
 
 ### computes sandwich vcov for regressions
-vcvPS <- function(psMod,outMod,int=any(grepl(":x",names(coef(outMod))))){
-    Attach(sandwichMats(psMod=psMod,outMod=outMod,int=int))
+vcvPS <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(coef(outMod))))){
+    Attach(
+        sandwichMats(
+            psMod=psMod,
+            outMod=outMod,
+            data=data,
+            clust=clust,
+            int=int))
 
     A <- rbind(
         cbind(solve(a11inv),matrix(0,nrow(a11inv),ncol(a22inv))),
@@ -107,11 +116,11 @@ vcvPS <- function(psMod,outMod,int=any(grepl(":x",names(coef(outMod))))){
 
 
 ### wrapper function for estimating regressions+vcov
-est <- function(data,covForm=~x1+x2,int=FALSE){
+est <- function(data,covForm=~x1+x2,psMod=NULL,clust=NULL,int=FALSE){
 
-    Attach(pointEst(data=data,covForm=covForm,int=int))
+    Attach(pointEst(data=data,covForm=covForm,int=int,psMod=psMod))
 
-    vcv <- vcvPS(psMod,outMod)
+    vcv <- vcvPS(psMod,outMod,data=data,int=int,clust=clust)
 
     list(outMod=outMod,psMod=psMod,vcv=vcv)
 }
@@ -119,9 +128,10 @@ est <- function(data,covForm=~x1+x2,int=FALSE){
 ### estimates effects of interest, starting from est() output
 effsFromFit <- function(ests){
         estimates <- with(as.list(coef(ests$outMod)),
-                      list(
-                          eff1=Z+`Z:Sp`,
-                          diff=`Z:Sp`))
+                          list(
+                              eff0=Z,
+                              eff1=Z+`Z:Sp`,
+                              diff=`Z:Sp`))
     vcv <- ests$vcv
     ddd <- diag(vcv)
     vars <- list(
@@ -143,14 +153,15 @@ effs <- function(data,covForm=~x1+x2,int=FALSE){
 }
 
 ### estimates lower left of A (bread) matrix in A^{-1}BA^{-t}
-A21 <- function(psMod,outMod){
-    Z <- model.frame(outMod)$Z
-    Y0 <- model.frame(outMod)$Y[Z==0]
-    aX <- predict(psMod,model.frame(outMod),type='link')[Z==0]
+### FIX FOR MISSING S IN TRT GROUP
+A21 <- function(psMod,outMod,data){
+    Z <- data$Z
+    Y0 <- data$Y[Z==0]
+    aX <- predict(psMod,data,type='link')[Z==0]
     q <- family(psMod)$mu.eta(aX)      ## dp/dalpha=qX'
     u <- 2*family(psMod)$linkinv(aX)*q   ## dp^2/dalpha=uX'
 
-    X0 <- model.matrix(update(formula(psMod),Sp~.),data=model.frame(outMod))[Z==0,]
+    X0 <- model.matrix(update(formula(psMod),Y~.),data=data)[Z==0,]
 
 
     est <- list(beta=coef(outMod)[colnames(X0)[-1]],
@@ -161,7 +172,7 @@ A21 <- function(psMod,outMod){
     a21=rbind(
        est$eta*t(q)%*%X0,
        -t((Y0-est$mu0-X0[,-1]%*%est$beta)*q-est$eta*u)%*%X0,
-        est$eta*t(X0[,-1])%*%diag(as.vector(q))%*%X0
+        est$eta*t(X0[,-1])%*%(as.vector(q)*X0)
     )#/nrow(X0)
     rownames(a21)[1:2] <- c('(Intercept)','Sp')
 
