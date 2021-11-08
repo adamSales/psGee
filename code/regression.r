@@ -52,16 +52,16 @@ sandwichMats <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(c
     efOut <- estfun(outMod)
 
     out <- list(
-        a11inv = bread(psMod)/sum(data$Z),
-        a22inv = bread(outMod)/nrow(data),
-        a21 = A21(psMod,outMod,data),
-        b11=(if(is.null(clust)) meat(psMod) else meatCL(psMod,cluster=clust[data$Z==1]))*nrow(model.frame(psMod)),
-        b22 = (if(is.null(clust)) meat(outMod) else meatCL(outMod,cluster=clust))*nrow(data)#,adjust=TRUE)
+        a11inv = bread(psMod),#/sum(data$Z),
+        a22inv = bread(outMod),#/nrow(data),
+        a21 = A21(psMod,outMod,data)/nrow(data),
+        b11=(if(is.null(clust)) meat(psMod) else meatCL(psMod,cluster=clust[data$Z==1])),#*nrow(model.frame(psMod)),
+        b22 = (if(is.null(clust)) meat(outMod) else meatCL(outMod,cluster=clust))#*nrow(data)#,adjust=TRUE)
     )
     out <- within(out,b12 <-
         if(int){
             matrix(0,nrow(b11),ncol(b22))
-        } else if(is.null(clust)) crossprod(efPS,efOut)
+        } else if(is.null(clust)) crossprod(efPS,efOut)/nrow(data)
         else crossprod(apply(efPS,2L,rowsum,clust),
                        apply(efOut,2L,rowsum,clust))#/sum(data$Z==0)
         )
