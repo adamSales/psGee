@@ -1,0 +1,200 @@
+\documentclass[11pt]{article} % use larger type; default would be 10pt
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{graphicx}
+
+\newcommand{\EE}{\mathbb{E}}
+\newcommand{\pp}{e(\bm{X})}
+\newcommand{\ppi}{e(\bm{X_i})}
+\newcommand{\hpp}{\hat{e}(\bm{X})}
+\newcommand{\hppi}{\hat{e}(\bm{X_i})}
+
+\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
+\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
+
+\title{MOM Estimator: Regression Form}
+
+\begin{document}
+\maketitle
+
+Let $p_i=Pr(S_i=1|\bm{x}_i)$.
+Then the original estimating equations were:
+\begin{align*}
+  Z_i=0:&\\
+  &Y_i-\mu_{00}(1-p_i)+\mu_{01}p_i=Y_i-\mu_{00}-(\mu_{01}-\mu_{00})p_i\\
+  p_i&Y_i-\mu_{00}p_i-(\mu_{01}-\mu_{00})p_i^2\\
+  Z_i=1:&\\
+        &Y_i-\mu_{10}-S_i(\mu_{11}-\mu_{10})\\
+  S_i&Y_i-S_i\mu_{10}-S_i(\mu_{11}-\mu_{10})=S_iY_i-S_i\mu_{11}\\
+\end{align*}
+
+Let
+\begin{equation}
+  r_i=
+  \begin{cases}
+    p_i&\text{ if }Z_i=0\\
+    S_i&\text{ if }Z_i=1
+  \end{cases}
+\end{equation}
+
+Note that since $r_i$ depends on $Z_i$, we can replace both $p$ and $S$ in the estimating equations with $r$, without changing them.
+
+\begin{align*}
+  Z_i=0:&\\
+  &Y_i-\mu_{00}(1-r_i)+\mu_{01}r_i=Y_i-\mu_{00}-(\mu_{01}-\mu_{00})r_i\\
+  r_i&Y_i-\mu_{00}r_i-(\mu_{01}-\mu_{00})r_i^2\\
+  Z_i=1:&\\
+        &Y_i-\mu_{10}-r_i(\mu_{11}-\mu_{10})\\
+  r_i&Y_i-r_i\mu_{10}-r_i(\mu_{11}-\mu_{10})=r_iY_i-r_i\mu_{11}\\
+\end{align*}
+
+Then we can combine these into four equations that look more like OLS. The first:
+
+\begin{align*}
+  &Y_i-(1-Z_i)(\mu_{00}-(\mu_{01}-\mu_{00})r_i)-Z_i(\mu_{10}-r_i(\mu_{11}-\mu_{10}))\\
+  =& Y_i-\mu_{00}-(\mu_{01}-\mu_{00})r_i-Z_i(\mu_{10}-\mu_{00})-r_iZ_i
+\end{align*}
+and the 2nd:
+\begin{align*}
+  &r_iY_i-(1-Z_i)\left[\mu_{00}r_i-(\mu_{01}-\mu_{00})r_i^2\right]-Z_ir_i\mu_{11}\\
+  =&r_iY_i-\mu_{00}r_i-(\mu_{01}-\mu_{00})r_i^2-Z_ir_i\left[\mu_{11}-\mu_{00}-r_i(\mu_{01}-\mu_{00})\right]\\
+\end{align*}
+
+The 3rd and 4th are the same as above:
+\begin{align*}
+  Z_i&Y_i-Z_i\mu_{10}-Z_ir_i(\mu_{11}-\mu_{10})\text{ and }\\
+  Z_ir_i&Y_i-Z_ir_i\mu_{11}\\
+\end{align*}
+
+These are the estimating equations for the OLS model:
+\begin{equation}\label{eq:regression0}
+  Y_i=\beta_0+\beta_1r_i+\beta_2Z_i+\beta_3Z_ir_i+\epsilon_i
+\end{equation}
+with
+\begin{align*}
+  \beta_0&=\mu_{00}\\
+  \beta_1&=\mu_{01}-\mu_{00}\\
+  \beta_2&=\mu_{10}-\mu_{00}\\
+  \beta_3&=\mu_{11}-\mu_{10}-(\mu_{01}-\mu_{00})
+\end{align*}
+
+\section{Missing $S$ in Treatment Group}
+When $S$ is missing at random (conditional on $\bm{x}$) for some observations in the treatment group,
+and $\mathbb{E}[Y|Z=1,S,p]=\mathbb{E}[Y|Z=1,S]$,
+a similar mixed model will work for estimating $\mu_{10}$ and $\mu_{11}$.
+\begin{align*}
+  Z_i=1\text{ and }S_i\text{ Missing}:&\\
+  &Y_i-\mu_{10}(1-p_i)+\mu_{11}p_i=Y_i-\mu_{10}-(\mu_{11}-\mu_{10})p_i\\
+  p_i&Y_i-\mu_{10}p_i-(\mu_{11}-\mu_{10})p_i^2\\
+  Z_i=1\text{ and }S_i\text{ Observed}:&\\
+        &Y_i-\mu_{10}-S_i(\mu_{11}-\mu_{10})\\
+  S_i&Y_i-S_i\mu_{10}-S_i(\mu_{11}-\mu_{10})=S_iY_i-S_i\mu_{11}\\
+    Z_i=0:&\\
+  &Y_i-\mu_{00}(1-p_i)+\mu_{01}p_i=Y_i-\mu_{00}-(\mu_{01}-\mu_{00})p_i\\
+  p_i&Y_i-\mu_{00}p_i-(\mu_{01}-\mu_{00})p_i^2\\
+\end{align*}
+
+This works because
+\begin{equation*}
+  \mathbb{E}[Y|p]=\mathbb{E}\left[\mathbb{E}[Y|p,S]|p\right]=\mathbb{E}\left[\mathbb{E}[Y|S]|p\right]=\mu_{10}(1-p)+\mu_{11}p
+\end{equation*}
+
+Then re-define
+
+\begin{equation}
+  r_i=
+  \begin{cases}
+    p_i&\text{ if }Z_i=0\text{ or }Z_i=1\text{ and }S_i\text{ missing}\\
+    S_i&\text{ if }Z_i=1\text{ and }S_i\text{ observed}
+  \end{cases}
+\end{equation}
+Then the rest of the logic holds, and the regression (\ref{eq:regression0}) can be used to estimate $\bm{\mu}$.
+
+\section{Sandwich Standard Errors}
+
+
+So we're estimating principal effects in two stages.
+First, fit the model
+\begin{equation}\label{eq:psMod}
+  Pr(S_{Ti}=1|\bm{\tilde{x}}_i)=f(\bm{\alpha}'\bm{\tilde{x}}_i)
+\end{equation}
+for some inverse link function $f(\cdot)$, where $\bm{\tilde{x}}_i=[1,\bm{x}_i]$, using (observed) values from the treatment group, and estimating $\hat{\alpha}$.
+Then let
+\begin{equation}\label{eq:ps}
+  \hat{p}_i=f(\bm{\hat{\alpha}}'\bm{\tilde{x}}_i)
+\end{equation}
+for all subjects in the experiment. 
+
+Finally, fit model
+\begin{equation}\label{eq:regression}
+  Y_i=\beta_0+\beta_1r_i+\beta_2Z_i+\beta_3Z_ir_i+\bm{\gamma}^t\bm{x}_i+\epsilon_i
+\end{equation}
+to estimate $\bm{\beta}$ and hence principal effects.
+[Note that \eqref{eq:regression} is just \eqref{eq:regression0} with $\bm{\gamma}^t\bm{x}_i$ added on the end].
+Let $\bm{\beta}=[\beta_0,\beta_1,\beta_2,\beta_3,\bm{\gamma}^t]^t$.
+
+The standard error matrix for $\bm{\hat{\beta}}$ can be estimated as:
+\begin{equation}\label{eq:sandwich}
+  \widehat{var}(\bm{\hat{\beta}})=A^{-1}BA^{-t}
+\end{equation}
+Where
+\begin{equation}\label{eq:Amat}
+  A=\sum_i\frac{\partial}{\partial [\alpha,\beta]^t} \Psi(Y_i;\alpha,\beta,\bm{x}_i)
+\end{equation}
+and
+\begin{equation}\label{eq:Bmat}
+  B=\sum_i \Psi(Y_i;\alpha,\beta,\bm{x}_i)\Psi(Y_i;\alpha,\beta,\bm{x}_i)^t
+\end{equation}
+where $\Psi(\cdot)$ is the estimating equations.
+
+Following \citet[][p. 373]{carroletal06}, we %separate the estimating equations $\Psi$ into $\phi$ and $\psi$, estimating equations for models \eqref{
+can decompose the matrices into diagonal elements $A_{1,1}$ and $A_{2,2}$ and $B_{1,1}$ and $B_{2,2}$ that pertain to the parameter sets $\alpha$ and $\beta$ and the estimating equations for models \eqref{eq:psMod} and  \eqref{eq:regression}, respectively, and $A_{21}$, and $B_{12}=B_{21}^t$, which capture to the dependence of model \eqref{eq:regression} on the parameters $\alpha$ from \eqref{psMod} and the covariance between the estimating equations of the two models. The sub-matrix $A_{12}=0$, since \eqref{eq:psMod} does not depend on $\beta$.
+
+The diagonal matrices $A_{1,1}$ and $A_{2,2}$ and $B_{1,1}$ and $B_{2,2}$ are all the typical ``bread'' and ``meat'' matrices from M-estimation of generalized linear models and OLS. In practice, we use the estimates from the \texttt{sandwich} package in \texttt{R}, adjusted in two ways: first, the function \texttt{bread} actually gives $A^{-1}$, not $A$; second, we must pay careful attention to sample sizes, since the sample size for \eqref{eq:psMod} includes only treated observations (with observed $S$) and \eqref{eq:regression} contains all observations.
+
+\subsection{$A_{21}$ Matrix}
+The estimating equations for the regression \eqref{eq:regression} are
+\begin{equation}\label{eq:eeOLS}
+  \psi(Y_i,\bm{x}_i,\beta,\alpha)=X_iY_i-X_iX_i^t\beta
+\end{equation}
+Where $X_i=[1,r_i,Z_i,r_iZ_i,\bm{x}_i^t]^t$.
+These depend on $\alpha$ when $r_i=p_i$, i.e. when $Z_i=0$ or $S_i$ is missing.
+Then note that, following \eqref{eq:ps}, and letting $\eta_i=\alpha^t\bm{\tilde{x}}_i$
+\begin{equation}\label{eq:derivP}
+  \frac{\partial p_i}{\partial \alpha^t}=f'(\eta_i)\frac{\partial \eta_i}{\partial \alpha^t}=f'(\eta_i)\bm{\tilde{x}}_i^t
+\end{equation}
+and that
+\begin{equation}
+  \frac{\partial p_i^2}{\partial \alpha^t}=2p\frac{\partial p_i}{\partial \alpha^t}=2f(\eta)f'(\eta_i)\bm{\tilde{x}}_i^t
+\end{equation}
+
+Then if $r_i=p_i$,
+\begin{align*}
+  \frac{\partial}{\partial \alpha^t}&\psi(Y_i,\bm{x}_i,\beta,\alpha)=\\
+  \left[\begin{array}{c}
+          -\beta_1\frac{\partial p_i}{\partial \alpha^t}\\
+          (Y_i-\beta_0-\beta_2Z_i-\bm{\gamma}^t\bm{x}_{i})\partial p/\partial\alpha^t-(\beta_1+\beta_3Z_i)\partial p^2/\partial \alpha^t\\
+          -\beta_1\frac{\partial p_i}{\partial \alpha^t}Z_i\\
+          Z_i\left[(Y_i-\beta_0-\beta_2Z_i-\bm{\gamma}^t\bm{x}_{i})\partial p/\partial\alpha^t-(\beta_1+\beta_3Z_i)\partial p^2/\partial \alpha^t\right]\\
+          -\beta_1\frac{\partial p_i}{\partial \alpha^t}\bm{x}_i
+        \end{array}\right]\\
+  =& \left[\begin{array}{c}
+          -\beta_1f'(\eta_i)\bm{\tilde{x}}_i^t\\
+          \left[Y_i-X_i^t\beta-p_i(\beta_1+\beta_3Z_i)\right]f'(\eta_i)\bm{\tilde{x}}_i\\
+          -Z_i\beta_1f'(\eta_i)\bm{\tilde{x}}_i^t\\
+          Z_i\left[Y_i-X_i^t\beta-p_i(\beta_1+\beta_3)\right]f'(\eta_i)\bm{\tilde{x}}_i\\
+          -\beta_1f'(\eta_i)\bm{x}_i\bm{x}_i^t
+           \end{array}\right]
+\end{align*}
+Note that unless there is missing $S$ in the treatment group, $Z_i=0$ whenever $r_i=p_i$, so the 3rd and 4th lines of the matrix are all 0.
+
+If $r_i=S_i$, $\frac{\partial}{\partial \alpha^t}&\psi(Y_i,\bm{x}_i,\beta,\alpha)=0$.
+
+
+
+
+\end{document}
