@@ -175,7 +175,7 @@ and that
 Then if $r_i=p_i$,
 \begin{align*}
   \frac{\partial}{\partial \alpha^t}&\psi(Y_i,\bm{x}_i,\beta,\alpha)=\\
-  \left[\begin{array}{c}
+  &\left[\begin{array}{c}
           -\beta_1\frac{\partial p_i}{\partial \alpha^t}\\
           (Y_i-\beta_0-\beta_2Z_i-\bm{\gamma}^t\bm{x}_{i})\partial p/\partial\alpha^t-(\beta_1+\beta_3Z_i)\partial p^2/\partial \alpha^t\\
           -\beta_1\frac{\partial p_i}{\partial \alpha^t}Z_i\\
@@ -192,8 +192,22 @@ Then if $r_i=p_i$,
 \end{align*}
 Note that unless there is missing $S$ in the treatment group, $Z_i=0$ whenever $r_i=p_i$, so the 3rd and 4th lines of the matrix are all 0.
 
-If $r_i=S_i$, $\frac{\partial}{\partial \alpha^t}&\psi(Y_i,\bm{x}_i,\beta,\alpha)=0$.
+If $r_i=S_i$, $\frac{\partial}{\partial \alpha^t}\text{ \& }\psi(Y_i,\bm{x}_i,\beta,\alpha)=0$.
 
+\section{Sample Sizes}
+
+I am a bit confused over this one.
+In Sefanski and Boos, the sums that define $A$ and $B$ are divided by $n$, the sample size.
+In Carrol et al., the sums are not divided by anything, but the variance formula has an $n^{-1}$ in it, $A^{-1}BA^{-t}/n$.
+The dilemma is that the sample size for \eqref{eq:psMod} is $\approx n/2$ and the sample size for \eqref{eq:regression} is $n$.
+
+My intuition is based on the fact that $A$ is supposed to estimate $\mathbb{E}[-d\Psi/d\theta]$ and $B$ is supposed to estimate $\mathbb{E}[\Psi\Psi^T]$.
+Hence, $A_{11}$ and $B_{11}$ should be divided by the sample size for \eqref{eq:psMod}, and $A_{22}$ and $B_{22}$ should be divided by $n$.
+What about $A_{21}$ and $B_{21}$? Well, the covariance between the estimating equations of the two models should account for the fact that roughly half of the estimating equations for the outcome model's sample is uncorrelated with the estimating equations for the principal score model, and the other half is not dependent on its parameters---i.e., there are zeroes in the sum. Dividing by $n$ treats those zeros as informative, which seems correct to me.
+
+On the other hand, it turns out that if you don't divide anything by anything---i.e. there's no $n$ or $n/2$ in any denominators---you reproduce the standard errors from \texttt{geex} almost exactly.
+
+In any event, it doesn't seem to matter much in practice, and standard errors computed either way, dividing by sample sizes or not, are all almost unbiased, in the scenarios I've simulated. So rn I'm not sure.
 
 
 

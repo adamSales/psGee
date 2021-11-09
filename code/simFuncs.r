@@ -374,7 +374,7 @@ fullsimJustM <- function(nsim,
              1:nrow(cases),
              function(i){
                  cat(round(i/nrow(cases)*100))
-                 replicate(nsim,effs(do.call("makeData",cases[i,])))
+                 replicate(nsim,effs(do.call("makeDat",cases[i,])))
              }
          )
          )

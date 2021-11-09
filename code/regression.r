@@ -96,7 +96,7 @@ vcvPS <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(coef(out
 
     n <- nrow(model.frame(outMod))
 
-    vcvFull <- solve(A)%*%B%*%t(solve(A))
+    vcvFull <- solve(A)%*%B%*%t(solve(A))/nrow(data)
     main <- a22inv%*%b22%*%t(a22inv)
     vcv <- vcvFull[-(1:nrow(b11)),-(1:nrow(b11))]
     dimnames(vcv) <- dimnames(main)
