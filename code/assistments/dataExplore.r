@@ -95,10 +95,17 @@ byProb <- datOvr%>%
     summarize(nCond=n_distinct(assigned_tsid),
               nVid=n_distinct(assigned_tsid[contains_video]),
               nStud=n(),
-              perVid=mean(contains_video))
+              perVid=mean(contains_video),
+              Sna=mean(is.na(time_on_task)),
+              SnaVid=mean(is.na(time_on_task[contains_video])),
+              diffNA=SnaVid-mean(is.na(time_on_task[!contains_video])))
 
 xtabs(~nCond+nVid,data=byProb)
 plot(byProb$nStud,byProb$perVid)
+
+
+### missing time_on_task -> didn't finish problem -> didn't do next problem
+xtabs(~is.na(time_on_task)+is.na(next_problem_correct),data=datOvr)
 
 
 ## 8-schools style analysis

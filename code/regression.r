@@ -19,10 +19,29 @@ Attach <- function(.list,.names=names(.list),env=environment()){
 
 }
 
+AUC = function(probs, true_Y){
+    probsSort = sort(probs, decreasing = TRUE, index.return = TRUE)
+    val = unlist(probsSort$x)
+    idx = unlist(probsSort$ix)
+
+    roc_y = true_Y[idx];
+    stack_x = cumsum(roc_y == 0)/sum(roc_y == 0)
+    stack_y = cumsum(roc_y == 1)/sum(roc_y == 1)
+
+    auc = sum((stack_x[2:length(roc_y)]-stack_x[1:length(roc_y)-1])*stack_y[2:length(roc_y)])
+    return(auc)
+}
+AUCmod <- function(mod){
+    AUC(mod$linear,mod$y)
+}
+
+
 ### computes/returns regression models
 pointEst <- function(data,covForm=~x1+x2,int=FALSE,psMod=NULL){
     if(is.null(psMod)) psMod <- glm(update(covForm,S~.),data=data,family=binomial,subset=Z==1&!is.na(S))
     else covForm <- formula(psMod)[c(1,3)]
+
+    attr(psMod,'auc') <- AUCmod(psMod)
 
     ps <- predict(psMod,data,type='response')
     if('Sp'%in%names(data)) warning('replacing Sp')
@@ -127,11 +146,11 @@ est <- function(data,covForm=~x1+x2,psMod=NULL,clust=NULL,int=FALSE){
 
 ### estimates effects of interest, starting from est() output
 effsFromFit <- function(ests){
-        estimates <- with(as.list(coef(ests$outMod)),
-                          list(
-                              eff0=Z,
-                              eff1=Z+`Z:Sp`,
-                              diff=`Z:Sp`))
+    estimates <- with(as.list(coef(ests$outMod)),
+                      list(
+                          eff0=Z,
+                          eff1=Z+`Z:Sp`,
+                          diff=`Z:Sp`))
     vcv <- ests$vcv
     ddd <- diag(vcv)
     vars <- list(
@@ -139,10 +158,13 @@ effsFromFit <- function(ests){
         eff1 <- ddd['Z']+ddd['Z:Sp']+2*vcv['Z','Z:Sp'],
         diff <- ddd['Z:Sp']
     )
-    cbind(
-        estimates=unlist(estimates),
-        SE=sqrt(unlist(vars))
-    )
+    out <-
+        cbind(
+            estimates=unlist(estimates),
+            SE=sqrt(unlist(vars))
+        )
+    attr(out,'auc') <- attr(ests$psMod,'auc')
+    out
 }
 
 ### estimates effects of interest, starting from data
