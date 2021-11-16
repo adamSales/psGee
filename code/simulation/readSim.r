@@ -66,6 +66,46 @@ getSumms <- function(res,S,EST){
     )
 }
 
+muEff <- function(facs,eff)
+    with(as.list(facs),
+         ifelse(eff==0,mu10,
+         ifelse(eff==1,mu11-mu01,mu11-mu01-mu10))
+         )
+
+
+bayesProc1 <- function(eff,res1){
+    if(rownames(res1$mest)[3]=='diff') rownames(res1$mest)[3] <- 'effDiff'
+    with(res1,
+         map_dfr(list(bayes,mest),~
+                                    tibble(
+                                        eff=eff,
+                                        pop=muEff(facs,eff),
+                                        samp=ifelse(eff=='Diff',true['S1']-true['S0'],true[paste0('S',eff)]),
+                                        estimator=ifelse('mean'%in%colnames(.),'bayes','mest'),
+                                        est=.[paste0('eff',eff),ifelse('mean'%in%colnames(.),'mean','estimates')],
+                                        CInormL=est-2*.[paste0('eff',eff),ifelse('sd'%in%colnames(.),'sd','SE')],
+                                        CInormU=est+2*.[paste0('eff',eff),ifelse('sd'%in%colnames(.),'sd','SE')],
+                                        CIpercL=ifelse('2.5%'%in%colnames(.),.[paste0('eff',eff),'2.5%'],CInormL),
+                                        CIpercU=ifelse('97.5%'%in%colnames(.),.[paste0('eff',eff),'97.5%'],CInormU),
+                                        rhat=bayes[paste0('eff',eff),'Rhat'],
+                                        auc=attr(mest,'auc')
+                                    )
+                 )
+         )
+}
+
+
+
+bayesProc <- function(res1,facs){
+    if(inherits(res1,'try-error')) return(as_tibble(facs))
+    facs%>%
+        rbind()%>%
+        as_tibble()%>%
+        bind_cols(
+            map_dfr(c(0,1,'Diff'),bayesProc1,res1=res1)
+        )
+}
+
 
 
 loadRes <- function(){
@@ -75,17 +115,17 @@ loadRes <- function(){
 #    summ <- NULL
     #fn <- list.files('./simResults','sim[[:alnum:]]+.RData')
     for(i in 1:nrow(cases)){#length(fn)){
-        if(i %% 10==0) cat(round(i/nrow(cases)*100),'%')#length(fn)*100), '% ')
+        #if(i %% 10==0)
+            cat(round(i/nrow(cases)*100),'%')#length(fn)*100), '% ')
         load(paste0('simResults/sim',i,'.RData'))#fn[i]))
-        stopifnot(identical(facs,cases[i,]))
-        res <- as.data.frame(res)
-        res$n <- facs$n
-        res$run <- i
-        results[[i]] <- res
+        #stopifnot(identical(facs,cases[i,]))
+        resT <- map_dfr(res,bayesProc,facs=facs)
+        resT$run <- i
+        results[[i]] <- resT
         rm(res,facs)
     }
 
-    results
+    reduce(results,bind_rows())
 }
 
 allSums <- function(results){
