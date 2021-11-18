@@ -14,7 +14,7 @@ bayes <- function(data,...){
                        )
                  )
                                         #fit1 <-
-    fit <- stan('code/ps.stan',data=sdat,...)
+    output <- capture.output(fit <- stan('code/ps.stan',data=sdat,...))
 
     summary(fit, par=c('eff0','eff1','effDiff'))$summary
 }
@@ -22,7 +22,19 @@ bayes <- function(data,...){
 
 
 ### mu00=0
-makeDat <- function(n,mu01=0.2,mu10=0,mu11=0.5,b1=1,errDist='norm',intS=FALSE,intZ=FALSE,...){
+makeDat <- function(n,mu01,mu10,mu11,b1,errDist,intS,intZ,debug=FALSE){
+
+    if(debug){
+      print("debugging--parameter values set to defaults")
+      if(missing(n)) n <- 1000
+      if(missing(mu01)) mu01 <- 0.3
+      if(missing(mu10)) mu01 <- 0.3
+      if(missing(mu11)) mu11 <- 0.3
+      if(missing(b1)) b1 <- 0.5
+      if(missing(errDist)) errDist <- "norm"
+      if(missing(intS)) intS <- FALSE
+      if(missing(intZ)) intZ <- FALSE
+      }
 
     x1 <- rnorm(2*n)
     x2 <- rnorm(2*n)
@@ -64,7 +76,7 @@ makeDat <- function(n,mu01=0.2,mu10=0,mu11=0.5,b1=1,errDist='norm',intS=FALSE,in
         S0=mean(Yt[S==0])-mean(Yc[S==0]),
         S1=mean(Yt[S==1])-mean(Yc[S==1])
     )
-    attr(dat,'facs') <- unlist(as.list(match.call())[-1])
+    attr(dat,'facs') <- as.data.frame(as.list(match.call())[-1])
 
     dat
 
@@ -85,22 +97,29 @@ simOneBayes <- function(dat){
 }
 
 
-oneCase <- function(nsim,ext,ncores, facs){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
+oneCase <- function(nsim,ext,ncores,cl=NULL, facs){ #n,mu00,mu01,mu10,mu11,gumb,b1,cl){
 
-    print(Sys.time())
+#    print(Sys.time())
 
-    datasets <- mclapply(1:nsim,function(i) do.call("makeDat",facs),mc.cores=ncores)
+     datasets <- 
+     if(is.null(cl)) mclapply(1:nsim,function(i) do.call("makeDat",facs),mc.cores=ncores)
+     else parLapply(cl, 1:nsim,function(i) do.call("makeDat",facs))
+
     save(datasets,file=paste0('simData/dat',ext,'.RData'))
 
     time <- system.time(
         res <-
-            mclapply(
-                datasets,
-                function(dat) try(simOneBayes(dat)),
-                mc.cores=ncores
-            )
+	    if(is.null(cl)){
+		mclapply(
+			datasets,
+                	function(dat) try(simOneBayes(dat)),
+                	mc.cores=ncores
+            		)
+	     } else
+	     	      parLapply(cl,datasets, function(dat) try(simOneBayes(dat)))
+	
     )
-    print(time)
+#    print(time)
 
   attr(res,"time") <- time
   res
@@ -115,12 +134,21 @@ fullsim <- function(nsim,
                     b1s=c(0,0.2,0.5),
                     ext='',
                     se=TRUE,
-                    ncores=parallel::detectCores(),
+                    ncores=8,
+		    cl=NULL,
 		    start=1
                     ){
 
-    cases=expand.grid(ns,mu01,mu10,mu11,errDist,b1s,intS=c(TRUE,FALSE),intZ=c(TRUE,FALSE))
-    names(cases) <- c('n','mu01','mu10','mu11','norm','b1')
+    cases=expand.grid(
+		n=ns,
+		mu01=mu01,
+		mu10=mu10,
+		mu11=mu11,
+		errDist=errDist,
+		b1=b1s,
+		intS=c(TRUE,FALSE),
+		intZ=c(TRUE,FALSE),
+		stringsAsFactors=FALSE)
 
     cat(nrow(cases),' conditions\n')
 
@@ -130,7 +158,7 @@ fullsim <- function(nsim,
     	  cat(round(i/nrow(cases)*100),'%\n')
 	  facs <- cases[i,]
     	  res <- oneCase(nsim=nsim,ext=paste0(i,ext),
-                         ncores=ncores,facs=facs)
+                         ncores=ncores,cl=cl,facs=facs)
 	  save(res,facs,file=paste0('simResults/sim',i,ext,'.RData'))
     }
 
