@@ -22,14 +22,22 @@ save(dat,rands,file='assistmentsData/dataWcontrasts.RData')
 
 dat <- mutate(dat,perVids=vids/nAlts)
 
-byExp <- dat%>%filter(vids>0)%>%group_by(alts)%>%summarize(n=n(),pVidstud=mean(contains_video),perVids=mean(perVids),diff=pVidstud-perVids)
+byExp <- dat%>%#filter(vids>0,nstud>800)%>%
+  group_by(alts)%>%summarize(n=n(),pVidstud=mean(contains_video),perVids=mean(perVids),diff=pVidstud-perVids)
 
 
 byExp%>%
-  ggplot(aes(n,diff))+geom_point()+geom_hline(yintercept=0)
+  ggplot(aes(n,pVidstud,col=perVids,yintercept=perVids))+geom_point()+geom_hline(aes(yintercept=perVids))
 
 dat$npc=ifelse(is.na(dat$next_problem_correct),0,dat$next_problem_correct)
 mod=feols(npc~contains_video|alts,data=dat,vcov='hetero')
+
+
+dat%>%group_by(alts)%>%
+  mutate(nstud=n())%>%
+  filter(nstud>100)%>%
+  summarize(nstud=nstud[1],eff=mean(npc[contains_video])-mean(npc[!contains_video]))%>%
+  ggplot(aes(nstud,eff))+geom_point()+geom_smooth(method='lm')
 
 dat <- dat%>%
   filter(vids>0)%>%
@@ -52,6 +60,8 @@ missMod2 <- feols(is.na(time_on_task)~contains_video|alts,
 dat <- mutate(dat,S1=ifelse(contains_video&is.na(time_on_task),FALSE,S))
 
 dat <- filter(dat,!is.na(student_prior_median_time_on_task))
+
+dat <- dat%>%mutate(nstud=n(),nStudVid=sum(contains_video),pCorrect=mean(npc))%>%filter(nstud>=100,nStudVid>10,pCorrect>0,pCorrect<1)
 
 save(dat,rands,file='assistmentsData/dataWcontrasts.RData')
 
