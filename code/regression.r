@@ -35,10 +35,34 @@ AUCmod <- function(mod){
     AUC(mod$linear,mod$y)
 }
 
+datNames <- function(data,trt='Z',out='Y',use='S',block=NULL){
+  data$Y <- as.numeric(data[[out]])
+  data$Z <- as.numeric(data[[trt]])
+  data$S <- as.numeric(data[[use]])
+  
+  if(!is.null(block)){
+    data$block <- as.factor(data[[block]])
+    data <- data%>%
+      group_by(block)%>%
+      mutate(
+        Zadj=Z-mean(Z),
+        Yadj=Y-mean(Y)
+      )
+  } else{
+    data <- mutate(data,
+                   Z=Z,
+                   Yadj=Y)
+  }
+  data
+}
 
 ### computes/returns regression models
-pointEst <- function(data,covForm=~x1+x2,int=FALSE,psMod=NULL){
-    if(is.null(psMod)) psMod <- glm(update(covForm,S~.),data=data,family=binomial,subset=Z==1&!is.na(S))
+pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,psMod=NULL){
+  
+    if(is.null(psMod)) psMod <- glm(
+      update(covFormU,S~.),
+      data=data,family=binomial,
+      subset=!is.na(S))
     else covForm <- formula(psMod)[c(1,3)]
 
     attr(psMod,'auc') <- AUCmod(psMod)
@@ -47,10 +71,15 @@ pointEst <- function(data,covForm=~x1+x2,int=FALSE,psMod=NULL){
     if('Sp'%in%names(data)) warning('replacing Sp')
     data <- within(data,Sp <- ifelse(Z==1&!is.na(S),S,ps))
 
-    outMod <- lm(
-        update(covForm,if(int) Y~Z*(Sp+.) else Y~Z*Sp+.),
-        data=data
-    )
+    outForm <- 
+      update(covFormY,
+        if(int) Y~Z*(Sp+.) else Y~Z*Sp+.
+        )
+    
+    if(!is.null(data$block))
+      outForm <- update(outForm,.~.+block)
+    
+    outMod <- lm(outForm,data=data)
 
     list(psMod=psMod,outMod=outMod)
 }
@@ -135,9 +164,12 @@ vcvPS <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(coef(out
 
 
 ### wrapper function for estimating regressions+vcov
-est <- function(data,covForm=~x1+x2,psMod=NULL,clust=NULL,int=FALSE){
+est <- function(data,covFormU=~x1+x2,covFormY=covFormU,psMod=NULL,clust=NULL,int=FALSE,
+                trt='Z',out='Y',use='S',block=NULL){
 
-    Attach(pointEst(data=data,covForm=covForm,int=int,psMod=psMod))
+  data <- datNames(data,trt=trt,out=out,use=use,block=block)
+  
+    Attach(pointEst(data=data,covFormU=covFormU,covFormY=covFormY,int=int,psMod=psMod))
 
     vcv <- vcvPS(psMod,outMod,data=data,int=int,clust=clust)
 
@@ -168,8 +200,10 @@ effsFromFit <- function(ests){
 }
 
 ### estimates effects of interest, starting from data
-effs <- function(data,covForm=~x1+x2,int=FALSE){
-    ests <- est(data=data,covForm=covForm,int=int)
+effs <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,
+                 trt='Z',out='Y',use='S',block=NULL){
+    ests <- est(data=data,covFormU=covFormU,covFormY=covFormY,
+                int=int,trt=trt,out=out,use=use,block=block)
 
     effsFromFit(ests)
 }

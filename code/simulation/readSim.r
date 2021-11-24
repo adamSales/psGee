@@ -108,16 +108,16 @@ bayesProc <- function(res1,facs){
 
 
 
-loadRes <- function(){
-    load('simResults/cases.RData')
+loadRes <- function(ext1='',ext2=''){
+    load(paste0('simResults',ext1,'/cases',ext2,'.RData'))
 
     results <- list()
 #    summ <- NULL
     #fn <- list.files('./simResults','sim[[:alnum:]]+.RData')
     for(i in 1:nrow(cases)){#length(fn)){
         #if(i %% 10==0)
-            cat(round(i/nrow(cases)*100),'%')#length(fn)*100), '% ')
-        load(paste0('simResults/sim',i,'.RData'))#fn[i]))
+            cat(round(i/nrow(cases)*100),'%',sep='')#length(fn)*100), '% ')
+        load(paste0('simResults',ext1,'/sim',i,ext2,'.RData'))#fn[i]))
         #stopifnot(identical(facs,cases[i,]))
         resT <- map_dfr(res,bayesProc,facs=facs)
         resT$run <- i
@@ -125,8 +125,23 @@ loadRes <- function(){
         rm(res,facs)
     }
 
-    reduce(results,bind_rows())
+    reduce(results,bind_rows)
 }
+
+
+allSums <- function(results)
+    pop <- results%>%
+        mutate(
+            errP=est-pop,
+            covN=pop<CInormU&pop>=CInormL,
+            covP=pop<CIpercU&pop>=CIpercL
+        )%>%
+        group_by(n,mu01,mu10,norm,b1,eff,estimator)%>%summarize(
+                                                              auc=mean(auc),
+                                                              pop=mean(pop),
+                                                                    bias=mean(errP),rmse=sqrt(mean(errP^2)),
+                                                                    covN=mean(covN),covP=mean(covP))
+
 
 allSums <- function(results){
     res1 <- results[[1]]
@@ -433,3 +448,14 @@ results%>%
     ggtitle('n=1000','Normal')
 
 
+results%>%
+    mutate(
+        errP=est-pop,
+        covN=pop<CInormU&pop>=CInormL,
+        covP=pop<CIpercU&pop>=CIpercL,
+        B1=as.factor(b1)
+    )%>%
+    filter(b1>0)%>%
+    ggplot(aes(x=B1,y=errP,fill=estimator,color=estimator))+
+    geom_jitter(alpha=0.1)+
+    geom_boxplot(position="dodge2",color='black',outlier.shape=NA)+geom_hline(yintercept=0)+coord_cartesian(ylim=c(-.5,.5))+facet_grid(norm+mu01~n)

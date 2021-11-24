@@ -1,10 +1,104 @@
-if(!all(c('dat1')%in%ls())) load('assistmentsData/assistmentsAnalysisData.RData')
+### start with deleting missing S
 
 covForm <- ~ splines::ns(log(student_prior_median_time_on_task),
     knots = c(quantile(log(student_prior_median_time_on_task),
-         probs = c((1:10)/11)), 6))
+         probs = c((1:20)/21)), 6,8,10,12))
 
-estimate <- est(dat1,covForm=covForm,int=FALSE)
+## check usage model
+modU1 <- glm(update(covForm,S~.),data=dat,family=binomial,
+             subset=contains_video&!is.na(S))
+
+bpMod <- function(mod) 
+  arm::binnedplot(predict(mod,type='response'),resid(mod,type='response'))
+
+bpMod(modU1)
+
+with(subset(dat,!is.na(S)),
+     arm::binnedplot(log(student_prior_median_time_on_task),S))
+
+lines(seq(2,14,length=100),predict(modU1,data.frame(student_prior_median_time_on_task=exp(seq(2,14,length=100))),type='response'),col='red',lwd=2)
+
+with(subset(dat,!is.na(S)),
+     arm::binnedplot(log(student_prior_median_time_on_task),
+                     resid(modU1,type='response')))
+
+with(subset(dat,!is.na(S)),
+     arm::binnedplot(log(student_prior_median_time_on_task),
+                     resid(modU1,type='response'),xlim=c(2,6)))
+
+### test out outcome models
+dat1 <- datNames(dat,trt = 'contains_video',out='npc',use='S',block='alts')
+
+AUCmod(modU1)
+
+ps <- predict(modU1,dat1,type='response')
+dat1 <- within(dat1,Sp <- ifelse(is.na(S),ps,S))
+modY <- lm(Yadj~Zadj*Sp+splines::ns(log(student_prior_median_time_on_task),
+                                    knots = c(quantile(log(student_prior_median_time_on_task),
+                                                       probs = c((1:20)/21)), 6,8,10,12)),data=dat1)
+
+dat2 <- dat1%>%
+  filter(!is.na(student_prior_average_correctness))%>%
+  ungroup()%>%
+  mutate(corFac=cut(student_prior_average_correctness,2))
+
+modY2 <- feols(Y~1#Z*Sp+#ns(log(student_prior_median_time_on_task),
+                          #           knots = c(seq(2,14,2)))+
+#corFac                 # I(student_prior_average_correctness==0)#+
+                 #bs(log(student_prior_started_problem_count),df=5)
+                 |block
+,data=dat2,vcov='hetero')
+
+bp(fitted(modY2),resid(modY2),na.rm=TRUE)
+
+
+bpMod(modY)
+
+bp <- arm::binnedplot
+with(dat,bp(log(student_prior_median_time_on_task),Yadj))
+
+
+lines(seq(2,14,length=100),predict(modY,data.frame(student_prior_median_time_on_task=exp(seq(2,14,length=100)),Zadj=0.5,Sp=1),type='response'),col='red',lwd=2)
+
+lines(seq(2,14,length=100),predict(modY,data.frame(student_prior_median_time_on_task=exp(seq(2,14,length=100)),Zadj=-0.5,Sp=1),type='response'),col='blue',lwd=2)
+
+lines(seq(2,14,length=100),predict(modY,data.frame(student_prior_median_time_on_task=exp(seq(2,14,length=100)),Zadj=-0.5,Sp=0),type='response'),col='green',lwd=2)
+
+lines(seq(2,14,length=100),predict(modY,data.frame(student_prior_median_time_on_task=exp(seq(2,14,length=100)),Zadj=0.5,Sp=0),type='response'),col='purple',lwd=2)
+
+
+### test indepdendece in Z==1
+modY11 <- lm(Yadj~S+splines::ns(log(student_prior_median_time_on_task),
+                                    knots = c(quantile(log(student_prior_median_time_on_task),
+                                                       probs = c((1:20)/21)), 6,8,10,12)),data=subset(dat1,!is.na(S)))
+
+modY12 <- lm(Yadj~S*splines::ns(log(student_prior_median_time_on_task),
+                                knots = c(quantile(log(student_prior_median_time_on_task),
+                                                   probs = c((1:20)/21)), 6,8,10,12)),data=subset(dat1,!is.na(S)))
+
+anova(modY11,modY12)
+
+
+
+pe <- pointEst(dat1,covForm)
+
+bpMod(pe$outMod)
+library(splines)
+pe2 <- pointEst(dat1,covForm,covFormY=~ns(log(student_prior_median_time_on_task),knots=seq(2,14,2))+ns(student_prior_average_correctness,knots=c(seq(.2,.8,.2),.9))+I(student_prior_average_correctness==0))
+
+bpMod(pe2$outMod)
+
+
+with(subset(dat,!is.na(student_prior_average_correctness)),
+     arm::binnedplot(student_prior_average_correctness,npc))
+
+pe3 <- pointEst(dat,covForm,covFormY=update(covForm,.~.+ns(student_prior_average_correctness,10)+I(student_prior_average_correctness==0)),trt = 'Zadj',out='Yadj',strat='S')
+
+bpMod(pe3$outMod)
+
+estimate <- est(dat,covFormU=covForm,
+                covFormY=update(covForm,.~.+ns(student_prior_average_correctness,10)+I(student_prior_average_correctness==0)),trt = 'Zadj',out='Yadj',strat='S')
+
 effsFromFit(estimate)
 
 binnedplot(estimate$psMod$fitted,residuals(estimate$psMod,type='response'))
