@@ -40,6 +40,8 @@ datNames <- function(data,trt='Z',out='Y',use='S',block=NULL){
   data$Z <- as.numeric(data[[trt]])
   data$S <- as.numeric(data[[use]])
   
+  data$S[data$Z==0] <- NA
+  
   if(!is.null(block)){
     data$block <- as.factor(data[[block]])
     data <- data%>%
@@ -58,6 +60,8 @@ datNames <- function(data,trt='Z',out='Y',use='S',block=NULL){
 
 ### computes/returns regression models
 pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,psMod=NULL){
+  
+  data$S[data$Z==0] <- NA
   
     if(is.null(psMod)) psMod <- glm(
       update(covFormU,S~.),
