@@ -1,4 +1,5 @@
 library(tidyverse)
+library(broom)
 
 source('code/simulation/readSimFuncs.r')
 #### after simulation results have been loaded and pre-processed...
@@ -51,7 +52,7 @@ pd <- results %>%
   mutate(
     errP = est - pop,
     B1 = as.factor(b1),
-    AUCff=paste0('AUCf=',round(AUCf,1)),
+    AUCff=paste0('AUC=',round(AUCf,1)),
     N=paste0('n=',n),
     M1=paste0('disp=',mu01),
     PE=paste('Stratum',eff),
@@ -65,17 +66,17 @@ pd <- results %>%
 bp(pd,
    subset=b1 > 0& errDist=='norm'& !intS& !intZ&eff!='Diff',
    title="Normal Outcomes, No Interaction, b1>0",
-   facet = AUCf+N~PE + M1
+   facet = AUCff+N~PE + M1
    ) 
+ggsave('simFigs/normalOutcomesNoInteractionPosB1.jpg')
 
-
-
+challengeAssumptions <- list(
 ### now just stratum 1, but different error dists
 
 bp(pd,
    subset=b1 > 0& eff=='1'& !intS& !intZ&errDist!='norm',
    title="Stratum 1, No Interaction, b1>0",
-   facet=AUCf+N~errDist+ M1)
+   facet=AUCff+N~errDist+ M1),
 
 
 ### now the same, but with interaction in S
@@ -83,15 +84,15 @@ bp(pd,
 bp(pd,
    subset=b1 > 0& errDist=='norm'& intS& !intZ&eff!='Diff',
    title="Normal Outcomes, Interaction in S, b1>0",
-   facet = AUCf+N~PE + M1
-) 
+   facet = AUCff+N~PE + M1
+) ,
 
 ### now just stratum 1, but different error dists
 
 bp(pd,
    subset=b1 > 0& eff=='1'& intS& !intZ&errDist!='norm',
    title="Stratum 1, Interaction in S, b1>0",
-   facet=AUCf+N~errDist+ M1)
+   facet=AUCff+N~errDist+ M1),
 
 
 
@@ -100,15 +101,15 @@ bp(pd,
 bp(pd,
    subset=b1 > 0& errDist=='norm'& !intS& intZ&eff!='Diff',
    title="Normal Outcomes, Interaction in Z, b1>0",
-   facet = AUCf+N~PE + M1
-) 
+   facet = AUCff+N~PE + M1
+) ,
 
 ### now just stratum 1, but different error dists
 
 bp(pd,
    subset=b1 > 0& eff=='1'& !intS& intZ&errDist!='norm',
    title="Stratum 1, Interaction in Z, b1>0",
-   facet=AUCf+N~errDist+ M1)
+   facet=AUCff+N~errDist+ M1),
 
 ### both interactions
 ### now the same, but with interaction in S
@@ -116,16 +117,23 @@ bp(pd,
 bp(pd,
    subset=b1 > 0& errDist=='norm'& intS& intZ&eff!='Diff',
    title="Normal Outcomes, Both Interactions , b1>0",
-   facet = AUCf+N~PE + M1
-) 
+   facet = AUCff+N~PE + M1
+) ,
 
 ### now just stratum 1, but different error dists
 
 bp(pd,
    subset=b1 > 0& eff=='1'& intS& intZ&errDist!='norm',
    title="Stratum 1, Both Interaction, b1>0",
-   facet=AUCf+N~errDist+ M1)
+   facet=AUCff+N~errDist+ M1)
+)
 
+#challengeAssumptions <- do.call(marrangeGrob, c(challengeAssumptions, list(nrow = 2, ncol = 2)))
+
+pdf("simFigs/challengeAssumptionsBoxplots.pdf", width = 6.5, height = 9,onefile = TRUE)
+
+lapply(challengeAssumptions,print)
+dev.off()
 
 #######################################################
 ### summary stats
@@ -143,7 +151,7 @@ bias <- results%>%
   bind_cols(.$ttest)%>%
   select(-ttest)
 
-
+pdf('simFigs/biasFigs.pdf',height = 9,width=6.5)
 
 ### normal errors, no interaction
 bias%>%
@@ -152,7 +160,7 @@ bias%>%
   geom_point()+geom_line()+
   geom_hline(yintercept = 0)+
   facet_grid(eff~mu01+n,scales='free')+
-  ggtitle( 'normal errors, no interaction')
+  ggtitle( 'normal errors, no interaction')%>%print()
 
 # with error bars:
 bias%>%
@@ -162,7 +170,7 @@ bias%>%
   geom_hline(yintercept = 0)+
   geom_errorbar(aes(ymin=conf.low,ymax=conf.high),width=0)+
   facet_grid(eff~mu01+n,scales='free')+
-  ggtitle( 'normal errors, no interaction')
+  ggtitle( 'normal errors, no interaction')%>%print()
 
 ### non-normal errors, no interaction
 bias%>%
@@ -171,7 +179,7 @@ bias%>%
   geom_point()+geom_line()+
   geom_hline(yintercept = 0)+
   facet_grid(errDist~mu01+n,scales='free')+
-  ggtitle('non-normal errors, no interaction stratum 1')
+  ggtitle('non-normal errors, no interaction stratum 1')%>%print()
 
 
 #### interactions, normal errors
@@ -181,7 +189,7 @@ bias%>%
   geom_point()+geom_line()+
   geom_hline(yintercept = 0)+
   facet_grid(paste('intS=',intS,'\nintZ=',intZ)~mu01+n,scales='free')+
-  ggtitle( 'normal errors, stratum 1, interactions')
+  ggtitle( 'normal errors, stratum 1, interactions')%>%print()
 
 
 #### interactions, mixture errors
@@ -191,7 +199,7 @@ bias%>%
   geom_point()+geom_line()+
   geom_hline(yintercept = 0)+
   facet_grid(paste('intS=',intS,'\nintZ=',intZ)~mu01+n,scales='free')+
-  ggtitle( 'mixture errors, stratum 1, interactions')
+  ggtitle( 'mixture errors, stratum 1, interactions')%>%print()
 
 
 #### interactions, uniform errors
@@ -201,17 +209,19 @@ bias%>%
   geom_point()+geom_line()+
   geom_hline(yintercept = 0)+
   facet_grid(paste('intS=',intS,'\nintZ=',intZ)~mu01+n,scales='free')+
-  ggtitle( 'uniform errors, stratum 1, interactions')
+  ggtitle( 'uniform errors, stratum 1, interactions')%>%print()
 
+dev.off()
 
 #######################################################
 #### coverage
 #######################################################
-coverage <- res%>%
+coverage <- results%>%
   filter(rhat<1.1)%>%
   group_by(n,mu01,errDist,b1,intS,intZ,eff,estimator)%>%
   summarize(coverage=mean(CInormL<=pop & CInormU>=pop,na.rm=TRUE))
 
+pdf('simFigs/coverage.pdf',height=9,width=6.5)
 
 ### normal errors, no interaction
 coverage%>%
@@ -220,7 +230,7 @@ coverage%>%
   geom_point()+geom_line()+
   geom_hline(yintercept = 0.95)+
   facet_grid(eff~mu01+n,scales='free')+
-  ggtitle( 'normal errors, no interaction')
+  ggtitle( 'normal errors, no interaction')%>%print()
 
 
 ### non-normal errors, no interaction
@@ -228,9 +238,9 @@ coverage%>%
   filter(errDist!='norm',eff=='1',!intS,!intZ)%>%
   ggplot(aes(b1,coverage,color=estimator,fill=estimator,group=estimator))+
   geom_point()+geom_line()+
-  geom_hline(yintercept =0.95)+
+  geom_hline(yintercept=0.05)+
   facet_grid(errDist~mu01+n,scales='free')+
-  ggtitle('non-normal errors, no interaction stratum 1')
+  ggtitle('non-normal errors, no interaction stratum 1')%>%print()
 
 
 #### interactions, normal errors
@@ -238,9 +248,9 @@ coverage%>%
   filter(errDist=='norm',eff=='1')%>%
   ggplot(aes(b1,coverage,color=estimator,fill=estimator,group=estimator))+
   geom_point()+geom_line()+
-  geom_hline(yintercept =0.95)+
+  geom_hline(yintercept=0.05)+
   facet_grid(paste('intS=',intS,'\nintZ=',intZ)~mu01+n,scales='free')+
-  ggtitle( 'normal errors, stratum 1, interactions')
+  ggtitle( 'normal errors, stratum 1, interactions')%>%print()
 
 
 #### interactions, mixture errors
@@ -248,9 +258,9 @@ coverage%>%
   filter(errDist=='mix',eff=='1')%>%
   ggplot(aes(b1,coverage,color=estimator,fill=estimator,group=estimator))+
   geom_point()+geom_line()+
-  geom_hline(yintercept =0.95)+
+  geom_hline(yintercept=0.05)+
   facet_grid(paste('intS=',intS,'\nintZ=',intZ)~mu01+n,scales='free')+
-  ggtitle( 'mixture errors, stratum 1, interactions')
+  ggtitle( 'mixture errors, stratum 1, interactions')%>%print()
 
 
 #### interactions, uniform errors
@@ -258,15 +268,13 @@ coverage%>%
   filter(errDist=='unif',eff=='1')%>%
   ggplot(aes(b1,coverage,color=estimator,fill=estimator,group=estimator))+
   geom_point()+geom_line()+
-  geom_hline(yintercept =0.95)+
+  geom_hline(yintercept=0.05)+
   facet_grid(paste('intS=',intS,'\nintZ=',intZ)~mu01+n,scales='free')+
-  ggtitle( 'uniform errors, stratum 1, interactions')
+  ggtitle( 'uniform errors, stratum 1, interactions')%>%print()
 
+dev.off()
 
-#######################################################
-#### standard errors
-#######################################################
-SE <- results%>%
+wSE <- results%>%
   filter(rhat<1.1)%>%
   group_by(n,mu01,errDist,b1,intS,intZ,eff,estimator)%>%
   summarize(SE2=mean(se^2,na.rm=TRUE),Vrep=var(est,na.rm = TRUE),
@@ -323,5 +331,67 @@ SE%>%
   ggtitle( 'uniform errors, stratum 1, interactions')
 
 
+#######################################################
+#### error rates
+#######################################################
+rate <- results%>%
+  filter(rhat<1.1)%>%
+  group_by(n,mu01,errDist,b1,intS,intZ,eff,estimator)%>%
+  summarize(rate=mean(abs(est)>=2*se,na.rm=TRUE),
+            powerORlevel=ifelse(pop==0,'Level',
+                                paste0('Power (eff=',pop,')'))
+  )
 
+pdf('simFigs/rates.pdf',height=6.5,width=6.5)
+
+### normal errors, no interaction
+rate%>%
+  filter(errDist=='norm',!intS,!intZ,eff!='0')%>%
+  ggplot(aes(b1,rate,color=estimator,fill=estimator,group=estimator))+
+  geom_point()+geom_line()+
+  geom_hline(yintercept = 0.05)+
+  facet_grid(powerORlevel~eff+n,scales='free')+
+  ggtitle( 'normal errors, no interaction')%>%print()
+
+
+### non-normal errors, no interaction
+rate%>%
+  filter(errDist!='norm',eff=='1',!intS,!intZ)%>%
+  ggplot(aes(b1,rate,color=estimator,fill=estimator,group=estimator))+
+  geom_point()+geom_line()+
+  geom_hline(yintercept=0.05)+
+  facet_grid(powerORlevel~errDist+n,scales='free')+
+  ggtitle('non-normal errors, no interaction stratum 1')%>%print()
+
+
+#### interactions, normal errors
+rate%>%
+  filter(errDist=='norm',eff=='1')%>%
+  ggplot(aes(b1,rate,color=estimator,fill=estimator,group=estimator))+
+  geom_point()+geom_line()+
+  geom_hline(yintercept=0.05)+
+  facet_grid(powerORlevel~paste('intS=\n',intS,'\nintZ=\n',intZ)+n,scales='free')+
+  ggtitle( 'normal errors, stratum 1, interactions')%>%print()
+
+
+#### interactions, mixture errors
+rate%>%
+  filter(errDist=='mix',eff=='1')%>%
+  ggplot(aes(b1,rate,color=estimator,fill=estimator,group=estimator))+
+  geom_point()+geom_line()+
+  geom_hline(yintercept=0.05)+
+  facet_grid(powerORlevel~paste('intS=\n',intS,'\nintZ=\n',intZ)+n,scales='free')+
+  ggtitle( 'mixture errors, stratum 1, interactions')%>%print()
+
+
+#### interactions, uniform errors
+rate%>%
+  filter(errDist=='unif',eff=='1')%>%
+  ggplot(aes(b1,rate,color=estimator,fill=estimator,group=estimator))+
+  geom_point()+geom_line()+
+  geom_hline(yintercept=0.05)+
+  facet_grid(powerORlevel~paste('intS=\n',intS,'\nintZ=\n',intZ)+n,scales='free')+
+  ggtitle( 'uniform errors, stratum 1, interactions')%>%print()
+
+dev.off()
 

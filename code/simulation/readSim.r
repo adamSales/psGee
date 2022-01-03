@@ -448,14 +448,14 @@ results%>%
     ggtitle('n=1000','Normal')
 
 
-results%>%
+res%>%
     mutate(
         errP=est-pop,
         covN=pop<CInormU&pop>=CInormL,
         covP=pop<CIpercU&pop>=CIpercL,
         B1=as.factor(b1)
     )%>%
-    filter(b1>0)%>%
+    filter(b1>0,eff=='Diff',!intS,!intZ)%>%
     ggplot(aes(x=B1,y=errP,fill=estimator,color=estimator))+
     geom_jitter(alpha=0.1)+
-    geom_boxplot(position="dodge2",color='black',outlier.shape=NA)+geom_hline(yintercept=0)+coord_cartesian(ylim=c(-.5,.5))+facet_grid(norm+mu01~n)
+    geom_boxplot(position="dodge2",color='black',outlier.shape=NA)+geom_hline(yintercept=0)+coord_cartesian(ylim=c(-.75,.75))+facet_grid(errDist+mu01~n)
