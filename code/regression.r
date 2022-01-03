@@ -215,32 +215,41 @@ effs <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,
 ### estimates lower left of A (bread) matrix in A^{-1}BA^{-t}
 ### FIX FOR MISSING S IN TRT GROUP
 A21 <- function(psMod,outMod,data){
-    Z <- data$Z
-    Y0 <- data$Y[Z==0]
-    aX <- predict(psMod,data,type='link')[Z==0]
-    q <- family(psMod)$mu.eta(aX)      ## dp/dalpha=qX'
-    u <- 2*family(psMod)$linkinv(aX)*q   ## dp^2/dalpha=uX'
+    risp <- data$Z==0|is.na(data$S)#,1,0)
+    Z <- data$Z[risp]
+    Y0 <- data$Y[risp]
+    aW <- predict(psMod,data,type='link')[risp]
+    q <- family(psMod)$mu.eta(aW)      ## dp/dalpha=qX'
+    u <- 2*family(psMod)$linkinv(aW)*q   ## dp^2/dalpha=uX'
 
-    X0 <- model.matrix(update(formula(psMod),Y~.),data=data)[Z==0,]
-
+    W0 <- model.matrix(update(formula(psMod),Y~.),data=data)[risp,]
+    
+    X0 <- model.matrix(outMod)[risp,
+                               -c(which(names(coef(outMod))%in%c('Z','Sp')),
+                                  grep('Z\\:|Sp\\:|\\:Z|\\:Sp',names(coef(outMod))))]
 
     est <- list(beta=coef(outMod)[colnames(X0)[-1]],
+                betaZ=coef(outMod)['Z'],
+                betaZr=coef(outMod)['Z:Sp'],
                 eta=coef(outMod)['Sp'],
                 mu0=coef(outMod)['(Intercept)']
                 )
 
     a21=rbind(
-       est$eta*t(q)%*%X0,
-       -t((Y0-est$mu0-X0[,-1]%*%est$beta)*q-est$eta*u)%*%X0,
-        est$eta*t(X0[,-1])%*%(as.vector(q)*X0)
+       t(est$eta*q+est$betaZr*Z)%*%W0, # 1 x p1
+       -t((Y0-est$mu0-est$betaZ*Z-X0[,-1]%*%est$beta)*q-est$eta*u)%*%W0,
+       t(Z*(est$eta*q+est$betaZr))%*%W0, # 1 x p1
+       -t(((Y0-est$mu0-est$betaZ*Z-X0[,-1]%*%est$beta)*q-est$eta*u)*Z)%*%W0,
+       t((est$eta*q+est$betaZr*Z)*X0)%*%W0 # p2 x p1
     )#/nrow(X0)
-    rownames(a21)[1:2] <- c('(Intercept)','Sp')
+    ## rownames(a21)[1:2] <- c('(Intercept)','Sp')
 
-    t(vapply(
-        names(coef(outMod)),
-        function(n)
-            if(n %in% rownames(a21)) a21[n,] else rep(0,ncol(a21)),
-        numeric(ncol(a21)))
-      )
+    ## t(vapply(
+    ##     names(coef(outMod)),
+    ##     function(n)
+    ##         if(n %in% rownames(a21)) a21[n,] else rep(0,ncol(a21)),
+    ##     numeric(ncol(a21)))
+    ##   )
+    a21
 }
 
