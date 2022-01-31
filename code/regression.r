@@ -80,7 +80,7 @@ pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,psMod=NULL
         if(int) Y~Z*(Sp+.) else Y~Z*Sp+.
         )
     
-    if(!is.null(data$block))
+  if('block'%in%names(data)) if(!is.null(data$block))
       outForm <- update(outForm,.~.+block)
     
     outMod <- lm(outForm,data=data)
@@ -240,8 +240,8 @@ A21 <- function(psMod,outMod,data){
        -t((Y0-est$mu0-est$betaZ*Z-X0[,-1]%*%est$beta)*q-est$eta*u)%*%W0,
        t(Z*(est$eta*q+est$betaZr))%*%W0, # 1 x p1
        -t(((Y0-est$mu0-est$betaZ*Z-X0[,-1]%*%est$beta)*q-est$eta*u)*Z)%*%W0,
-       t((est$eta*q+est$betaZr*Z)*X0)%*%W0 # p2 x p1
-    )#/nrow(X0)
+       t((est$eta*q+est$betaZr*Z)*X0[,-1])%*%W0 # p2 x p1
+    )/nrow(X0)
     ## rownames(a21)[1:2] <- c('(Intercept)','Sp')
 
     ## t(vapply(
