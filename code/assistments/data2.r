@@ -61,7 +61,8 @@ dat <- mutate(dat,S1=ifelse(contains_video&is.na(time_on_task),FALSE,S))
 
 dat <- filter(dat,!is.na(student_prior_median_time_on_task))
 
+save(dat,rands,file='assistmentsData/dataWcontrasts.RData')
+
 dat <- dat%>%mutate(nstud=n(),nStudVid=sum(contains_video),pCorrect=mean(npc))%>%filter(nstud>=100,nStudVid>10,pCorrect>0,pCorrect<1)
 
-save(dat,rands,file='assistmentsData/dataWcontrasts.RData')
 
