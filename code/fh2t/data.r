@@ -14,15 +14,23 @@ dat$bottom <- dat%>%select(contains("bottom"))%>%rowSums(na.rm=TRUE)
 dat$anyBottom <- dat$bottom>0
 
 
-full <- read_csv('../../fh2t/data/Assessment_merged_2021_07_16_state_assessment_N=4321 - Sheet1.csv')%>%
+full <- read_csv('../../fh2t/data/Assessment_merged_2022_01_19_N=4,343 - Sheet1.csv')
+older <- read_csv('../../fh2t/data/Assessment_merged_2021_07_16_state_assessment_N=4321 - Sheet1.csv')
+
+full <- older%>%
+  select(student_number,pre.avg_time_on_tasks,pre_MA_total_score,pre_negative_reaction_score,pre_numerical_confindence_score)%>%
+  right_join(full)
+
+
+
+full=full%>%
   mutate(
-    race=student_raceEthnicityFed%>%
+    race=raceEthnicity%>%
       factor()%>%
       fct_lump_min(300)%>%
-      fct_recode(`Hispanic/Latino`="1",Asian="3",White="6")%>%
+      fct_recode(`Hispanic/Latino`="H",Asian="A",White="W")%>%
       fct_relevel('White'),
-    pretest = pre.total_math_score-round(mean(pre.total_math_score,na.rm=TRUE)),
-    ScaleScore5=`ScaleScore_5th grade`
+    pretest = pre.total_math_score-round(mean(pre.total_math_score,na.rm=TRUE))
   )
 
 full <- dat%>%select(student_number,hints,bottom,anyHint,anyBottom)%>%
@@ -32,7 +40,7 @@ dat0 <- full
 
 dat0 <- dat0%>%
   mutate(
-    ScaleScore7 = Scale(Scale.Score_7th.grade),
+    ScaleScore7 = Scale(Scale.Score7),
     hasPretest=is.finite(pre.total_math_score),
     hasPosttest=is.finite(post.total_math_score),
     Z =rdm_condition
@@ -60,7 +68,7 @@ xtabs(~Z+anyBottom,addNA=TRUE,data=dat3)
 
 ### try modeling anyBottom for Z=ASSISTments
 mod1 <- glm(anyBottom~
-              pretest+ScaleScore5+MALE+race+#as.factor(class)+
+              pretest+Scale.Score5+MALE+race+#as.factor(class)+
               #as.factor(initial_school_id)+
               virtual+EIP+IEP+ESOL+GIFTED+AbsentDays6+MOBILE6,
             family=binomial,
@@ -71,15 +79,15 @@ AUCmod(mod1)
 summary(mod1)
 
 binnedplot(mod1$fitted.values,resid(mod1,type='response'))
-           
-with(subset(dat3,Z=='ASSISTments'&!is.na(ScaleScore5)),
-                 binnedplot(ScaleScore5,anyBottom)) 
+
+with(subset(dat3,Z=='ASSISTments'&!is.na(Scale.Score5)),
+                 binnedplot(Scale.Score5,anyBottom))
 
 mod2 <- glm(anyBottom~
-              pretest+poly(ScaleScore5,2)+MALE+race+
+              pretest+poly(Scale.Score5,2)+MALE+race+
               virtual+EIP+IEP+ESOL+GIFTED+AbsentDays5+MOBILE5,
             family=binomial,
-            data=subset(dat3,Z=='ASSISTments'&!is.na(ScaleScore5)))
+            data=subset(dat3,Z=='ASSISTments'&!is.na(Scale.Score5)))
 
 AUCmod(mod2)
 
@@ -92,10 +100,10 @@ anova(mod1,mod2,test='Chisq')
 ### OK let's do some imputaiton
 dat3%>%
   filter(Z=='ASSISTments')%>%
-  dplyr::select(pretest,ScaleScore5,MALE,race,virtual,EIP,IEP,ESOL,GIFTED,AbsentDays5,MOBILE5)%>%sapply(function(x) mean(is.na(x)))
+  dplyr::select(pretest,Scale.Score5,MALE,race,virtual,EIP,IEP,ESOL,GIFTED,AbsentDays5,MOBILE5)%>%sapply(function(x) mean(is.na(x)))
 
 mod3 <- glm(anyBottom~
-              as.factor(pretest)+ScaleScore5+MALE+race+
+              as.factor(pretest)+Scale.Score5+MALE+race+
               virtual+EIP+IEP+ESOL+GIFTED,
             family=binomial,
             data=subset(dat3,Z=='ASSISTments'))
@@ -118,7 +126,7 @@ binnedplot(mod4$fitted.values,resid(mod4,type='response'))
 ### let's do some imputation
 xmis <- dat3 %>%
   dplyr::select(pretest,
-                ScaleScore5,
+                Scale.Score5,
                 MALE,
                 race,
                 virtual,
@@ -128,9 +136,9 @@ xmis <- dat3 %>%
                 GIFTED,
                 AbsentDays5,
                 MOBILE5,
-                pre.avg_time_on_tasks,          
-                  pre_MA_total_score,             
-                 pre_negative_reaction_score,    
+                pre.avg_time_on_tasks,
+                  pre_MA_total_score,
+                 pre_negative_reaction_score,
                  pre_numerical_confindence_score,
                 pre_MA_avg_score
                 ) %>%
@@ -148,8 +156,8 @@ ximp <- imp$ximp%>%
 dat3 <- bind_cols(dat3, ximp)
 
 mod4imp <- glm(
-  anyBottom ~ pretestIMP+ ScaleScore5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+ 
-  IEPIMP+ ESOLIMP+ GIFTEDIMP+ pre.avg_time_on_tasksIMP+ 
+  anyBottom ~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
+  IEPIMP+ ESOLIMP+ GIFTEDIMP+ pre.avg_time_on_tasksIMP+
   pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP,
   data=subset(dat3,Z=='ASSISTments'),family=binomial)
 
@@ -167,32 +175,5 @@ psdat <- dat3%>%
          Y=ScaleScore7,
          S=as.numeric(anyBottom))
 
-estimate0 <- est(psdat,covFormU = formula(mod4imp)[-2])
-                # covFormY=
-                #   update(formula(mod4imp)[-2],
-                #          .~.-virtualIMP),block = "class")
-plot(estimate0$outMod)
-effsFromFit(estimate0)
-
-estimate1 <- est(psdat,covFormU = formula(mod4imp)[-2],
-                covFormY=
-                  update(formula(mod4imp)[-2],
-                         .~.-virtualIMP),block = "class")
-plot(estimate1$outMod)
-effsFromFit(estimate1)
-
-
-### test standard errors
-bs0=replicate(1000,
-              effsFromFit(
-                est(
-                  psdat[sample(1:nrow(psdat),nrow(psdat),replace=TRUE),],
-                  covFormU = formula(mod4imp)[-2])))
-
-bs1=replicate(1000,
-              effsFromFit(
-                est(
-                  psdat[sample(1:nrow(psdat),nrow(psdat),replace=TRUE),],
-                  covFormU = formula(mod4imp)[-2],
-                   covFormY=update(formula(mod4imp)[-2],
-                                   .~.-virtualIMP),block = "class")))
+save(psdat,dat3,file="data/psdat.RData")
+##
