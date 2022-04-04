@@ -9,13 +9,13 @@ library(mice)
 #source('code/regression.r')
 
 
-rstan_options(auto_write = TRUE) 
+rstan_options(auto_write = TRUE)
 options(mc.cores = 4)
 gc()
 
-load('psdat.RData')
-write.csv(psdat, "psdat.csv")
-psdat<- read.csv("psdat.csv")
+load('data/psdat.RData')
+write.csv(psdat, "data/psdat.csv")
+psdat<- read.csv("data/psdat.csv")
 colnames(psdat)
 table(psdat$Z,
       psdat$rdm_condition)
@@ -45,17 +45,17 @@ table(psdat$raceIMP, psdat$Z)
 ### Data Prep ####
 ###### Dummy Codes ####
 #  dummy codes for race
-race_dummy <- fastDummies::dummy_cols(psdat$raceIMP, 
+race_dummy <- fastDummies::dummy_cols(psdat$raceIMP,
                                       remove_first_dummy = T) %>%
   distinct() %>%
-  rename(raceIMP = ".data") 
+  rename(raceIMP = ".data")
 names(dummy)[-1]<-sub(".data*", "", names(dummy)[-1])
 
 #  dummy codes for class
-class_dummy<-fastDummies::dummy_cols(psdat$class, 
+class_dummy<-fastDummies::dummy_cols(psdat$class,
                                      remove_first_dummy = T) %>%
   distinct() %>%
-  rename(class = ".data") 
+  rename(class = ".data")
 names(dummy)[-1]<-sub(".data*", "", names(dummy)[-1])
 
 #### Covariates matrixes #######
@@ -202,27 +202,27 @@ XtrtY <- psdat %>%
          , -class
          )
 
-stanDat <-  list(nc= length(psdat[psdat$Z == 0,]$student_number), # 
-                    nt= length(psdat[psdat$Z == 1,]$student_number), # 
+stanDat <-  list(nc= length(psdat[psdat$Z == 0,]$student_number), #
+                    nt= length(psdat[psdat$Z == 1,]$student_number), #
                     ncovU= ncol(XctlU), # √
                     ncovY= ncol(XctlY), # √
-                    
+
                     YctlY=  (psdat[psdat$Z == 0, ]$Y), ### IS THE OUTCOME Y OR post.total_math_score?
                 #    YctlU= , this doesn't exist, right?
-                    
+
                     YtrtY= (psdat[psdat$Z == 1, ]$Y ), ### IS THE OUTCOME Y OR post.total_math_score?
                     YtrtU=(ifelse(psdat[psdat$Z == 1, ]$anyBottom == "TRUE", 1, 0)),
-                
+
                     XctlU=as.matrix(XctlU), # √
                     XctlY=as.matrix(XctlY), # √
-                    
+
                     XtrtU=as.matrix(XtrtU), # √
                     XtrtY=as.matrix(XtrtY), # √
-                
+
                     bottomOuter=(ifelse(psdat[psdat$Z == 1, ]$anyBottom == "TRUE", 1, 0))
                       )
 
-md.pattern(stanDat$XctlU)  
+md.pattern(stanDat$XctlU)
 
 ### Model ####
 mod <- stan('psMod.stan',data=stanDat, iter = 4000)
@@ -232,7 +232,7 @@ mod <- stan('psMod.stan',data=stanDat, iter = 4000)
 # Warning message:
 #   Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
 # Running the chains for more iterations may help. See
-# https://mc-stan.org/misc/warnings.html#bulk-ess 
+# https://mc-stan.org/misc/warnings.html#bulk-ess
 
 print(
   mod,
@@ -281,17 +281,17 @@ traceplot(
 ## call the new sample control
 ## run same model
 
-# 
+#
 # checkdat_treatment <- psdat %>%
-#   filter(rdm_condition == "ASSISTments") 
-# 
+#   filter(rdm_condition == "ASSISTments")
+#
 # set.seed(4)
 # coltrol_student_id <- as.data.frame(sample(checkdat_treatment$student_number, size = 853, replace = T))
 # colnames(coltrol_student_id) <- c("student_number")
 # install.packages("sampling")
 # require(sampling)
 # table(psdat$class[psdat$Z==0])
-# 
+#
 # checkdat_control<- sampling::strata(
 #   data = checkdat_treatment %>%
 #     dplyr::arrange(class),
@@ -299,10 +299,10 @@ traceplot(
 #   size = table(psdat$class[psdat$Z==0]),
 #   method = "srswr"
 # )
-# 
+#
 # checkdat_control<- getdata(
 #                            checkdat_treatment%>%
-#                              dplyr::arrange(class), 
+#                              dplyr::arrange(class),
 #                            checkdat_control)
 # setdiff(colnames(checkdat_treatment), colnames(checkdat_control))
 # colnames(checkdat_treatment)
@@ -317,9 +317,9 @@ traceplot(
 # table(checkdat$Z)
 # table(psdat$Z)
 #   table(checkdat$class, checkdat$Z)
-# 
+#
 # write.csv(checkdat, "FakeDataForCheck.csv")
-checkdat <- read.csv("FakeDataForCheck.csv")
+checkdat <- read.csv("data/FakeDataForCheck.csv")
 md.pattern(checkdat)
 ### Data Prep ####
 
@@ -357,7 +357,7 @@ XctlU <- checkdat %>%
   ) %>%
   dplyr::select(-raceIMP)
 colnames(XctlU)
-md.pattern(XctlU)
+#md.pattern(XctlU)
 
 # Control Cov for Y model
 XctlY <- checkdat %>%
@@ -396,7 +396,7 @@ XctlY <- checkdat %>%
   ) %>%
   dplyr::select(-raceIMP, -class)
 colnames(XctlY)
-md.pattern(XctlY)
+#md.pattern(XctlY)
 
 # Treatment Cov for U model
 XtrtU <- checkdat %>%
@@ -431,7 +431,7 @@ XtrtU <- checkdat %>%
   ) %>%
   dplyr::select(-raceIMP)
 colnames(XtrtU)
-md.pattern(XtrtU)
+#md.pattern(XtrtU)
 
 # Treatment Cov for Y model
 XtrtY <- checkdat %>%
@@ -470,35 +470,57 @@ XtrtY <- checkdat %>%
   ) %>%
   dplyr::select(-raceIMP
                 , -class
-  ) 
+  )
 colnames(XtrtY)
 md.pattern(XtrtY)
-stanDat <-  list(nc= length(checkdat[checkdat$Z == 0,]$student_number), # 
-                 nt= length(checkdat[checkdat$Z == 1,]$student_number), # 
+stanDat <-  list(nc= length(checkdat[checkdat$Z == 0,]$student_number), #
+                 nt= length(checkdat[checkdat$Z == 1,]$student_number), #
                  ncovU= ncol(XctlU), # √
                  ncovY= ncol(XctlY), # √
-                 
+
                  YctlY=  (checkdat[checkdat$Z == 0, ]$Y), ### IS THE OUTCOME Y OR post.total_math_score?
                  #    YctlU= , this doesn't exist, right?
-                 
+
                  YtrtY= (checkdat[checkdat$Z == 1, ]$Y ), ### IS THE OUTCOME Y OR post.total_math_score?
                  YtrtU=(ifelse(checkdat[checkdat$Z == 1, ]$anyBottom == "TRUE", 1, 0)),
-                 
+
                  XctlU=as.matrix(XctlU), # √
-                 XctlY=as.matrix(XctlY), # √ 
-                 
+                 XctlY=as.matrix(XctlY), # √
+
                  XtrtU=as.matrix(XtrtU), # √
                  XtrtY=as.matrix(XtrtY), # √
-                 
+
                  bottomOuter=(ifelse(checkdat[checkdat$Z == 1, ]$anyBottom == "TRUE", 1, 0))
 )
 
 ### Model ####
-checkmod2 <- stan('psMod.stan',
+checkmod2 <- stan('code/fh2t/psMod.stan',
                  data=stanDat,
-                 iter = 4000,
+                 #iter = 4000,
                  control = list(max_treedepth = 10))
-# saveRDS(checkmod2, "checkmod2.rds")
+
+
+sdatNoClass=stanDat
+sdatNoClass$XtrtY=sdatNoClass$XtrtY[,-c(12:145)]
+sdatNoClass$XctlY=sdatNoClass$XctlY[,-c(12:145)]
+sdatNoClass$ncovY=ncol(sdatNoClass$XtrtY)
+
+## justOutTrt <- stan('code/fh2t/psModJustOutcomeTrt.stan',data=sdatNoClass)
+## save(justOutTrt,file='justOutTrt.RData')
+
+sdatClass=sdatNoClass
+checkdat$classN=as.numeric(droplevels(as.factor(checkdat$class)))
+sdatClass$classT=checkdat$classN[checkdat$Z==1]
+sdatClass$classC=checkdat$classN[checkdat$Z==0]
+sdatClass$nclass=max(sdatClass$classT)
+stopifnot(max(sdatClass$classT)==max(sdatClass$classC))
+stopifnot(max(sdatClass$classT)==n_distinct(sdatClass$classT))
+stopifnot(max(sdatClass$classT)==n_distinct(sdatClass$classC))
+
+checkmodRandClass=stan('code/fh2t/psModRandClass.stan',data=sdatClass)
+save(checkmodRandClass,file='checkmodRandClass.RData')
+
+                                        # saveRDS(checkmod2, "checkmod2.rds")
 # mod <- readRDS("model.rds")
 checkmod2
 print(
