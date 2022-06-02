@@ -101,7 +101,7 @@ oneCase <- function(nsim,ext,ncores,cl=NULL, facs){ #n,mu00,mu01,mu10,mu11,gumb,
 
 #    print(Sys.time())
 
-     datasets <- 
+     datasets <-
      if(is.null(cl)) mclapply(1:nsim,function(i) do.call("makeDat",facs),mc.cores=ncores)
      else parLapply(cl, 1:nsim,function(i) do.call("makeDat",facs))
 
@@ -117,7 +117,7 @@ oneCase <- function(nsim,ext,ncores,cl=NULL, facs){ #n,mu00,mu01,mu10,mu11,gumb,
             		)
 	     } else
 	     	      parLapply(cl,datasets, function(dat) try(simOneBayes(dat)))
-	
+
     )
 #    print(time)
 
@@ -197,6 +197,26 @@ fullsimJustM <- function(nsim,
 }
 
 
+psw=function(dat,psMod){
+
+  if(missing(psMod)) psMod=glm(S~x1+x2,data=dat,subset=Z==1,family=binomial)
+
+  dat0=subset(dat,Z==0)
+  dat1=subset(dat,Z==1)
+  dat0$ps=predict(psMod,dat0,type='response')
+
+
+  muc0=with(dat0,sum(Y*(1-ps))/sum(1-ps))
+  muc1=with(dat0,sum(Y*ps)/sum(ps))
+
+  mut0=with(dat1,mean(Y[S==0]))
+  mut1=with(dat1,mean(Y[S==1]))
+
+  c(eff0=mut0-muc0,
+    eff1=mut1-muc1,
+    attributes(dat)$trueEffs
+    )
+}
 
 
 xSim <- function(){
