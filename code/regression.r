@@ -39,9 +39,9 @@ datNames <- function(data,trt='Z',out='Y',use='S',block=NULL){
   data$Y <- as.numeric(data[[out]])
   data$Z <- as.numeric(data[[trt]])
   data$S <- as.numeric(data[[use]])
-  
+
   data$S[data$Z==0] <- NA
-  
+
   if(!is.null(block)){
     data$block <- as.factor(data[[block]])
     data <- data%>%
@@ -60,9 +60,9 @@ datNames <- function(data,trt='Z',out='Y',use='S',block=NULL){
 
 ### computes/returns regression models
 pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,psMod=NULL){
-  
+
   data$S[data$Z==0] <- NA
-  
+
     if(is.null(psMod)) psMod <- glm(
       update(covFormU,S~.),
       data=data,family=binomial,
@@ -75,17 +75,24 @@ pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,psMod=NULL
     if('Sp'%in%names(data)) warning('replacing Sp')
     data <- within(data,Sp <- ifelse(Z==1&!is.na(S),S,ps))
 
-    outForm <- 
+    outForm <-
       update(covFormY,
         if(int) Y~Z*(Sp+.) else Y~Z*Sp+.
         )
-    
+
   if('block'%in%names(data)) if(!is.null(data$block))
       outForm <- update(outForm,.~.+block)
-    
+
     outMod <- lm(outForm,data=data)
 
     list(psMod=psMod,outMod=outMod)
+}
+
+intEst0 <- function(dat){
+  Attach(pointEst(dat,int=TRUE))
+
+  coef(outMod)['Z']+
+    crossprod(coef(outMod)[c('Z:x1','Z:x2')],colMeans(subset(dat,Z==1&S==0,select=c('x1','x2'))))
 }
 
 ### estimating equations for stage 1 model (PS)
@@ -172,7 +179,7 @@ est <- function(data,covFormU=~x1+x2,covFormY=covFormU,psMod=NULL,clust=NULL,int
                 trt='Z',out='Y',use='S',block=NULL){
 
   data <- datNames(data,trt=trt,out=out,use=use,block=block)
-  
+
     Attach(pointEst(data=data,covFormU=covFormU,covFormY=covFormY,int=int,psMod=psMod))
 
     vcv <- vcvPS(psMod,outMod,data=data,int=int,clust=clust)
@@ -223,7 +230,7 @@ A21 <- function(psMod,outMod,data){
     u <- 2*family(psMod)$linkinv(aW)*q   ## dp^2/dalpha=uX'
 
     W0 <- model.matrix(update(formula(psMod),Y~.),data=data)[risp,]
-    
+
     X0 <- model.matrix(outMod)[risp,
                                -c(which(names(coef(outMod))%in%c('Z','Sp')),
                                   grep('Z\\:|Sp\\:|\\:Z|\\:Sp',names(coef(outMod))))]
@@ -252,4 +259,3 @@ A21 <- function(psMod,outMod,data){
     ##   )
     a21
 }
-

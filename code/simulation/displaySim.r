@@ -6,34 +6,6 @@ source('code/simulation/readSimFuncs.r')
 #### after simulation results have been loaded and pre-processed...
 
 
-print(load('simResults/fullResults.RData'))
-print(load('simResults/pswResults.RData'))
-
-if(!is.data.frame(results)) results <- reduce(results,bind_rows)
-
-facsDF<-distinct(results,n,mu01,mu10,mu11,b1,errDist,intS,intZ,run)
-stopifnot(all.equal(facsDF$run,1:length(pswResults)))
-### transform pswResults
-pswResults <-
-  map(seq(length(pswResults)),
-      function(i){
-        res<-pswResults[[i]]
-        facs<-attr(res,'facs')
-        if(!all(as.data.frame(facsDF[i,names(facs)])==facs)){
-          print(i)
-          stop()
-        }
-        res<-cbind(res,facs)
-        res$run<-i
-        res$effDiff=res$eff1-res$eff0
-        res=pivot_longer(res,starts_with('eff'),names_to='eff',names_prefix='eff',values_to='est')
-        samp<-unique(na.omit(results$samp[results$run==i]))
-        res$samp <- if(length(samp)==nrow(res)) samp else NA
-        res
-      })%>%
-  reduce(bind_rows)
-
-pswResults$estimator<-'psw'
 
 ### rhats
 rhats <- results%>%
@@ -65,13 +37,6 @@ results%>%
   geom_smooth()+
   geom_hline(aes(yintercept=mu11-mu01))+
   facet_grid(estimator~mu01)+ylim(-1,1)
-
-
-
-results<-bind_rows(results,pswResults)%>%
-  group_by(run,eff)%>%
-  mutate(pop=na.omit(pop)[1],samp=ifelse(is.na(samp),pop,samp))%>%
-  ungroup()
 
 
 pd <- results %>%
@@ -518,7 +483,7 @@ rate%>%
 dev.off()
 
 
-
+### n=100 results
 pd100 <- res100 %>%
   group_by(b1)%>%
   mutate(AUCf=mean(auc,na.rm=TRUE))%>%
@@ -538,3 +503,73 @@ pd100 <- res100 %>%
     interactionS=ifelse(intS,"S interaction","No\nS interaction")
   ) %>%
   filter(estimator=='PSW'|rhat<1.1)
+
+### results across ns
+pdns <- resultsNs %>%
+  group_by(b1)%>%
+  mutate(AUCf=mean(auc,na.rm=TRUE))%>%
+  ungroup()%>%
+  mutate(
+    errP = est - pop,
+    B1 = factor(b1,levels=c(0,0.2,0.5),
+                labels=c(bquote(alpha==0),bquote(alpha==0.2),bquote(alpha==0.5))),
+    AUCff=paste0('AUC=',round(AUCf,1)),
+    N=paste0('n=',n),
+    M1=factor(mu01,levels=c("0","0.3"),
+              labels=c(bquote(mu[c]^1-mu[c]^0==0),bquote(mu[c]^1-mu[c]^0==0.3))),
+    PE=paste('Stratum',eff),
+    dist=paste(c(mix='Mixture',unif='Unform',norm='Normal')[errDist],'Errors'),
+    estimator=c(bayes='Mixture',mest='M-Est',psw='PSW')[estimator],
+    interactionZ=ifelse(intZ,"Z interaction","No\nZ interaction"),
+    interactionS=ifelse(intS,"S interaction","No\nS interaction"),
+    N=paste0("n=",n)
+  ) %>%
+  filter(rhat<1.1)
+
+
+bp(pdns,subset=eff==1,facet=~N,title="Estimation Error by N",ylim=c(-1,1))+
+  labs(subtitle=bquote("Stratum 1 Principal Effects; Normal Residuals, No Interactions, "~alpha>0~", "~mu[C]^1-mu[C]^0==0.3))
+ggsave('simFigs/byN.jpg',width=6,height=3)
+
+
+rmse <- pdns%>%
+  filter(rhat<1.1)%>%
+  group_by(n,eff,estimator)%>%
+  summarize(rmse=sqrt(mean(errP^2,na.rm=TRUE)))%>%ungroup()
+
+rmse%>%filter(eff==1)%>%select(-eff)%>%
+  pivot_wider(names_from=n,names_prefix="n=",values_from=rmse)
+
+rmse%>%filter(eff==1)%>%select(-eff)%>%
+  mutate(N1000=factor(ifelse(n==1000,"n=1000","99<n<501"),levels=c("99<n<501","n=1000")))%>%
+  ggplot(aes(n,rmse,color=estimator,group=estimator,fill=estimator))+
+  geom_point()+geom_line()+facet_grid(cols=vars(N1000),scales="free_x",space="free")
+
+ coverage <- pdns%>%
+  filter(rhat<1.1)%>%
+  group_by(n,eff,estimator)%>%
+   summarize(coverage=mean(CInormL<=pop & CInormU>=pop,na.rm=TRUE))%>%ungroup()
+
+coverage%>%filter(eff==1)%>%select(-eff)%>%
+  pivot_wider(names_from=n,names_prefix="n=",values_from=coverage)
+
+coverage%>%filter(eff==1)%>%select(-eff)%>%
+  mutate(N1000=factor(ifelse(n==1000,"n=1000","99<n<501"),levels=c("99<n<501","n=1000")))%>%
+  ggplot(aes(n,coverage,color=estimator,group=estimator,fill=estimator))+
+  geom_point()+geom_line()+geom_hline(yintercept=0.95)+
+  facet_grid(cols=vars(N1000),scales="free_x",space="free")
+
+
+
+bias <- pdns%>%
+  filter(rhat<1.1)%>%
+  group_by(n,eff,estimator)%>%
+  summarize(bias=mean(errP,na.rm=TRUE))%>%ungroup()
+
+bias%>%filter(eff==1)%>%select(-eff)%>%
+  pivot_wider(names_from=n,names_prefix="n=",values_from=bias)
+
+bias%>%filter(eff==1)%>%select(-eff)%>%
+  mutate(N1000=factor(ifelse(n==1000,"n=1000","99<n<501"),levels=c("99<n<501","n=1000")))%>%
+  ggplot(aes(n,bias,color=estimator,group=estimator,fill=estimator))+
+  geom_point()+geom_line()#+facet_grid(cols=vars(N1000),scales="free_x",space="free")

@@ -14,7 +14,7 @@ bayes <- function(data,...){
                        )
                  )
                                         #fit1 <-
-    output <- capture.output(fit <- stan('code/ps.stan',data=sdat,...))
+    output <- capture.output(fit <- stan('code/ps.stan',data=sdat))#,...))
 
     summary(fit, par=c('eff0','eff1','effDiff'))$summary
 }

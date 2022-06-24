@@ -1,9 +1,3 @@
-
-
-library(tidyverse)
-library(rstan)
-library(parallel)
-
 bias <- function(sss){
 
     sss1 <- sss[,1:6]
@@ -39,27 +33,39 @@ muEff <- function(facs,eff)
          ifelse(eff==1,mu11-mu01,mu11-mu01-mu10))
          )
 
+psw1Proc=function(psw){
+  psw['effDiff']=psw['eff1']-psw['eff0']
+  cbind(
+    estimates=psw[c('eff0','eff1','effDiff')],
+    SE=NA,
+    psw=1
+  )
+}
 
 bayesProc1 <- function(eff, res1) {
   if (rownames(res1$mest)[3] == 'diff')
     rownames(res1$mest)[3] <- 'effDiff'
+
+  res1$psw <- if('psw'%in% names(res1)) psw1Proc(res1$psw) else NULL
+
+
   with(res1,
-       map_dfr(
-         list(bayes, mest),
-         ~
-           tibble(
-             eff = eff,
-             pop = muEff(facs, eff),
-             samp = ifelse(eff == 'Diff', true['S1'] -true['S0'], true[paste0('S', eff)]),
-             estimator = ifelse('mean' %in% colnames(.), 'bayes', 'mest'),
-             est = .[paste0('eff', eff), ifelse('mean' %in% colnames(.), 'mean', 'estimates')],
-             se = .[paste0('eff', eff), ifelse('sd' %in%colnames(.), 'sd', 'SE')],
-             CInormL = est - 2 *se,
-             CInormU = est + 2 *se,
-             CIpercL = ifelse('2.5%' %in% colnames(.), .[paste0('eff', eff), '2.5%'], CInormL),
-             CIpercU = ifelse('97.5%' %in% colnames(.), .[paste0('eff', eff), '97.5%'], CInormU),
-             rhat = bayes[paste0('eff', eff), 'Rhat'],
-             auc = attr(mest, 'auc')
+   map_dfr(
+    if('psw'%in%names(res1)) list(bayes,mest,psw) else list(bayes,mest),
+    ~
+      tibble(
+       eff = eff,
+       pop = muEff(facs, eff),
+       samp = ifelse(eff == 'Diff', true['S1'] -true['S0'], true[paste0('S', eff)]),
+       estimator=ifelse('mean'%in%colnames(.),'bayes',ifelse('psw'%in%colnames(.),'psw','mest')),
+       est = .[paste0('eff', eff), ifelse('mean' %in% colnames(.), 'mean', 'estimates')],
+       se = .[paste0('eff', eff), ifelse('sd' %in%colnames(.), 'sd', 'SE')],
+       CInormL = est - 2 *se,
+       CInormU = est + 2 *se,
+       CIpercL = ifelse('2.5%' %in% colnames(.), .[paste0('eff', eff), '2.5%'], CInormL),
+       CIpercU = ifelse('97.5%' %in% colnames(.), .[paste0('eff', eff), '97.5%'], CInormU),
+       rhat = bayes[paste0('eff', eff), 'Rhat'],
+       auc = attr(mest, 'auc')
            )
        ))
 }
@@ -67,6 +73,8 @@ bayesProc1 <- function(eff, res1) {
 
 
 bayesProc <- function(res1,facs){
+  if(is.null(res1)) return(as_tibble(facs))
+  if(is.null(res1$mest)) return(as_tibble(facs))
     if(inherits(res1,'try-error')) return(as_tibble(facs))
     facs%>%
         rbind()%>%
@@ -78,7 +86,7 @@ bayesProc <- function(res1,facs){
 
 
 
-loadRes <- function(ext1='',ext2=''){
+loadRes <- function(ext1='',ext2='',pswResults){
     load(paste0('simResults',ext1,'/cases',ext2,'.RData'))
 
     results <- list()
@@ -87,32 +95,53 @@ loadRes <- function(ext1='',ext2=''){
     for(i in 1:nrow(cases)){#length(fn)){
         #if(i %% 10==0)
             cat(round(i/nrow(cases)*100),'%',sep='')#length(fn)*100), '% ')
-        load(paste0('simResults',ext1,'/sim',i,ext2,'.RData'))#fn[i]))
+      load(paste0('simResults',ext1,'/sim',i,ext2,'.RData'))#fn[i]))
+      if(!missing(pswResults))
+        res <- map(1:length(res),
+                   ~append(res[[.]],list(psw=unlist(pswResults[[i]][.,]))))
         #stopifnot(identical(facs,cases[i,]))
-        resT <- map_dfr(res,bayesProc,facs=facs)
-        resT$run <- i
-        results[[i]] <- resT
-        rm(res,facs)
+      resT <- map_dfr(res,bayesProc,facs=facs)
+      resT$run <- i
+      results[[i]] <- resT
+      rm(res,facs)
     }
 
     reduce(results,bind_rows)
 }
 
-bp <- function(pd,subset,facet,title=deparse(substitute(subset))){
-  
-  r <- if (missing(subset)) 
+bp <- function(pd,subset,facet,title=deparse(substitute(subset)),ylim,Labeller="label_value"){
+
+
+  r <- if (missing(subset))
     rep_len(TRUE, nrow(pd))
   else {
     e <- substitute(subset)
     r <- eval(e, pd, parent.frame())
-    if (!is.logical(r)) 
+    if (!is.logical(r))
       stop("'subset' must be logical")
     r & !is.na(r)
   }
-  
+
   pd <- pd[r, , drop = TRUE]
-  
-  ggplot(pd,
+
+  if(missing(ylim)) ylim = quantile(pd$errP, c(0.01, 0.99))
+
+  if(any(pd$errP<ylim[1]|pd$errP>ylim[2])){
+    outliers=TRUE
+    grp=c(as.character(unlist(as.list(facet)[-1])),'estimator')
+    outDat=pd%>%
+      group_by(across(!!grp))%>%
+      summarize(
+        nBig=sum(errP>ylim[2]),
+        nSmall=sum(errP<ylim[1]))%>%
+      pivot_longer(c(nBig,nSmall),names_to="bs",values_to="out")%>%
+      mutate(
+        y=ifelse(bs=='nBig',ylim[2],ylim[1]),
+        lab=ifelse(out>0,paste0('+',out),''))%>%
+      ungroup()
+  } else outliers=FALSE
+
+  p <- ggplot(pd,
          aes(
            x = estimator,
            y = errP,
@@ -125,11 +154,15 @@ bp <- function(pd,subset,facet,title=deparse(substitute(subset))){
       #outlier.shape = NA
       draw_quantiles = 0.5) +
     geom_hline(yintercept = 0) +
-    coord_cartesian(ylim = quantile(pd$errP, c(0.01, 0.99))) +
-    facet_grid(facet , scales = "free") +
+    coord_cartesian(ylim =ylim)+
+    facet_grid(facet , scales = "free",
+               labeller = Labeller)+
     labs(title = title,
          x = NULL, y = 'Estimation Error') + theme(legend.pos = 'none')
-  
+  if(outliers) p=p+geom_label(data=filter(outDat,out>0),
+                              inherit.aes=FALSE,
+                              mapping=aes(estimator,y,label=lab))
+  p
 }
 
 
@@ -140,9 +173,9 @@ load1 <- function(i,ext1='',ext2=''){
 
 justLoad <- function(ext1='',ext2=''){
   load(paste0('simResults',ext1,'/cases',ext2,'.RData'))
-  
+
   resList <- lapply(1:nrow(cases),load1)
-  
+
   list(resList=resList,cases=cases)
 }
 
@@ -155,4 +188,3 @@ justProc <- function(resList)
         resT$run <- i
         resT
       })
-

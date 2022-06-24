@@ -517,8 +517,33 @@ stopifnot(max(sdatClass$classT)==max(sdatClass$classC))
 stopifnot(max(sdatClass$classT)==n_distinct(sdatClass$classT))
 stopifnot(max(sdatClass$classT)==n_distinct(sdatClass$classC))
 
+
 checkmodRandClass=stan('code/fh2t/psModRandClass.stan',data=sdatClass)
 save(checkmodRandClass,file='checkmodRandClass.RData')
+
+
+checkdathalf1=subset(checkdat,classN<67)
+stanDatHalf <-  list(nc= length(checkdathalf1[checkdathalf1$Z == 0,]$student_number), #
+                 nt= length(checkdathalf1[checkdathalf1$Z == 1,]$student_number), #
+                 ncovU= ncol(XctlU), # √
+                 ncovY= ncol(XctlY), # √
+                 YctlY=  (checkdathalf1[checkdathalf1$Z == 0, ]$Y), ### IS THE OUTCOME Y OR post.total_math_score?
+                 #    YctlU= , this doesn't exist, right?
+                 YtrtY= (checkdathalf1[checkdathalf1$Z == 1, ]$Y ), ### IS THE OUTCOME Y OR post.total_math_score?
+                 YtrtU=(ifelse(checkdathalf1[checkdathalf1$Z == 1, ]$anyBottom == "TRUE", 1, 0)),
+                 XctlU=as.matrix(XctlU)[checkdat$classN[checkdat$Z==0]<67,], # √
+                 XctlY=as.matrix(XctlY)[checkdat$classN[checkdat$Z==0]<67,], # √
+                 XtrtU=as.matrix(XtrtU)[checkdat$classN[checkdat$Z==1]<67,], # √
+                 XtrtY=as.matrix(XtrtY)[checkdat$classN[checkdat$Z==1]<67,], # √
+                 classT=checkdathalf1$classN[checkdathalf1$Z==1],
+                 classC=checkdathalf1$classN[checkdathalf1$Z==0],
+                 nclass=66,
+                 bottomOuter=(ifelse(checkdathalf1[checkdathalf1$Z == 1, ]$anyBottom == "TRUE", 1, 0))
+)
+
+modHalf1=stan('code/fh2t/psModRandClass.stan',data=stanDatHalf)
+save(modHalf1,file='modHalf1.RData')
+
 
                                         # saveRDS(checkmod2, "checkmod2.rds")
 # mod <- readRDS("model.rds")
