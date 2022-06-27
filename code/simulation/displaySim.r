@@ -1,10 +1,15 @@
 library(tidyverse)
 library(broom)
 library(kableExtra)
+library(gridExtra)
 
 source('code/simulation/readSimFuncs.r')
-#### after simulation results have been loaded and pre-processed...
 
+#### after simulation results have been loaded and pre-processed...
+## source('code/simulation/readSim.r')
+load('simResults/fullResults.RData')
+load('simResults/resultsNs.RData')
+load('simResults/resultsB1s.RData')
 
 
 ### rhats
@@ -24,6 +29,22 @@ lm(Rhat1.1~I(n/500)+mu01+errDist+b1+intS+intZ,data=rhats)
 results%>%ggplot(aes(as.factor(b1),auc))+geom_jitter(alpha=0.2)+geom_violin(draw_quantiles = 0.5)
 
 results%>%ggplot(aes(as.factor(n),auc))+geom_jitter(alpha=0.2)+geom_violin(draw_quantiles = 0.5)+facet_wrap(~b1,nrow=1)
+
+
+resultsB1s%>%
+  group_by(b1)%>%
+  mutate(meanAUC=mean(auc))%>%
+  ggplot(aes(as.factor(b1),auc))+geom_boxplot()+geom_point(aes(y=meanAUC))+geom_smooth(se=FALSE)
+                                        #  scale_y_continuous('Avg. AUC',seq(.5,1,.1))
+resultsB1s%>%
+  group_by(b1)%>%
+  summarize(meanAUC=mean(auc))
+
+resultsB1s%>%
+  group_by(b1)%>%
+  summarize(meanAUC=mean(auc))%>%ggplot(aes(b1,meanAUC))+geom_point()+geom_smooth(method='lm')
+
+
 
 #### how do estimates vary with auc (simple case)?
 results%>%
@@ -50,12 +71,13 @@ pd <- results %>%
     AUCff=paste0('AUC=',round(AUCf,1)),
     N=paste0('n=',n),
     M1=factor(mu01,levels=c("0","0.3"),
-              labels=c(bquote(mu[c]^1-mu[c]^0==0),bquote(mu[c]^1-mu[c]^0==0.3))),
+              ##labels=c(bquote(mu[c]^1-mu[c]^0==0),bquote(mu[c]^1-mu[c]^0==0.3))),
+              labels=c(bquote(mu[c]^1==0),bquote(mu[c]^1==0.3))),
     PE=paste('Stratum',eff),
     dist=paste(c(mix='Mixture',unif='Unform',norm='Normal')[errDist],'Errors'),
     estimator=c(bayes='Mixture',mest='M-Est',psw='PSW')[estimator],
-    interactionZ=ifelse(intZ,"Z interaction","No\nZ interaction"),
-    interactionS=ifelse(intS,"S interaction","No\nS interaction")
+    interactionZ=ifelse(intZ,"Z\ninteraction","No Z\ninteraction"),
+    interactionS=ifelse(intS,"S\ninteraction","No S\ninteraction")
   ) %>%
   filter(estimator=='PSW'|rhat<1.1)
 
@@ -92,6 +114,68 @@ bp(pd,
    )+
   labs(subtitle=bquote("Stratum 1 Principal Effects; "~alpha==0.5~","~mu[C]^1-mu[C]^0==0.3~","~ n==500))
 ggsave('simFigs/InteractionPosB1.jpg',height=4,width=6)
+
+
+
+norm<-bp(pd,
+   subset=b1 > 0& errDist=='norm'& !intS& !intZ&eff!='Diff'&n==500&PE=='Stratum 1',
+   title="Normal Residuals",
+   facet = B1~ M1,
+   ylim=c(-1,1),
+   Labeller=label_parsed,labSize=2
+   )+
+  labs(y=bquote("Estimation Error for "~tau^1),subtitle="No Interactions",x=NULL)+
+  #theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        plot.subtitle = element_text(size=10),legend.pos="none")+
+  scale_fill_manual(values=c('#1b9e77','#d95f02','#7570b3'))+
+  scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
+
+#ggsave('simFigs/normalOutcomesNoInteractionPosB1.jpg',height=4,width=6)
+
+unif<-bp(pd,
+   subset=b1 > 0& errDist=='unif'& !intS& !intZ&eff!='Diff'&n==500&PE=='Stratum 1',
+   title="Uniform Residuals",
+   facet = B1~ M1,
+   ylim=c(-1,1),
+   Labeller=label_parsed,labSize=2
+   )+
+  labs(subtitle="No Interactions",x=NULL,y=NULL)+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        plot.subtitle = element_text(size=10))+
+  scale_fill_manual(values=c('#1b9e77','#d95f02','#7570b3'))+
+  scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
+#ggsave('simFigs/unifOutcomesNoInteractionPosB1.jpg',height=4,width=6)
+
+int<-bp(pd,
+   subset=b1 > 0& errDist=='norm'& n==500&PE=='Stratum 1'&b1==.5&mu01==0.3,
+   title="S&Z Interactions",
+   facet = interactionZ~interactionS,
+   ylim=NULL
+   )+
+  labs(subtitle=bquote(~alpha==0.5~","~mu[C]^1==0.3~"Norm. Resid"),x=NULL,y=NULL)+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        plot.subtitle = element_text(size=8))+
+  scale_fill_manual(values=c('#1b9e77','#d95f02','#7570b3'))+
+  scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
+
+#ggsave('simFigs/InteractionPosB1.jpg',height=4,width=6)
+
+pdf("simFigs/boxplots.pdf",width=6.4,height=4)
+grid.arrange(norm,unif,int,nrow=1)
+dev.off()
+
+int.2<-bp(pd,
+   subset=b1 > 0& errDist=='norm'& n==500&PE=='Stratum 1'&b1==.2&mu01==0.3,
+   title="S&Z Interactions",
+   facet = interactionZ~interactionS,
+   ylim=c(-1.5,1.5)
+   )+
+  labs(subtitle=bquote(~alpha==0.5~","~mu[C]^1==0.3~"Norm. Resid"),x=NULL,y=NULL)+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+        plot.subtitle = element_text(size=8))+
+  scale_fill_manual(values=c('#1b9e77','#d95f02','#7570b3'))+
+  scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
 
 
 
@@ -504,8 +588,10 @@ pd100 <- res100 %>%
   ) %>%
   filter(estimator=='PSW'|rhat<1.1)
 
+###############################################################################
 ### results across ns
-pdns <- resultsNs %>%
+###############################################################################
+ pdns <- resultsNs %>%
   group_by(b1)%>%
   mutate(AUCf=mean(auc,na.rm=TRUE))%>%
   ungroup()%>%
@@ -532,15 +618,15 @@ bp(pdns,subset=eff==1,facet=~N,title="Estimation Error by N",ylim=c(-1,1))+
 ggsave('simFigs/byN.jpg',width=6,height=3)
 
 
-rmse <- pdns%>%
+rmseN <- pdns%>%
   filter(rhat<1.1)%>%
   group_by(n,eff,estimator)%>%
   summarize(rmse=sqrt(mean(errP^2,na.rm=TRUE)))%>%ungroup()
 
-rmse%>%filter(eff==1)%>%select(-eff)%>%
+rmseN%>%filter(eff==1)%>%select(-eff)%>%
   pivot_wider(names_from=n,names_prefix="n=",values_from=rmse)
 
-rmse%>%filter(eff==1)%>%select(-eff)%>%
+rmseN%>%filter(eff==1)%>%select(-eff)%>%
   mutate(N1000=factor(ifelse(n==1000,"n=1000","99<n<501"),levels=c("99<n<501","n=1000")))%>%
   ggplot(aes(n,rmse,color=estimator,group=estimator,fill=estimator))+
   geom_point()+geom_line()+facet_grid(cols=vars(N1000),scales="free_x",space="free")
@@ -550,10 +636,10 @@ rmse%>%filter(eff==1)%>%select(-eff)%>%
   group_by(n,eff,estimator)%>%
    summarize(coverage=mean(CInormL<=pop & CInormU>=pop,na.rm=TRUE))%>%ungroup()
 
-coverage%>%filter(eff==1)%>%select(-eff)%>%
+coverageN%>%filter(eff==1)%>%select(-eff)%>%
   pivot_wider(names_from=n,names_prefix="n=",values_from=coverage)
 
-coverage%>%filter(eff==1)%>%select(-eff)%>%
+coverageN%>%filter(eff==1)%>%select(-eff)%>%
   mutate(N1000=factor(ifelse(n==1000,"n=1000","99<n<501"),levels=c("99<n<501","n=1000")))%>%
   ggplot(aes(n,coverage,color=estimator,group=estimator,fill=estimator))+
   geom_point()+geom_line()+geom_hline(yintercept=0.95)+
@@ -561,15 +647,127 @@ coverage%>%filter(eff==1)%>%select(-eff)%>%
 
 
 
-bias <- pdns%>%
+biasN <- pdns%>%
   filter(rhat<1.1)%>%
   group_by(n,eff,estimator)%>%
-  summarize(bias=mean(errP,na.rm=TRUE))%>%ungroup()
+    summarize(bias=mean(est-pop,na.rm=TRUE),
+            ttest=tidy(t.test(est-pop)))%>%
+  ungroup()%>%
+  bind_cols(.$ttest)%>%
+  select(-ttest)
 
-bias%>%filter(eff==1)%>%select(-eff)%>%
+biasN%>%filter(eff==1)%>%select(-eff)%>%
   pivot_wider(names_from=n,names_prefix="n=",values_from=bias)
 
-bias%>%filter(eff==1)%>%select(-eff)%>%
+biasN%>%filter(eff==1)%>%select(-eff)%>%
   mutate(N1000=factor(ifelse(n==1000,"n=1000","99<n<501"),levels=c("99<n<501","n=1000")))%>%
   ggplot(aes(n,bias,color=estimator,group=estimator,fill=estimator))+
   geom_point()+geom_line()#+facet_grid(cols=vars(N1000),scales="free_x",space="free")
+
+seN <- pdns%>%
+  filter(rhat<1.1)%>%
+  group_by(n,eff,estimator)%>%
+  summarize(se=sd(errP,na.rm=TRUE))%>%ungroup()
+
+full_join(seN,biasN)%>%filter(eff==1,estimator!="PSW")%>%summarize(across(c(se,bias),max),coef=round(se/bias))
+
+
+bind_rows(
+  seN%>%mutate(se=se/3,meas="SE")%>%rename(what=se),
+  biasN%>%mutate(meas="Bias")%>%rename(what=bias))%>%
+  filter(eff==1,estimator!="PSW")%>%
+  ggplot(aes(n,what,color=estimator,group=paste0(estimator,meas),linetype=meas,fill=estimator,shape=meas))+
+  geom_point()+geom_line()+geom_hline(yintercept=0)+#,linetype="dotted",size=2)+
+  scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*3,name='Standard Error'))+
+  scale_shape_manual(values=c(0,16))+
+  annotate('text',600,.125,label=list(bquote(atop("Normal Resid., No Interactions, ",alpha==0.5~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
+  scale_x_continuous(name="Sample Size Per Group",breaks=c(seq(100,500,200),1000))+
+  ggtitle("Bias and Standard Error by n")+theme(legend.title=element_blank())
+ggsave("simFigs/biasSEbyN.jpg",width=6,height=3)
+
+
+###############################################################################
+### results across B1
+###############################################################################
+
+ pdb1 <- resultsB1s %>%
+  group_by(b1)%>%
+  mutate(AUCf=mean(auc,na.rm=TRUE))%>%
+  ungroup()%>%
+  mutate(
+    errP = est - pop,
+    B1 = factor(b1,levels=seq(0,1,.1),
+                labels=lapply(seq(0,1,.1), function(x) bquote(alpha==.(x)))),
+    AUCff=paste0('AUC=',round(AUCf,1)),
+    N=paste0('n=',n),
+    M1=factor(mu01,levels=c("0","0.3"),
+              labels=c(bquote(mu[c]^1-mu[c]^0==0),bquote(mu[c]^1-mu[c]^0==0.3))),
+    PE=paste('Stratum',eff),
+    dist=paste(c(mix='Mixture',unif='Unform',norm='Normal')[errDist],'Errors'),
+    estimator=c(bayes='Mixture',mest='M-Est',psw='PSW')[estimator],
+    interactionZ=ifelse(intZ,"Z interaction","No\nZ interaction"),
+    interactionS=ifelse(intS,"S interaction","No\nS interaction"),
+    N=paste0("n=",n)
+  ) %>%
+  filter(rhat<1.1)
+
+
+bp(pdb1,subset=eff==1,facet=~B1,title=bquote("Estimation Error by "~alpha),Labeller=label_parsed,labSize=2)+
+  labs(subtitle=bquote("Stratum 1; Normal Resid., No Interactions, "~n==500~", "~mu[C]^1-mu[C]^0==0.3))
+ggsave('simFigs/byAlpha.jpg',width=6,height=3)
+
+
+rmseB1 <- pdb1%>%
+  filter(rhat<1.1)%>%
+  group_by(b1,eff,estimator)%>%
+  summarize(rmse=sqrt(mean(errP^2,na.rm=TRUE)))%>%ungroup()
+
+rmseB1%>%filter(eff==1)%>%select(-eff)%>%
+  pivot_wider(names_from=b1,names_prefix="b1=",values_from=rmse)%>%knitr::kable(format='markdown',digits=3)
+
+rmseB1%>%filter(eff==1)%>%select(-eff)%>%
+  ggplot(aes(b1,rmse,color=estimator,group=estimator,fill=estimator))+
+  geom_point()+geom_line()
+
+ coverageB1 <- pdb1%>%
+  filter(rhat<1.1)%>%
+  group_by(b1,eff,estimator)%>%
+   summarize(coverage=mean(CInormL<=pop & CInormU>=pop,na.rm=TRUE))%>%ungroup()
+
+coverageB1%>%filter(eff==1)%>%select(-eff)%>%
+  pivot_wider(names_from=b1,names_prefix="n=",values_from=coverage)
+
+coverageB1%>%filter(eff==1)%>%select(-eff)%>%
+  ggplot(aes(b1,coverage,color=estimator,group=estimator,fill=estimator))+
+  geom_point()+geom_line()+geom_hline(yintercept=0.95)
+
+
+biasB1 <- pdb1%>%
+  filter(rhat<1.1)%>%
+  group_by(b1,eff,estimator)%>%
+  summarize(bias=mean(errP,na.rm=TRUE))%>%ungroup()
+
+biasB1%>%filter(eff==1)%>%select(-eff)%>%
+  pivot_wider(names_from=b1,names_prefix="n=",values_from=bias)
+
+biasB1%>%filter(eff==1)%>%select(-eff)%>%
+  ggplot(aes(b1,bias,color=estimator,group=estimator,fill=estimator))+
+  geom_point()+geom_line()#+facet_grid(cols=vars(N1000),scales="free_x",space="free")
+
+seB1 <- pdb1%>%
+  filter(rhat<1.1)%>%
+  group_by(b1,eff,estimator)%>%
+  summarize(se=sd(errP,na.rm=TRUE))%>%ungroup()
+
+full_join(seB1,biasB1)%>%filter(eff==1,estimator!="PSW",b1>0)%>%summarize(across(c(se,bias),max),coef=round(se/bias))
+
+bind_rows(
+  seB1%>%mutate(se=se/5,meas="SE")%>%rename(what=se),
+  biasB1%>%mutate(meas="Bias")%>%rename(what=bias))%>%
+  filter(b1>0,eff==1,estimator!="PSW")%>%
+  ggplot(aes(b1,what,color=estimator,group=paste0(estimator,meas),linetype=meas,fill=estimator,shape=meas))+
+  geom_point()+geom_line()+geom_hline(yintercept=0)+#,linetype="dashed")+
+  scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*5,name='Standard Error'))+
+  scale_shape_manual(values=c(0,16))+
+  annotate('text',.7,.1,label=list(bquote(atop("Normal Resid., No Interactions, ",n==500~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+xlab(bquote(alpha))+ggtitle(bquote("Bias and Standard Error by "~alpha))
+ggsave("simFigs/biasSEbyB1.jpg",width=6,height=3)
