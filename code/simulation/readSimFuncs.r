@@ -109,7 +109,7 @@ loadRes <- function(ext1='',ext2='',pswResults){
     reduce(results,bind_rows)
 }
 
-bp <- function(pd,subset,facet,title=deparse(substitute(subset)),ylim,Labeller="label_value"){
+bp <- function(pd,subset,facet,title=deparse(substitute(subset)),ylim,Labeller="label_value",labSize=5){
 
 
   r <- if (missing(subset))
@@ -126,20 +126,6 @@ bp <- function(pd,subset,facet,title=deparse(substitute(subset)),ylim,Labeller="
 
   if(missing(ylim)) ylim = quantile(pd$errP, c(0.01, 0.99))
 
-  if(any(pd$errP<ylim[1]|pd$errP>ylim[2])){
-    outliers=TRUE
-    grp=c(as.character(unlist(as.list(facet)[-1])),'estimator')
-    outDat=pd%>%
-      group_by(across(!!grp))%>%
-      summarize(
-        nBig=sum(errP>ylim[2]),
-        nSmall=sum(errP<ylim[1]))%>%
-      pivot_longer(c(nBig,nSmall),names_to="bs",values_to="out")%>%
-      mutate(
-        y=ifelse(bs=='nBig',ylim[2],ylim[1]),
-        lab=ifelse(out>0,paste0('+',out),''))%>%
-      ungroup()
-  } else outliers=FALSE
 
   p <- ggplot(pd,
          aes(
@@ -157,11 +143,33 @@ bp <- function(pd,subset,facet,title=deparse(substitute(subset)),ylim,Labeller="
     coord_cartesian(ylim =ylim)+
     facet_grid(facet , scales = "free",
                labeller = Labeller)+
-    labs(title = title,
-         x = NULL, y = 'Estimation Error') + theme(legend.pos = 'none')
-  if(outliers) p=p+geom_label(data=filter(outDat,out>0),
-                              inherit.aes=FALSE,
-                              mapping=aes(estimator,y,label=lab))
+    ggtitle(title)+
+                                        #labs(title = title,
+     #    x = NULL, y = 'Estimation Error') +
+    theme(legend.pos = 'none')
+
+  ## if(any(pd$errP<ylim[1]|pd$errP>ylim[2])){
+  ##   outliers=TRUE
+  ##   grp=c(as.character(unlist(as.list(facet)[-1])),'estimator')
+  ##   outDat=pd%>%
+  ##     group_by(across(!!grp))%>%
+  ##     summarize(
+  ##       nBig=sum(errP>ylim[2]),
+  ##       nSmall=sum(errP<ylim[1]))%>%
+  ##     pivot_longer(c(nBig,nSmall),names_to="bs",values_to="out")%>%
+  ##     mutate(
+  ##       y=ifelse(bs=='nBig',ylim[2],ylim[1]),
+  ##       lab=ifelse(out>0,paste0('+',out),''))%>%
+  ##     ungroup()
+  ## } else outliers=FALSE
+
+  ## if(outliers) p=p+geom_label(data=filter(outDat,out>0),
+  ##                             inherit.aes=FALSE,
+  ##                             mapping=aes(estimator,y,label=lab),size=labSize,label.padding=unit(0.1, "lines"))
+
+  if(!is.null(ylim))
+    p=p+stat_summary(aes(estimator,errP),geom='label', fun.data=function(xx) data.frame(y=if(sum(xx<ylim[1])>0) ylim[1] else ylim[1]-100,label=paste('+',sum(xx <ylim[1]))),inherit.aes=FALSE)+
+      stat_summary(aes(estimator,errP),geom='label', fun.data=function(xx) data.frame(y=if(sum(xx>ylim[2])>0) ylim[2] else ylim[2]+100,label=paste('+',sum(xx >ylim[2]))),inherit.aes=FALSE)
   p
 }
 
