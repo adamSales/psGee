@@ -270,8 +270,8 @@ This leads to the following proposition:
   Say
   \begin{equation}\label{eq:interaction}
     \begin{split}
-      Y_{Ci}=\beta_0^C+\bm{\beta_1}^{C'}\bxy_i+\beta_2^C\sti+\bm{\beta_3^C}'\bxy_i\sti+\epsilon_{Ci}\\
-      Y_{Ti}=\beta_0^T+\bm{\beta_1}^{T'}\bxy_i+\beta_2^T\sti+\bm{\beta_3^T}'\bxy_i\sti+\epsilon_{Ti}\\
+      Y_{Ci}=\beta_0^C+\bm{\beta_1}^{C'}\bxy_i+\beta_2^C\sti+\bm{\beta_3^{C'}}\bxy_i\sti+\epsilon_{Ci}\\
+      Y_{Ti}=\beta_0^T+\bm{\beta_1}^{T'}\bxy_i+\beta_2^T\sti+\bm{\beta_3^{T'}}\bxy_i\sti+\epsilon_{Ti}\\
     \end{split}
   %  \end{equation}
 %      +\beta_3Z_i+\beta_4\sti Z_i+\bm{\beta_5}'\bxy_i\sti+
@@ -366,28 +366,33 @@ Note that when there were no interactions included in the model, since $Var(\bet
 
 
 \subsubsection{Manipulated Factors}
-We manipulated five factors in the simulation:
+We manipulated six factors in the simulation:
 \begin{itemize}
-%\item Sample size $n\in\{500,1000\}$
+\item Sample size per treatment group $n\in\{100,200,\dots,1000\}$
+\item $\alpha \in \{0,0.2,0.3,\dots,1\}$
 \item $\muc1\in\{0,0.3\}$
-\item $\alpha \in \{0,0.2,0.5,1\}$
 \item The distribution of $\epsilon_i$
 \item The presence of interactions between $\st$ and covariates
 \item The presence of interactions between $Z$ and covariates
 \end{itemize}
+The six factors are not completely crossed---in particular, we let $n$ and $\alpha$ each vary across all the levels listed while holding the other five factors fixed.
+
+The guarentees of M-estimation are all assymptotic, so we examined the behavior of our M-estimator at a range of sample sizes to determine its finite-sample properties.
 
 When $\muc1=0$ there is only one mixture component in the control
 group, which can be problematic for mixture modeling \citep{griffin2008application}. Conversely, when $\muc1=0.3$, $\eff0=\eff1=0$, so there is no treatment effect for any subjects.
 
 As mentioned above, $\alpha$ controls the variance of the principal scores, i.e. the extent to which $\st$ is predictible as a function of covariates. When $\alpha=0$, the covariates are unrelated to $\st$ and principal scores do not vary between participants, violating \eqref{eq:vps}. We expect that the more predictive the covariates, the better the performance of all three estimators.
+To aid in the interpretation of the $\alpha$ parameter, the online appendix plots $\alpha$ against the area under the receiver operating characteristic curve for each fitted model (AUC), a common measure of classification accuracy \citep{bradley1997use}---an AUC of 0.5 implies that the model is no better than random guessing, and AUC of 1 implieds perfect prediction. For $0.5\le \alpha \le 1$, the average AUC varies from roughly 0.53 to 0.77; for $\alpha=0.5$, the average AUC was roughly 0.675.
 
-$\epsilon$ is the regression error in \eqref{eq:yc-sim}. Across simulation runs, $E[\epsilon]=0$ and $Var(\epsilon)=1/2$. However, the shape of $\epsilon$'s distribution varied between the following three possibilities:
+
+$\epsilon$ is the regression error in \eqref{eq:yc-sim}. Across simulation runs, $E[\epsilon]=0$ and $Var(\epsilon)=1/2$. However, the shape of $\epsilon$'s distribution varied between the following two possibilities:
 \begin{itemize}
-\item[Normal] $\epsilon~\mathcal{N}(0,1/2)$, as assumed by the mixture model estimator
-\item[Uniform] $\epsilon~\mathcal{U}(-\sqrt{6}/2,\sqrt{6}/2)$
-\item[Mixture] $f_\epsilon(x)=\frac{1}{4}\phi\left((x+1/3)\sqrt{6}\right)+\frac{1}{4}\phi\left((x-1)\sqrt{6})\right)$
+\item[Normal] $\epsilon\sim\mathcal{N}(0,1/2)$, as assumed by the mixture model estimator
+\item[Uniform] $\epsilon\sim\mathcal{U}(-\sqrt{6}/2,\sqrt{6}/2)$
+%\item[Mixture] $f_\epsilon(x)=\frac{1}{4}\phi\left((x+1/3)\sqrt{6}\right)+\frac{1}{4}\phi\left((x-1)\sqrt{6})\right)$
 \end{itemize}
-The mixture distribution for $\epsilon$ was designed to be particularly difficult for the mixture model estimator.
+%The mixture distribution for $\epsilon$ was designed to be particularly difficult for the mixture model estimator.
 
 The last two factors---the presence of interactions between covariates and $\st$ and $Z$, respectively---test the performance of a model that does not include interactions when that modeling assumption is false.
 
@@ -402,7 +407,7 @@ The third covariate used in the data generating model, $x_3$, was ``unobserved''
 
 All three methods used the same principal score model, fit using data from the treatment group in which $S=\st$ was observed:
 \begin{equation}\label{eq:psModsim}
-  \fpp{\bm{\alpha}}{x_1,x_2}=logit^{-1}(\alpha_0+\alpha_1x_1+\alpha_2x_2)
+  \ppf{\bm{\alpha}}{x_1,x_2}=logit^{-1}(\alpha_0+\alpha_1x_1+\alpha_2x_2)
 \end{equation}
 
 The mixture estimator then fit two outcome models.
@@ -428,27 +433,85 @@ with OLS.
 To estimate standard errors, we used the \texttt{sandwich} package \citep{sandwich} to extract estimating equations from \eqref{eq:psModsim} and \eqref{eq:simReg} and computed the sandwich covariance matrix following the procedure detailed in the appendix.
 
 \subsection{Results}
+In this section we present the subset of simulation results that we think is the most telling and interesting; a fuller set of results is available in the online appendix.
+
+\subsubsection{Varying $n$ and $\alpha$}
+When $\alpha=0$, Assumption \ref{ass:vps} is violated, and M-estimates are highly erratic; however, as Table \ref{tab:coverage} shows, when other assumptions hold inference remains valid.
+For the sake of clarity, we will focus here on cases where $\alpha>0$; results for $\alpha=0$ are in Tables \ref{tab:rmse} and \ref{tab:coverage} and in the online appendix.
+
+Figures \ref{fig:n} and \ref{fig:alpha} show the empirical bias and standard error (SE) of the M-estimator and mixture estimator of $\eff1$ as sample size and $\alpha$ vary.
+Across $n$ and $\alpha$, the M-estimator has lower bias and higher SE than the mixture estimator.
+The M-estimator is positively biased for low $n$ with bias converging to close to 0 (up to simulation error) for $n\ge 300$, and appears to be roughly unbiased (up to simulation error) for $0.2\le \alpha 1$, with $n$ fixed at 500.
+The SE of the M-estimator decreases rapidly for $100\le n \le 500$ and $0.2\le \alpha \le 0.5$ and more gradually for higher values of $n$ and $\alpha$.
+
+For the remainder of the simulation, we focus on the moderate cases of $n=500$ and $\alpha=0.2$ or 0.5.
 
 \begin{figure}
-  \centring
-  \includegraphics{../simFigs/normalOutcomesNoInteractionPosB1.jpg}
-  \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was normal, there were no interactions between covariates and $S$ or $Z$, and $\alpha=0.2,0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
-  \label{fig:simNorm}
+  \centering
+  \includegraphics{../simFigs/biasSEbyN.jpg}
+  \caption{Empirical bias and standard error of M- and Mixture estimates of $\muc1$ as sample size per treatment group $n$ varies from 0 to 1. There were 500 replications for each $n$. Other factors were held fixed at the noted values.}
+  \label{fig:n}
 \end{figure}
 
 \begin{figure}
-  \centring
-  \includegraphics{../simFigs/unifOutcomesNoInteractionPosB1.jpg}
-  \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was uniform, there were no interactions between covariates and $S$ or $Z$, and $\alpha=0.2,0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
-  \label{fig:simUnif}
+  \centering
+  \includegraphics{../simFigs/biasSEbyB1.jpg}
+  \caption{Empirical bias and standard error of M- and Mixture estimates of $\muc1$ as $\alpha$ varies from 0.1 to 1. There were 500 replications for each $n$. Other factors were held fixed at the noted values.}
+  \label{fig:alpha}
 \end{figure}
 
+\subsubsection{Other Factors}
+
+
 \begin{figure}
-  \centring
-  \includegraphics{../simFigs/InteractionPosB1.jpg}
-  \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was normal, there were possibly interactions between covariates and $S$ or $Z$, $\muc1=0.3$, and $\alpha=0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
-  \label{fig:simUnif}
+  \centering
+  \includegraphics{../simFigs/boxplots.pdf}
+  \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} under varying conditions. For all plots, $n=500$; there were 500 replications for each set of conditions. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
+  \label{fig:boxplots}
 \end{figure}
+
+
+Figure \ref{fig:boxplots} shows violin plots, layered on top of jitters scatterplots, showing estimation error for the M-estimator, the mixture estimator, and the PSW estimator of $\eff1$ under various sets of conditions, and Table \ref{tab:rmse} shows root mean squared error (RMSE) estimates under a somewhat wider set of circumstances when $\muc1=0.3$.
+The leftmost panel of Figure \ref{fig:boxplots} and the top line of Table \ref{tab:rmse} show results under ``standard'' conditions---normal residuals and no interactions in the data generating model between covariates and either $S$ or $Z$.
+In this case, the M-estimator is roughly unbiased, but less precise than the other two methods---when $\alpha=0.2$ it is much noisier, and when $\alpha=0.5$ it is only slightly less precise.
+The mixture estimator's bias depends on $\muc1$---when $\muc1=0$, the bias is slight, and when $\muc1=0.3$ the bias is more substantial. This is somewhat surprising, because when $\muc1=0$, there is no separation (``dispersion'') between the principal strata in the control group, and previous literature \citep{griffin2008application} has identified this scenario as a particular challenge for mixture modeling.
+The PSW estimator is also biased---due, presumeably, to the violation of Principal Ignorability, Assumption \ref{ass:pi}--inherent in the data generating model. On the other hand, the PSW estimator has easily the lowest sampling variance of the three estimators.
+In fact, Table \ref{tab:rmse} shows that despite its bias, the PSW estimator has lower RMSE than the M-estimator when $\alpha=0$ or 0.2.
+The middle panel of Figure \ref{fig:boxplots} and the fifth line of Table \ref{tab:rmse} shows a similar set of results for when the residuals in \eqref{eq:yc-sim} are uniformly distributed.
+In this case, the M-estimator and PSW estimator behave in a similiar fashion to the normal case, but the mixture estimator shows a bimodal pattern--sometimes over-estimating $\eff0$ and sometimes underestimating, but rarely estimationg $\eff1$ accurately.
+
+The rightmost panel of Figure \ref{fig:boxplots} returns to the case of normal residuals---and only shows results when $\muc1=0.3$ and $\alpha=0.5$---but introduces interactions in the data generating model between covariates and either $\st$, $Z$, or both. That is, the coefficients on the covariates in the outcome model vary between principal strata and/or between treatment groups.
+Corresponding RMSE results, along with analogous results for uniform residuals and other values for $\alpha$, are in Table \ref{tab:rmse}.
+Presence of interactions could undermine the M-estimate by inducing a relationship between principal scores and potential outcomes, even after adjusting the outcomes for covariate effects.
+Fortunately, the presence of interactions in the data generating model in this scenario appear to make little difference, though RMSEs were slightly higher when interactions between $Z$ and covariates are present.
+Table \ref{tab:rmse} shows that when $\alpha=.2$, M-estimation RMSE can be substantially higher when $Z$ interactions are present than when they are not; plots in the online appendix suggest that this is due to an increase in sampling variance and kurtosis rather than bias.
+
+Table \ref{tab:coverate} shows estimates of the empirical coverage of nominal 95\% confidence intervals for the M-estimator and mixture estimator of $\eff1$, to evaluate their respective standard error estimates and the associated statistical inference.
+When $\alpha=0.5$, M-estimator confidence intervals consistently acheive their nominal levels\footnote{With 500 replications and true coverage probabilities of 0.95, the standard error for emperical coverage rates is approximately 1 percentage point.}, whereas confidence intervals from mixture estimators undercover in the presence of interactions between $Z$ and $X$, or when residuals are non-normal.
+When $\alpha=0$ or 0.2, M-estimation confidence intervals undercover in the presence of interactions between $X$ and $Z$.
+Across all conditions in the table, the M-estimation confidence intervals have higher empirical coverage than their mixture-model counterparts.
+
+
+%% \begin{figure}
+%%   \centring
+%%   \includegraphics{../simFigs/normalOutcomesNoInteractionPosB1.jpg}
+%%   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was normal, there were no interactions between covariates and $S$ or $Z$, and $\alpha=0.2,0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
+%%   \label{fig:simNorm}
+%% \end{figure}
+
+%% \begin{figure}
+%%   \centring
+%%   \includegraphics{../simFigs/unifOutcomesNoInteractionPosB1.jpg}
+%%   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was uniform, there were no interactions between covariates and $S$ or $Z$, and $\alpha=0.2,0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
+%%   \label{fig:simUnif}
+%% \end{figure}
+
+%% \begin{figure}
+%%   \centring
+%%   \includegraphics{../simFigs/InteractionPosB1.jpg}
+%%   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was normal, there were possibly interactions between covariates and $S$ or $Z$, $\muc1=0.3$, and $\alpha=0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
+%%   \label{fig:simUnif}
+%% \end{figure}
 
 
   \begin{table}
@@ -460,6 +523,7 @@ To estimate standard errors, we used the \texttt{sandwich} package \citep{sandwi
 \begin{table}
   \input{coverageTab}
   \caption{Coverage}
+  \label{tab:coverage}
 \end{table}
 
 Analysis models had access to treatment assignment $Z$, outcomes $Y$,
@@ -588,7 +652,7 @@ $$\EE[\bx S]=\EE[\bx S|Z=1]=\EE[\bx S|Z=0]=\EE[\bx \EE[\bx\EE[S|\bx]|Z=0]]=\EE[\
 implying that
 \begin{equation*}
   \begin{split}
-    \EE[Y|\bx,Z=0]&=\beta_0+\bm{\beta_1}\bxy+\beta_2\pp+\bm{\beta_5}'\bxy\pp\tag*{and}\\
+    \EE[Y|\bx,Z=0]&=\beta_0+\bm{\beta_1}\bxy+\beta_2\pp+\bm{\beta_5}'\bxy\pp\\
     \EE[Y|\bx,S,Z=1]&=\beta_0+\beta_3+(\bm{\beta_1}+\bm{\beta_6})\bxy+(\beta_3+\beta_4)S+(\bm{\beta_5}+\bm{\beta_7})'\bxy S
   \end{split}
 \end{equation*}
@@ -596,29 +660,28 @@ Therefore,
 \begin{align*}
   \EE[Y]&=\EE[Y|Z=0]+\EE[Z]\left\{\EE[Y|Z=1]-\EE[Y|Z=0]\right\}\\
   &=\beta_0+\bm{\beta_1}\EE[\bxy]+\beta_2\EE[\pp]+\bm{\beta_5}'\EE[\bxy\pp]+\EE[Z]\left\{\beta_3+\bm{\beta_4}\EE[S]+\bm{\beta_6}'\EE[\bxy]+\bm{\beta_7}'\EE[\bxy S]\right\}\\
-  &=\beta_0+\bm{\beta_1}\EE[\bxy]+\beta_2\EE[R]+\bm{\beta_5}'\EE[\bxyR]+\EE[Z]\left\{\beta_3+\bm{\beta_4}\EE[R]+\bm{\beta_6}'\EE[\bxy]+\bm{\beta_7}'\EE[\bxy R]\right\}\\
+  &=\beta_0+\bm{\beta_1}\EE[\bxy]+\beta_2\EE[R]+\bm{\beta_5}'\EE[\bxy R]+\EE[Z]\left\{\beta_3+\bm{\beta_4}\EE[R]+\bm{\beta_6}'\EE[\bxy]+\bm{\beta_7}'\EE[\bxy R]\right\}\\
 \end{align*}
 Analogous reasoning leads to expressions for $\EE[RY]$, $\EE[\bxy Y]$, $\EE[ZY]$,  $\EE[ZRY]$, $\EE[\bxy YZ]$, and $\EE[\bxy RZY]$.
 These, in turn, give rise to estimating equations
 \begin{equation*}
-
   \displaystyle\sum_i \begin{pmatrix}
     Y_i-\beta_0-\bm{\beta_1}\bxy_i-\beta_2R_i-\bm{\beta_5}'\bxy_iR_i-Z_i\left\{\beta_3-\bm{\beta_4}R_i-\bm{\beta_6}'\bxy_i-\bm{\beta_7}'\bxy_i R_i\right\}\\
-    R_iY_i-\beta_0R_i-\bm{\beta_1}\bxy_iR_i-\beta_2R_i^2-\bm{\beta_5}'\bxy_iR_i^2-Z_i\left\{\beta_3R_i-\bm{\beta_4}R_i^2-\bm{\beta_6}'\bxy_iR_i-\bm{\beta_7}'\bxy_i R_i^2\right\}\\
-    \bxy_i Y_i-\beta_0\bxy_i-\bm{\beta_1}\bxy_i\bxy_i'-\beta_2R_i\bxy_i-\bm{\beta_5}'\bxy_iR_i-Z_i\left\{\beta_3\bxy_i-\bm{\beta_4}R_i\bxy_i-\bm{\beta_6}'\bxy_i\bxy_i'-\bm{\beta_7}'\bxy_i\bxy_i' R_i\right\}\\
+    R_iY_i-\beta_0R_i-\bm{\beta_1}\bxy_i R_i-\beta_2R_i^2-\bm{\beta_5}'\bxy_iR_i^2-Z_i\left\{\beta_3R_i-\bm{\beta_4}R_i^2-\bm{\beta_6}'\bxy_iR_i-\bm{\beta_7}'\bxy_i R_i^2\right\}\\
+    \bxy_i Y_i-\beta_0\bxy_i-\bm{\beta_1}\bxy_i\bx^{Y'}_i-\beta_2R_i\bxy_i-\bm{\beta_5}'\bxy_iR_i-Z_i\left\{\beta_3\bxy_i-\bm{\beta_4}R_i\bxy_i-\bm{\beta_6}'\bxy_i\bx^{Y'}_i-\bm{\beta_7}'\bxy_i\bx^{Y'}_i R_i\right\}\\
     Z_iY_i-Z_i\left\{\beta_0-\bm{\beta_1}\bxy_i-\beta_2R_i-\bm{\beta_5}'\bxy_iR_i-\beta_3-\bm{\beta_4}R_i-\bm{\beta_6}'\bxy_i-\bm{\beta_7}'\bxy_i R_i\right\}\\
     Z_iR_iY_i-Z_iR_i\left\{\beta_0-\bm{\beta_1}\bxy_i-\beta_2R_i-\bm{\beta_5}'\bxy_iR_i-\beta_3-\bm{\beta_4}R_i-\bm{\beta_6}'\bxy_i-\bm{\beta_7}'\bxy_i R_i\right\}\\
-    Z_iY_i\bxy_i-Z_i\left\{\beta_0\bxy_i-\bm{\beta_1}\bxy_i\bxy_i'-\beta_2R_i\bxy_i-\bm{\beta_5}'\bxy_i\bxy_i'R_i-\beta_3\bxy_i-\bm{\beta_4}R_i\bxy_i-\bm{\beta_6}'\bxy_i\bxy_i'-\bm{\beta_7}'\bxy_i\bxy_i' R_i\right\}\\
-    R_iZ_iY_i\bxy_i-Z_iR_i\left\{\beta_0\bxy_i-\bm{\beta_1}\bxy_i\bxy_i'-\beta_2R_i\bxy_i-\bm{\beta_5}'\bxy_i\bxy_i'R_i-\beta_3\bxy_i-\bm{\beta_4}R_i\bxy_i-\bm{\beta_6}'\bxy_i\bxy_i'-\bm{\beta_7}'\bxy_i\bxy_i' R_i\right\}
+    Z_iY_i\bxy_i-Z_i\left\{\beta_0\bxy_i-\bm{\beta_1}\bxy_i\bx^{Y'}_i-\beta_2R_i\bxy_i-\bm{\beta_5}'\bxy_i\bx^{Y'}_iR_i-\beta_3\bxy_i-\bm{\beta_4}R_i\bxy_i-\bm{\beta_6}'\bxy_i\bx^{Y'}_i-\bm{\beta_7}'\bxy_i\bx^{Y'}_i R_i\right\}\\
+    R_iZ_iY_i\bxy_i-Z_iR_i\left\{\beta_0\bxy_i-\bm{\beta_1}\bxy_i\bx^{Y'}_i-\beta_2R_i\bxy_i-\bm{\beta_5}'\bxy_i\bx^{Y'}_iR_i-\beta_3\bxy_i-\bm{\beta_4}R_i\bxy_i-\bm{\beta_6}'\bxy_i\bx^{Y'}_i-\bm{\beta_7}'\bxy_i\bx^{Y'}_i R_i\right\}
   \end{pmatrix}=\begin{pmatrix} 0\\0\\0\\0\\0\\0\\0\end{pmatrix}
 \end{equation*}
 These are the estimating equations for the regression model \eqref{eq:fullInteractionModel}, fit by OLS. Now note that
 \begin{equation*}
-  \EE[Y_T-Y_C|\st=0]=\beta_0^T-\beta_0^C+(\bm{\beta_1}^T'-\bm{\beta_1}^C')\EE[\xby|S=0]=\beta_3+\beta_6'E[\xby|S=0]
+  \EE[Y_T-Y_C|\st=0]=\beta_0^T-\beta_0^C+(\bm{\beta_1}^{T'}-\bm{\beta_1}^{C'})\EE[\bxy|S=0]=\beta_3+\beta_6'E[\bxy|S=0]
 \end{equation*}
 and
 \begin{equation*}
-  \EE[Y_T-Y_C|\st=1]=\beta_0^T+\beta_2^T-(\beta_0^C+\beta_2^C)+(\bm{\beta_1}^T'+\bm{\beta_3^T}'-\bm{\beta_1}^C'-\bm{\beta_3^C}')\EE[\xby|S=0]=\beta_3+\beta_4+(\beta_6'+\beta_7')E[\xby|S=1]
+  \EE[Y_T-Y_C|\st=1]=\beta_0^T+\beta_2^T-(\beta_0^C+\beta_2^C)+(\bm{\beta_1}^{T'}+\bm{\beta_3^{Ti}}-\bm{\beta_1}^{C'}-\bm{\beta_3^{C'}})\EE[\bxy|S=0]=\beta_3+\beta_4+(\beta_6'+\beta_7')E[\bxy|S=1]
 \end{equation*}
 the result follows
 
