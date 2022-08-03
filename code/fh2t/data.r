@@ -6,7 +6,7 @@ select <- dplyr::select
 
 Scale <- function(x) (x-mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
 
-dat <- read_csv('../../fh2t/data/data.csv')
+dat <- read_csv('data/data.csv')
 dat$hints <- dat%>%select(contains("hint_count"))%>%rowSums(na.rm=TRUE)
 dat$anyHint <- dat$hints>0
 
@@ -14,8 +14,8 @@ dat$bottom <- dat%>%select(contains("bottom"))%>%rowSums(na.rm=TRUE)
 dat$anyBottom <- dat$bottom>0
 
 
-full <- read_csv('../../fh2t/data/Assessment_merged_2022_01_19_N=4,343 - Sheet1.csv')
-older <- read_csv('../../fh2t/data/Assessment_merged_2021_07_16_state_assessment_N=4321 - Sheet1.csv')
+full <- read_csv('data/Assessment_merged_2022_01_19_N=4,343 - Sheet1.csv')
+older <- read_csv('data/Assessment_merged_2021_07_16_state_assessment_N=4321 - Sheet1.csv')
 
 full <- older%>%
   select(student_number,pre.avg_time_on_tasks,pre_MA_total_score,pre_negative_reaction_score,pre_numerical_confindence_score)%>%
@@ -47,7 +47,7 @@ dat0 <- dat0%>%
   )%>%
   filter(!is.na(Z))
 
-teachDrop <- read_csv('../../fh2t/data/IES_school_teacher_ID_list_opt_out - teacher (1).csv')
+teachDrop <- read_csv('data/IES_school_teacher_ID_list_opt_out - teacher (1).csv')
 
 dat0$schoolSupp <- dat0$initial_school_id
 dat0$schoolSupp[dat0$initial_teacher_id%in%teachDrop$teacher_id[teachDrop$note=='S03']] <- 'S03'
@@ -176,4 +176,13 @@ psdat <- dat3%>%
          S=as.numeric(anyBottom))
 
 save(psdat,dat3,file="data/psdat.RData")
+##
+
+psdatBAU <- dat3%>%
+  filter(Z%in%c('ASSISTments','BAU'))%>%
+  mutate(Z=ifelse(Z=='ASSISTments',1,0),
+         Y=ScaleScore7,
+         S=as.numeric(anyBottom))
+
+save(psdatBAU,dat3,file="data/psdatBAU.RData")
 ##

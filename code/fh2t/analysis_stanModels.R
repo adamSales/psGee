@@ -14,218 +14,89 @@ options(mc.cores = 4)
 gc()
 
 load('data/psdat.RData')
-write.csv(psdat, "data/psdat.csv")
-psdat<- read.csv("data/psdat.csv")
-colnames(psdat)
-table(psdat$Z,
-      psdat$rdm_condition)
+## write.csv(psdat, "data/psdat.csv")
+## psdat<- read.csv("data/psdat.csv")
+## colnames(psdat)
+## table(psdat$Z,
+##       psdat$rdm_condition)
 
 # U --> Model predicting Bottom Outers
 # Y --> Model predicting Bottom Outcomes
 
-### remove classes that don't have representation across both scripts
-classes_by_z <- data.frame(table(psdat$class, psdat$Z)) %>%
-  spread(Var2, Freq) %>%
-  rename(class = Var1) %>%
-  filter(
-    `0` > 0 &
-    `1` > 0) %>%
-  dplyr::select(-`1`,
-         -`0`)
 
-psdat <- psdat %>%
-  inner_join(
-    classes_by_z
-  )
+xtabs(~class+Z,psdat)%>%as.data.frame()%>%summarize(sum(Freq==0))
+length(unique(psdat$class))
+
+psdat=psdat%>%
+    group_by(class)%>%
+    mutate(nz=n_distinct(Z))%>%
+    ungroup()%>%
+    filter(nz>1)
 
 length(unique(psdat$class))
 
 table(psdat$raceIMP, psdat$Z)
 
-### Data Prep ####
-###### Dummy Codes ####
-#  dummy codes for race
-race_dummy <- fastDummies::dummy_cols(psdat$raceIMP,
-                                      remove_first_dummy = T) %>%
-  distinct() %>%
-  rename(raceIMP = ".data")
-names(dummy)[-1]<-sub(".data*", "", names(dummy)[-1])
+formU <-    ~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
+  IEPIMP+ ESOLIMP+ GIFTEDIMP+ pre.avg_time_on_tasksIMP+
+  pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP
 
-#  dummy codes for class
-class_dummy<-fastDummies::dummy_cols(psdat$class,
-                                     remove_first_dummy = T) %>%
-  distinct() %>%
-  rename(class = ".data")
-names(dummy)[-1]<-sub(".data*", "", names(dummy)[-1])
+formY  <- update(formU,~.-virtualIMP+as.factor(class))
 
-#### Covariates matrixes #######
-# Control Cov for U model
-XctlU <- psdat %>%
-  dplyr::filter(Z == 0) %>%
-  dplyr::select(
-    pretestIMP,
-    Scale.Score5IMP,
-    MALEIMP,
-    raceIMP,
-    virtualIMP,
-    EIPIMP,
-    IEPIMP,
-    ESOLIMP,
-    GIFTEDIMP,
-    pre.avg_time_on_tasksIMP,
-    pre_MA_total_scoreIMP,
-    pre_negative_reaction_scoreIMP,
-    pre_numerical_confindence_scoreIMP
-  ) %>%
-  mutate(
-    pretestIMP = scale(pretestIMP),
-    Scale.Score5IMP = scale(Scale.Score5IMP),
-    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
-    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
-    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
-    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
-  ) %>%
-  left_join(
-    race_dummy,
-    by = "raceIMP"
-  ) %>%
-  dplyr::select(-raceIMP)
+makeCovMat=function(form,data){
+    X=model.matrix(form,data=data)[,-1]
+    sdX=apply(X,2,sd)
+    meanX=colMeans(X)
+    scale(X,center=meanX,scale=sdX)
+}
 
-# Control Cov for Y model
-XctlY <- psdat %>%
-  filter(Z == 0) %>%
-  dplyr::select(
-    pretestIMP,
-    Scale.Score5IMP,
-    MALEIMP,
-    raceIMP,
-    #virtualIMP,
-    EIPIMP,
-    IEPIMP,
-    ESOLIMP,
-    GIFTEDIMP,
-    pre.avg_time_on_tasksIMP,
-    pre_MA_total_scoreIMP,
-    pre_negative_reaction_scoreIMP,
-    pre_numerical_confindence_scoreIMP,
-    class
-  ) %>%
-  mutate(
-    pretestIMP = scale(pretestIMP),
-    Scale.Score5IMP = scale(Scale.Score5IMP),
-    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
-    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
-    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
-    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
-  ) %>%
-  left_join(
-    class_dummy,
-    by = "class"
-  ) %>%
-  left_join(
-    race_dummy,
-    by = "raceIMP"
-  ) %>%
-  dplyr::select(-raceIMP, -class)
+XU=makeCovMat(formU,data=psdat)
+XY=makeCovMat(formY,data=psdat)
+
+XctlU=XU[psdat$Z==0,]
+XtrtU=XU[psdat$Z==1,]
+XctlY=XY[psdat$Z==0,]
+XtrtY=XY[psdat$Z==1,]
 
 
-# Treatment Cov for U model
-XtrtU <- psdat %>%
-  filter(Z == 1) %>%
-  dplyr::select(
-    pretestIMP,
-    Scale.Score5IMP,
-    MALEIMP,
-    raceIMP,
-    virtualIMP,
-    EIPIMP,
-    IEPIMP,
-    ESOLIMP,
-    GIFTEDIMP,
-    pre.avg_time_on_tasksIMP,
-    pre_MA_total_scoreIMP,
-    pre_negative_reaction_scoreIMP,
-    pre_numerical_confindence_scoreIMP,
-    #class
-  ) %>%
-  mutate(
-    pretestIMP = scale(pretestIMP),
-    Scale.Score5IMP = scale(Scale.Score5IMP),
-    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
-    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
-    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
-    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
-  ) %>%
-  left_join(
-    race_dummy,
-    by = "raceIMP"
-  ) %>%
-  dplyr::select(-raceIMP)
 
+stanDat <-  list(nc= sum(1-psdat$Z),#length(psdat[psdat$Z == 0,]$student_number), #
+                 nt= sum(psdat$Z),#length(psdat[psdat$Z == 1,]$student_number), #
+                 ncovU= ncol(XctlU), # √
+                 ncovY= ncol(XctlY), # √
 
-# Treatment Cov for Y model
-XtrtY <- psdat %>%
-  filter(Z == 1) %>%
-  dplyr::select(
-    pretestIMP,
-    Scale.Score5IMP,
-    MALEIMP,
-    raceIMP,
-    #virtualIMP,
-    EIPIMP,
-    IEPIMP,
-    ESOLIMP,
-    GIFTEDIMP,
-    pre.avg_time_on_tasksIMP,
-    pre_MA_total_scoreIMP,
-    pre_negative_reaction_scoreIMP,
-    pre_numerical_confindence_scoreIMP,
-    class
-  ) %>%
-  mutate(
-    pretestIMP = scale(pretestIMP),
-    Scale.Score5IMP = scale(Scale.Score5IMP),
-    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
-    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
-    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
-    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
-  ) %>%
-  left_join(
-    class_dummy,
-    by = "class"
-  ) %>%
-  left_join(
-    race_dummy,
-    by = "raceIMP"
-  ) %>%
-  dplyr::select(-raceIMP
-         , -class
-         )
-
-stanDat <-  list(nc= length(psdat[psdat$Z == 0,]$student_number), #
-                    nt= length(psdat[psdat$Z == 1,]$student_number), #
-                    ncovU= ncol(XctlU), # √
-                    ncovY= ncol(XctlY), # √
-
-                    YctlY=  (psdat[psdat$Z == 0, ]$Y), ### IS THE OUTCOME Y OR post.total_math_score?
+                 YctlY=  (psdat[psdat$Z == 0, ]$Y), ### IS THE OUTCOME Y OR post.total_math_score?
                 #    YctlU= , this doesn't exist, right?
 
-                    YtrtY= (psdat[psdat$Z == 1, ]$Y ), ### IS THE OUTCOME Y OR post.total_math_score?
-                    YtrtU=(ifelse(psdat[psdat$Z == 1, ]$anyBottom == "TRUE", 1, 0)),
+                 YtrtY= (psdat[psdat$Z == 1, ]$Y ), ### IS THE OUTCOME Y OR post.total_math_score?
+                 #   YtrtU=(ifelse(psdat[psdat$Z == 1, ]$anyBottom == "TRUE", 1, 0)),
 
-                    XctlU=as.matrix(XctlU), # √
-                    XctlY=as.matrix(XctlY), # √
+                 XctlU=XctlU, # √
+                 XctlY=XctlY, # √
 
-                    XtrtU=as.matrix(XtrtU), # √
-                    XtrtY=as.matrix(XtrtY), # √
+                 XtrtU=XtrtU, # √
+                 XtrtY=XtrtY, # √
 
-                    bottomOuter=(ifelse(psdat[psdat$Z == 1, ]$anyBottom == "TRUE", 1, 0))
-                      )
+                 bottomOuter=(ifelse(psdat[psdat$Z == 1, ]$anyBottom == "TRUE", 1, 0))
+                 )
 
 md.pattern(stanDat$XctlU)
 
 ### Model ####
-mod <- stan('psMod.stan',data=stanDat, iter = 4000)
+mod <- stan('code/fh2t/psMod.stan',data=stanDat, iter = 4000)
+
+save(mod,stanDat,XU,XY,file='fittedModsStanPS.RData')
+
+
+#### try it without class FE
+sdatNoClass=stanDat
+sdatNoClass$XctlY=sdatNoClass$XctlU
+sdatNoClass$XtrtY=sdatNoClass$XtrtU
+sdatNoClass$ncovY=sdatNoClass$ncovU
+modNoClass <- stan('code/fh2t/psMod.stan',data=sdatNoClass, iter = 4000)
+
+save(modNoClass,sdatNoClass,file='fittedModsStanPSnoClass.RData')
+
 # saveRDS(mod, "model.rds")
 # mod <- readRDS("model.rds")
 
@@ -261,9 +132,10 @@ traceplot(
     'ATEdiff'
   )
 )
+
 traceplot(
   mod,
-  inc_warmup = T,
+  inc_warmup = F,
   pars = c(
     'alphaTBO',
     'alphaTNBO',
@@ -323,180 +195,44 @@ checkdat <- read.csv("data/FakeDataForCheck.csv")
 md.pattern(checkdat)
 ### Data Prep ####
 
+XU=makeCovMat(formU,data=checkdat)
+XY=makeCovMat(formY,data=checkdat)
 
-#### Covariates matrixes #######
-# Control Cov for U model
-XctlU <- checkdat %>%
-  dplyr::filter(Z == 0) %>%
-  dplyr::select(
-    pretestIMP,
-    Scale.Score5IMP,
-    MALEIMP,
-    raceIMP,
-    virtualIMP,
-    EIPIMP,
-    IEPIMP,
-    ESOLIMP,
-    GIFTEDIMP,
-    pre.avg_time_on_tasksIMP,
-    pre_MA_total_scoreIMP,
-    pre_negative_reaction_scoreIMP,
-    pre_numerical_confindence_scoreIMP
-  ) %>%
-  mutate(
-    pretestIMP = scale(pretestIMP),
-    Scale.Score5IMP = scale(Scale.Score5IMP),
-    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
-    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
-    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
-    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
-  ) %>%
-  left_join(
-    race_dummy,
-    by = "raceIMP"
-  ) %>%
-  dplyr::select(-raceIMP)
-colnames(XctlU)
-#md.pattern(XctlU)
+XctlU=XU[checkdat$Z==0,]
+XtrtU=XU[checkdat$Z==1,]
+XctlY=XY[checkdat$Z==0,]
+XtrtY=XY[checkdat$Z==1,]
 
-# Control Cov for Y model
-XctlY <- checkdat %>%
-  filter(Z == 0) %>%
-  dplyr::select(
-    pretestIMP,
-    Scale.Score5IMP,
-    MALEIMP,
-    raceIMP,
-    #virtualIMP,
-    EIPIMP,
-    IEPIMP,
-    ESOLIMP,
-    GIFTEDIMP,
-    pre.avg_time_on_tasksIMP,
-    pre_MA_total_scoreIMP,
-    pre_negative_reaction_scoreIMP,
-    pre_numerical_confindence_scoreIMP,
-    class
-  ) %>%
-  mutate(
-    pretestIMP= scale(pretestIMP),
-    Scale.Score5IMP= scale(Scale.Score5IMP),
-    pre.avg_time_on_tasksIMP= scale(pre.avg_time_on_tasksIMP),
-    pre_MA_total_scoreIMP= scale(pre_MA_total_scoreIMP),
-    pre_negative_reaction_scoreIMP= scale(pre_negative_reaction_scoreIMP),
-    pre_numerical_confindence_scoreIMP= scale(pre_numerical_confindence_scoreIMP)
-  ) %>%
-  left_join(
-    class_dummy,
-    by = "class"
-  ) %>%
-  left_join(
-    race_dummy,
-    by = "raceIMP"
-  ) %>%
-  dplyr::select(-raceIMP, -class)
-colnames(XctlY)
-#md.pattern(XctlY)
 
-# Treatment Cov for U model
-XtrtU <- checkdat %>%
-  filter(Z == 1) %>%
-  dplyr::select(
-    pretestIMP,
-    Scale.Score5IMP,
-    MALEIMP,
-    raceIMP,
-    virtualIMP,
-    EIPIMP,
-    IEPIMP,
-    ESOLIMP,
-    GIFTEDIMP,
-    pre.avg_time_on_tasksIMP,
-    pre_MA_total_scoreIMP,
-    pre_negative_reaction_scoreIMP,
-    pre_numerical_confindence_scoreIMP,
-    #class
-  ) %>%
-  mutate(
-    pretestIMP = scale(pretestIMP),
-    Scale.Score5IMP = scale(Scale.Score5IMP),
-    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
-    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
-    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
-    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
-  ) %>%
-  left_join(
-    race_dummy,
-    by = "raceIMP"
-  ) %>%
-  dplyr::select(-raceIMP)
-colnames(XtrtU)
-#md.pattern(XtrtU)
 
-# Treatment Cov for Y model
-XtrtY <- checkdat %>%
-  filter(Z == 1) %>%
-  dplyr::select(
-    pretestIMP,
-    Scale.Score5IMP,
-    MALEIMP,
-    raceIMP,
-    #virtualIMP,
-    EIPIMP,
-    IEPIMP,
-    ESOLIMP,
-    GIFTEDIMP,
-    pre.avg_time_on_tasksIMP,
-    pre_MA_total_scoreIMP,
-    pre_negative_reaction_scoreIMP,
-    pre_numerical_confindence_scoreIMP,
-    class
-  ) %>%
-  mutate(
-    pretestIMP = scale(pretestIMP),
-    Scale.Score5IMP = scale(Scale.Score5IMP),
-    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
-    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
-    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
-    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
-  ) %>%
-  left_join(
-    class_dummy,
-    by = "class"
-  ) %>%
-  left_join(
-    race_dummy,
-    by = "raceIMP"
-  ) %>%
-  dplyr::select(-raceIMP
-                , -class
-  )
-colnames(XtrtY)
-md.pattern(XtrtY)
-stanDat <-  list(nc= length(checkdat[checkdat$Z == 0,]$student_number), #
-                 nt= length(checkdat[checkdat$Z == 1,]$student_number), #
+stanDat <-  list(nc= sum(1-checkdat$Z),#length(checkdat[checkdat$Z == 0,]$student_number), #
+                 nt= sum(checkdat$Z),#length(psdat[psdat$Z == 1,]$student_number), #
                  ncovU= ncol(XctlU), # √
                  ncovY= ncol(XctlY), # √
 
                  YctlY=  (checkdat[checkdat$Z == 0, ]$Y), ### IS THE OUTCOME Y OR post.total_math_score?
-                 #    YctlU= , this doesn't exist, right?
+                #    YctlU= , this doesn't exist, right?
 
                  YtrtY= (checkdat[checkdat$Z == 1, ]$Y ), ### IS THE OUTCOME Y OR post.total_math_score?
-                 YtrtU=(ifelse(checkdat[checkdat$Z == 1, ]$anyBottom == "TRUE", 1, 0)),
+                 #   YtrtU=(ifelse(psdat[psdat$Z == 1, ]$anyBottom == "TRUE", 1, 0)),
 
-                 XctlU=as.matrix(XctlU), # √
-                 XctlY=as.matrix(XctlY), # √
+                 XctlU=XctlU, # √
+                 XctlY=XctlY, # √
 
-                 XtrtU=as.matrix(XtrtU), # √
-                 XtrtY=as.matrix(XtrtY), # √
+                 XtrtU=XtrtU, # √
+                 XtrtY=XtrtY, # √
 
                  bottomOuter=(ifelse(checkdat[checkdat$Z == 1, ]$anyBottom == "TRUE", 1, 0))
-)
+                 )
 
-### Model ####
+
+
+
 checkmod2 <- stan('code/fh2t/psMod.stan',
                  data=stanDat,
-                 #iter = 4000,
+                 iter = 4000)
+
+,
                  control = list(max_treedepth = 10))
 
 

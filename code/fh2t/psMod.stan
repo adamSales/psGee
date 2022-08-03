@@ -9,7 +9,7 @@ data{
  real YtrtY[nt]; // treatment outcomes
  
 // real YctlU[nc]; // control outcomes <- this doesn't exist yet, right?
- real YtrtU[nt]; // treatment outcomes
+// real YtrtU[nt]; // treatment outcomes
  
  matrix[nc,ncovU] XctlU; // covariate matrix for controls
  matrix[nt,ncovU] XtrtU; //covariate matrix for treated
@@ -45,7 +45,7 @@ transformed parameters{
  real bottomOuterATE; //Avg. Effect for skippers
  real notbottomOuterATE; //Avg. Effect for firsters
  real ATEdiff; //Difference btw Avg Effects
- vector[nc] piC; //Pr(notbottomOuterATE) for controls
+ vector[nc] piC; //Pr(bottomOuter) for controls
  vector[nt] piT; //Pr(bottomOuter) for treateds
 
  //define new parameters:
@@ -69,6 +69,18 @@ model{
    sigT[i] = bottomOuter[i]?sigTBO:sigTNBO;
  }
 
+// std_normal() prior for everything?
+alphaTBO~std_normal();
+alphaTNBO~std_normal();
+alphaCBO~std_normal();
+alphaCNBO~std_normal();
+alphaU~std_normal();
+betaU~std_normal();
+betaY~std_normal();
+sigTBO~std_normal();
+sigTNBO~std_normal();
+sigCBO~std_normal();
+sigCNBO~std_normal();
 
 // producing error
  //bottomOuterATE~normal(0,.5);
@@ -86,23 +98,23 @@ model{
    log((1-piC[i])) + normal_lpdf(YctlY[i] |alphaCNBO+XctlY[i,]*betaY,sigCNBO));
 } 
 
-generated quantities{
- int<lower=0,upper=1> first_repC[nc]; //M_T for controls
- real Ytrt_rep[nt]; // outcomes for treateds
- real Yctl_rep[nc]; // outcomes for controls
+// generated quantities{
+//  int<lower=0,upper=1> first_repC[nc]; //M_T for controls
+//  real Ytrt_rep[nt]; // outcomes for treateds
+//  real Yctl_rep[nc]; // outcomes for controls
 
- for(i in 1:nt){
-  if(bottomOuter[i]==1)
-   Ytrt_rep[i]=normal_rng(alphaTBO+XtrtY[i,]*betaY,sigTBO);
-  else
-   Ytrt_rep[i]=normal_rng(alphaTNBO+XtrtY[i,]*betaY,sigTNBO);
- }
- for(i in 1:nc){
-  first_repC[i]=bernoulli_rng(piC[i]);
-  if(first_repC[i]==1)
-   Yctl_rep[i]=normal_rng(alphaCBO+XctlY[i,]*betaY,sigCBO);
-  else
-   Yctl_rep[i]=normal_rng(alphaCNBO+XctlY[i,]*betaY,sigCNBO);
- }
-}
+//  for(i in 1:nt){
+//   if(bottomOuter[i]==1)
+//    Ytrt_rep[i]=normal_rng(alphaTBO+XtrtY[i,]*betaY,sigTBO);
+//   else
+//    Ytrt_rep[i]=normal_rng(alphaTNBO+XtrtY[i,]*betaY,sigTNBO);
+//  }
+//  for(i in 1:nc){
+//   first_repC[i]=bernoulli_rng(piC[i]);
+//   if(first_repC[i]==1)
+//    Yctl_rep[i]=normal_rng(alphaCBO+XctlY[i,]*betaY,sigCBO);
+//   else
+//    Yctl_rep[i]=normal_rng(alphaCNBO+XctlY[i,]*betaY,sigCNBO);
+//  }
+// }
 
