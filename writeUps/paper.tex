@@ -24,9 +24,6 @@
 
 
 
-In a recent educational field experiment, middle school students completing their math schoolwork on a computer program were randomized between two conditions. In one condition, students were instructed to work on a fixed number of math problems, and later informed of their scores. In a second condition, students received immediate, informative error messages after entering a wrong answer, and were required to enter a correct answer in order to proceed. Students in the second treatment arm also had access to a series of hints for each problem, the last of which contained the correct answer. Students who ``bottomed out'' on a problem, i.e. requested all available hints on a problem, and were told the correct answer, did not receive credit for that problem. Students remained in their randomly-assigned condition over the course of a school year, and were assessed with a 10-item posttest administered within the computer program, as well with state standardized tests.
-
-The literature on hints in online learning is mixed \citep{stuff}, in particular when it comes to bottoming out. On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep{worked example stuff}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer, and use the software without ever working to solve any problems. However, in this experiment, the ability to bottom out was only one of several differnces between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects separately for subjects who would (if assigned to treatment) bottom out, and for subjects who would not. If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who do not bottom out, but a positive effect for students who do. (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
 
 
 
@@ -526,69 +523,36 @@ Across all conditions in the table, the M-estimation confidence intervals have h
   \label{tab:coverage}
 \end{table}
 
-Analysis models had access to treatment assignment $Z$, outcomes $Y$,
-principal stratum $S$ for members of the treatment group, and
-covariates.
-Even though three covariates, $x_1$, $x_2$ and $x_3$ were included as
-predictors of principal stratum $S$ and outcome $Y$ in the data
-generating model, both analysis approaches only had access to the
-first two covariates, $x_1$ and $x_2$.
-Hence, principal ignorability was violated---$S$ and $Y$ were
-``confounted'' by unobserved variable $x_3$.
 
-Simulated data were analyzed first with a ``stacked equations''/M-Estimation/GEE
-approach, using the \texttt{geex} package in \texttt{R}
-\citep{geex,rcite}, and then with a more conventional maximum
-likelihood approach via \texttt{rstan} \citep{rstan}.
+\section{Application: Estimating Treatment Effects for Implementation Subgroups}
 
-Both methods assumed (correctly) that there were no interactions
-between covariates $x_1$ and $x_2$ and treatment assignment (after
-accounting for $S$).
+In a recent educational field experiment, middle school students completing their math schoolwork on a computer program were randomized between two conditions. In one condition (which we arbitrarily label ``treatment''), students were instructed to work on a fixed number of math problems, and later informed of their scores. In a second condition, students received immediate, informative error messages after entering a wrong answer, and were required to enter a correct answer in order to proceed. Students in the second treatment arm (labeled ``control'') also had access to a series of hints for each problem, the last of which contained the correct answer. Students who ``bottomed out'' on a problem, i.e. requested all available hints on a problem, and were told the correct answer, did not receive credit for that problem. Students remained in their randomly-assigned condition over the course of a school year, and were assessed with a 10-item posttest administered within the computer program, as well with state standardized tests.
 
-In the GEE approach included a set of nine estimating equations.
-First, a GEE logistic regression fit to the treatment group to
-estimate principal scores
-$\ppi=logit^{-1}(\beta_0+\beta_1x_{1i}+\beta_2x_{2i})$ (three parameters):
-\begin{align*}
-  \sum_iZ_i\left[S_i-\ppi\right]&=0\\
-  \sum_iZ_ix_{1i}\left[S_i-\ppi\right]&=0\\
-  \sum_iZ_ix_{2i}\left[S_i-\ppi\right]&=0
-\end{align*}
-Next, four equations to estimate the outcome regression in the
-treatment group, including terms for $S$:
-\begin{align*}
-  \sum_i
-  Z_i\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+S_i\mu_{11}+(1-S_i)\mu_{10})\right]&=0\\
-  \sum_i
-  Z_ix_{1i}\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+S_i\mu_{11}+(1-S_i)\mu_{10})\right]&=0\\
-  \sum_i
-  Z_ix_{2i}\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+S_i\mu_{11}+(1-S_i)\mu_{10})\right]&=0\\
-  \sum_i
-  Z_iS_i\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+S_i\mu_{11}+(1-S_i)\mu_{10})\right]&=0
-\end{align*}
+The literature on hints in online learning is mixed \citep{stuff}, in particular when it comes to bottoming out. On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep{worked example stuff}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer, and use the software without ever working to solve any problems. However, in this experiment, the ability to bottom out was only one of several differnces between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects separately for subjects who would (if assigned to treatment) bottom out, and for subjects who would not. If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who do not bottom out, but a positive effect for students who do. (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
 
-Finally, two equations to estimate the mixture model in the control
-group, for whom $S$ is unobserved:
-\begin{align*}
-  \sum_i
-  (1-Z_i)\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+\ppi\mu_{01}+(1-\ppi)\mu_{00})\right]&=0\\
-  \sum_i
-  (1-Z_i)\left[Y_i-(\gamma_1x_{1i}+\gamma_2x_{2i}+\ppi^2\mu_{01}+(\ppi-\ppi^2)\mu_{00})\right]&=0
-\end{align*}
-The average treatment effect for $S=0$ was $\mu_{10}-\mu_{00}$ and for
-$S=1$ was $\mu_{11}-\mu_{01}$.
+For the purpose of demonstrating GEEPERS, we gathered dichotomized data on which students in the treatment condition requested at least one bottom-out hint.
+That is, $\st=1$ for students who, if assigned to the treatment condition, would request at least one bottom-out hint, and $\st=0$ for students who would not.
+The outcome of interest $Y$ in our example is students' total scores on a ten-item posttest completed within the online tutoring system; $Y$ is an integer ranging from 0 to 10.
+The goal of our analysis will be to determine the principal effects $\tau_1=\EE[\yt-\yc|\st=0]$ and $\tau_0=\EE[\yt-\yc|\st=0]$, the average effects of assignment to the treatment condition for bottom-outers and non-bottom-outers.
+We also gathered data on baseline covariates: total scores on a 10-item pretest, fifth-grade stanardized test scores, indicator variables for if students have an early intervention program (EIP)
 
-Next, we estimated effects with MLE, using the built-in optimizer of
-\texttt{rstan}.
+or individualized educational plan (IEP) in place, if students are learning English as a second language (ESOL)students'
 
-In this model we regressed $S$ and $Y$ for the treatment group on an
-intercept, $x_1$, and $x_2$ using a logistic and normal linear
-specification, respectively.
-Then, we specified a two-component mixture model for control
-outcomes.
+empress
+Mperes
 
 
-\section{Data Analysis}
+
+M-estimation of Principal
+
+peseer per
+
+
+
+M estimation regression principal effects
+
+M
+
 
 \section{Discussion}
 
@@ -643,7 +607,8 @@ Carrying out those replacements in \eqref{eq:estEq0}, and rearranging\footnote{T
     \ri Y_i-\ri\muc0-\ri^2(\muc1-\muc0)-Z_i\ri(\mut0-\muc0)-Z_i\ri^2(\mut0-\mut1-\muc0+\muc1)\\
     Z_iY_i-Z_i\mut0-Z_i\ri (\mut1-\mut0)\\
     Z_i\ri Y_i -Z_i\ri\mut0-Z_i\ri^2(\mut1-\mut0)
-  \end{pmatrix}=\begin{pmatrix} 0\\0\\0\\0\end{pmatrix}
+
+\end{pmatrix}=\begin{pmatrix} 0\\0\\0\\0\end{pmatrix}
 \end{equation}
 
 \subsection{Proof for Proposition \ref{prop:interaction}}

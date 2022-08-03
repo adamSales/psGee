@@ -192,11 +192,12 @@ traceplot(
 #
 # write.csv(checkdat, "FakeDataForCheck.csv")
 checkdat <- read.csv("data/FakeDataForCheck.csv")
-md.pattern(checkdat)
+#md.pattern(checkdat)
 ### Data Prep ####
 
 XU=makeCovMat(formU,data=checkdat)
 XY=makeCovMat(formY,data=checkdat)
+
 
 XctlU=XU[checkdat$Z==0,]
 XtrtU=XU[checkdat$Z==1,]
@@ -207,6 +208,159 @@ XtrtY=XY[checkdat$Z==1,]
 
 stanDat <-  list(nc= sum(1-checkdat$Z),#length(checkdat[checkdat$Z == 0,]$student_number), #
                  nt= sum(checkdat$Z),#length(psdat[psdat$Z == 1,]$student_number), #
+
+#### Covariates matrixes #######
+# Control Cov for U model
+XctlU <- checkdat %>%
+  dplyr::filter(Z == 0) %>%
+  dplyr::select(
+    pretestIMP,
+    Scale.Score5IMP,
+    MALEIMP,
+    raceIMP,
+    virtualIMP,
+    EIPIMP,
+    IEPIMP,
+    ESOLIMP,
+    GIFTEDIMP,
+    pre.avg_time_on_tasksIMP,
+    pre_MA_total_scoreIMP,
+    pre_negative_reaction_scoreIMP,
+    pre_numerical_confindence_scoreIMP
+  ) %>%
+  mutate(
+    pretestIMP = scale(pretestIMP),
+    Scale.Score5IMP = scale(Scale.Score5IMP),
+    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
+    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
+    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
+    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
+  ) %>%
+  left_join(
+    race_dummy,
+    by = "raceIMP"
+  ) %>%
+  dplyr::select(-raceIMP)
+colnames(XctlU)
+##md.pattern(XctlU)
+
+# Control Cov for Y model
+XctlY <- checkdat %>%
+  filter(Z == 0) %>%
+  dplyr::select(
+    pretestIMP,
+    Scale.Score5IMP,
+    MALEIMP,
+    raceIMP,
+    #virtualIMP,
+    EIPIMP,
+    IEPIMP,
+    ESOLIMP,
+    GIFTEDIMP,
+    pre.avg_time_on_tasksIMP,
+    pre_MA_total_scoreIMP,
+    pre_negative_reaction_scoreIMP,
+    pre_numerical_confindence_scoreIMP,
+    class
+  ) %>%
+  mutate(
+    pretestIMP= scale(pretestIMP),
+    Scale.Score5IMP= scale(Scale.Score5IMP),
+    pre.avg_time_on_tasksIMP= scale(pre.avg_time_on_tasksIMP),
+    pre_MA_total_scoreIMP= scale(pre_MA_total_scoreIMP),
+    pre_negative_reaction_scoreIMP= scale(pre_negative_reaction_scoreIMP),
+    pre_numerical_confindence_scoreIMP= scale(pre_numerical_confindence_scoreIMP)
+  ) %>%
+  left_join(
+    class_dummy,
+    by = "class"
+  ) %>%
+  left_join(
+    race_dummy,
+    by = "raceIMP"
+  ) %>%
+  dplyr::select(-raceIMP, -class)
+colnames(XctlY)
+##md.pattern(XctlY)
+
+# Treatment Cov for U model
+XtrtU <- checkdat %>%
+  filter(Z == 1) %>%
+  dplyr::select(
+    pretestIMP,
+    Scale.Score5IMP,
+    MALEIMP,
+    raceIMP,
+    virtualIMP,
+    EIPIMP,
+    IEPIMP,
+    ESOLIMP,
+    GIFTEDIMP,
+    pre.avg_time_on_tasksIMP,
+    pre_MA_total_scoreIMP,
+    pre_negative_reaction_scoreIMP,
+    pre_numerical_confindence_scoreIMP,
+    #class
+  ) %>%
+  mutate(
+    pretestIMP = scale(pretestIMP),
+    Scale.Score5IMP = scale(Scale.Score5IMP),
+    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
+    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
+    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
+    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
+  ) %>%
+  left_join(
+    race_dummy,
+    by = "raceIMP"
+  ) %>%
+  dplyr::select(-raceIMP)
+colnames(XtrtU)
+##md.pattern(XtrtU)
+
+# Treatment Cov for Y model
+XtrtY <- checkdat %>%
+  filter(Z == 1) %>%
+  dplyr::select(
+    pretestIMP,
+    Scale.Score5IMP,
+    MALEIMP,
+    raceIMP,
+    #virtualIMP,
+    EIPIMP,
+    IEPIMP,
+    ESOLIMP,
+    GIFTEDIMP,
+    pre.avg_time_on_tasksIMP,
+    pre_MA_total_scoreIMP,
+    pre_negative_reaction_scoreIMP,
+    pre_numerical_confindence_scoreIMP,
+    class
+  ) %>%
+  mutate(
+    pretestIMP = scale(pretestIMP),
+    Scale.Score5IMP = scale(Scale.Score5IMP),
+    pre.avg_time_on_tasksIMP = scale(pre.avg_time_on_tasksIMP),
+    pre_MA_total_scoreIMP = scale(pre_MA_total_scoreIMP),
+    pre_negative_reaction_scoreIMP = scale(pre_negative_reaction_scoreIMP),
+    pre_numerical_confindence_scoreIMP = scale(pre_numerical_confindence_scoreIMP)
+  ) %>%
+  left_join(
+    class_dummy,
+    by = "class"
+  ) %>%
+  left_join(
+    race_dummy,
+    by = "raceIMP"
+  ) %>%
+  dplyr::select(-raceIMP
+                , -class
+  )
+colnames(XtrtY)
+#md.pattern(XtrtY)
+stanDat <-  list(nc= length(checkdat[checkdat$Z == 0,]$student_number), #
+                 nt= length(checkdat[checkdat$Z == 1,]$student_number), #
+>>>>>>> Stashed changes
                  ncovU= ncol(XctlU), # √
                  ncovY= ncol(XctlY), # √
 
