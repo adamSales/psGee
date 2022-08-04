@@ -56,7 +56,8 @@ dat0$schoolSupp[dat0$initial_teacher_id%in%teachDrop$teacher_id[teachDrop$note==
 dat1 <- subset(dat0,!schoolSupp%in%c('S03','S07'))
 dat2 <- dat1%>%
   filter(!endsWith(Z,'Resource'))
-dat3 <- filter(dat2,!is.na(ScaleScore7),hasPretest)
+###dat3 <- filter(dat2,!is.na(ScaleScore7),hasPretest)
+dat3 <- filter(dat2,!is.na(post.total_math_score))#,hasPretest)
 
 
 ### use final teacher/class id to impute missing initial teacher/class id
@@ -78,10 +79,10 @@ AUCmod(mod1)
 
 summary(mod1)
 
-binnedplot(mod1$fitted.values,resid(mod1,type='response'))
+### binnedplot(mod1$fitted.values,resid(mod1,type='response'))
 
-with(subset(dat3,Z=='ASSISTments'&!is.na(Scale.Score5)),
-                 binnedplot(Scale.Score5,anyBottom))
+###with(subset(dat3,Z=='ASSISTments'&!is.na(Scale.Score5)),
+                ### binnedplot(Scale.Score5,anyBottom))
 
 mod2 <- glm(anyBottom~
               pretest+poly(Scale.Score5,2)+MALE+race+
@@ -93,9 +94,9 @@ AUCmod(mod2)
 
 summary(mod2)
 
-binnedplot(mod2$fitted.values,resid(mod2,type='response'))
+###binnedplot(mod2$fitted.values,resid(mod2,type='response'))
 
-anova(mod1,mod2,test='Chisq')
+###anova(mod1,mod2,test='Chisq')
 
 ### OK let's do some imputaiton
 dat3%>%
@@ -112,7 +113,7 @@ AUCmod(mod3)
 
 summary(mod3)
 
-binnedplot(mod3$fitted.values,resid(mod3,type='response'))
+###binnedplot(mod3$fitted.values,resid(mod3,type='response'))
 AIC(mod3)
 AIC(mod1)
 
@@ -121,7 +122,7 @@ mod4 <- update(mod1,.~.+pre.avg_time_on_tasks+pre_MA_total_score+pre_negative_re
 summary(mod4)
 AUCmod(mod4)
 
-binnedplot(mod4$fitted.values,resid(mod4,type='response'))
+###binnedplot(mod4$fitted.values,resid(mod4,type='response'))
 
 ### let's do some imputation
 xmis <- dat3 %>%
@@ -147,6 +148,7 @@ xmis <- dat3 %>%
 
 imp <- missForest(xmis, variablewise = TRUE)
 names(imp$OOBerror) <- names(imp$ximp)
+save(imp,xmis,file='data/imputation.RData')
 imp$OOBerror
 names(imp$ximp) <- paste0(names(imp$ximp), 'IMP')
 ximp <- imp$ximp%>%
@@ -164,7 +166,7 @@ mod4imp <- glm(
 summary(mod4imp)
 AUCmod(mod4imp)
 
-binnedplot(mod4imp$fitted.values,resid(mod4imp,type='response'))
+###binnedplot(mod4imp$fitted.values,resid(mod4imp,type='response'))
 
 
 ### let's go with mod4imp!
@@ -172,7 +174,7 @@ binnedplot(mod4imp$fitted.values,resid(mod4imp,type='response'))
 psdat <- dat3%>%
   filter(Z%in%c('ASSISTments','FH2T'))%>%
   mutate(Z=ifelse(Z=='ASSISTments',1,0),
-         Y=ScaleScore7,
+         Y=post.total_math_score,
          S=as.numeric(anyBottom))
 
 save(psdat,dat3,file="data/psdat.RData")
@@ -181,7 +183,7 @@ save(psdat,dat3,file="data/psdat.RData")
 psdatBAU <- dat3%>%
   filter(Z%in%c('ASSISTments','BAU'))%>%
   mutate(Z=ifelse(Z=='ASSISTments',1,0),
-         Y=ScaleScore7,
+         Y=post.total_math_score,
          S=as.numeric(anyBottom))
 
 save(psdatBAU,dat3,file="data/psdatBAU.RData")

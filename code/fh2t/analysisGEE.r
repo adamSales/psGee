@@ -36,6 +36,31 @@ effsFromFit(estimate1)
 
 
 ### robustness checks
+probit=glm(
+  S ~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
+  IEPIMP+ ESOLIMP+ GIFTEDIMP+ log(pre.avg_time_on_tasksIMP)+
+  pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP,
+  data=subset(psdatBAU,Z==1),family=binomial('probit'))
+estimate1.1 <- est(psdatBAU, psMod=probit,
+                covFormY=
+                  update(formula(mod4imp)[-2],
+                         .~.-virtualIMP),block = "class")
+plot(estimate1.1$outMod,which=1)
+effsFromFit(estimate1.1)
+
+bayes=bayesglm(
+  S ~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
+  IEPIMP+ ESOLIMP+ GIFTEDIMP+ log(pre.avg_time_on_tasksIMP)+
+  pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP,
+  data=subset(psdatBAU,Z==1),family=binomial)
+estimate1.2 <- est(psdatBAU, psMod=bayes,
+                covFormY=
+                  update(formula(mod4imp)[-2],
+                         .~.-virtualIMP),block = "class")
+plot(estimate1.2$outMod,which=1)
+effsFromFit(estimate1.2)
+
+
 library(lspline)
 ### 3-df linear splines on pretest
 mod5 <-     update(mod4imp,.~.-pretestIMP-Scale.Score5IMP-log(pre.avg_time_on_tasksIMP)-  pre_MA_total_scoreIMP- pre_negative_reaction_scoreIMP- pre_numerical_confindence_scoreIMP+qlspline(pretestIMP,3)+qlspline(Scale.Score5IMP,3)+qlspline(log(pre.avg_time_on_tasksIMP),3)+qlspline(  pre_MA_total_scoreIMP,3)+qlspline( pre_negative_reaction_scoreIMP,3)+qlspline( pre_numerical_confindence_scoreIMP,3))
@@ -77,6 +102,42 @@ psRF=predict(rf,newdata=psdatBAU)
 
 plot(predict(mod4imp,newdata=psdatBAU,type='response'),psRF,col=ifelse(psdatBAU$Z==1,'blue','red'))
 abline(0,1)
+
+boxplot(psRF[psdatBAU$Z==1]~psdatBAU$S[psdatBAU$Z==1])
+
+rfDat=psdatBAU
+rfDat$Sp=ifelse(rfDat$Z==1,rfDat$S,psRF)
+bbb=coef(lm(update(formula(mod5)[-2],
+                         Y~.-virtualIMP+class+Z*Sp),data=rfDat))
+with(as.list(bbb),
+                      list(
+                          eff0=Z,
+                          eff1=Z+`Z:Sp`,
+                          diff=`Z:Sp`))
+
+rfbs=replicate(1000,
+{
+    ddd=psdatBAU[sample(1:nrow(psdatBAU),nrow(psdatBAU),replace=TRUE),]
+    rf=randomForest(  S~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
+  IEPIMP+ ESOLIMP+ GIFTEDIMP+ pre.avg_time_on_tasksIMP+
+  pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP,
+  data=subset(ddd,Z==1))
+
+    psRF=predict(rf,newdata=ddd)
+
+    
+    ddd$Sp=ifelse(ddd$Z==1,ddd$S,psRF)
+    bbb=coef(lm(update(formula(mod5)[-2],
+                       Y~.-virtualIMP+class+Z*Sp),data=ddd))
+    with(as.list(bbb),
+                      c(
+                          eff0=Z,
+                          eff1=Z+`Z:Sp`,
+                          diff=`Z:Sp`))
+    })
+
+
+
 
 ### test standard errors
 bs0=replicate(1000,
