@@ -73,7 +73,7 @@ tab1oth<- tab1dat%>%
   CreateTableOne(vars=setdiff(names(.),'Z'),data=.,strata="Z")%>%
   print(missing=TRUE,test=FALSE,showAllLevels=TRUE,explain=FALSE)%>%
   cbind(.,
-        `Imputation Error`=round(oob[pmatch(gsub("( \\(%\\))|( \\(mean \\(SD\\)\\))","",rownames(.)),rownames(oob)),],2))
+        `Imp. Err.`=round(oob[pmatch(gsub("( \\(%\\))|( \\(mean \\(SD\\)\\))","",rownames(.)),rownames(oob)),],2))
 
 
 
@@ -85,7 +85,7 @@ tab1=rbind(
 
 colnames(tab1)[4]='Miss. %'
 
-print(xtable(tab1),hline.after=17,sanitize.text.function=function(x) {x})
+#print(xtable(tab1),hline.after=17,sanitize.text.function=function(x) {x})
 
 sink('writeUps/table1.tex')
 kbl(tab1,format='latex',booktabs=TRUE)%>% #c("p{1.5in}",rep("l",5)))%>%

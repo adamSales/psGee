@@ -25,7 +25,7 @@
 
 
 
-
+We refer to the estimators presented here as ``GEEPERs'': generalized estimating equations for principal effects using regressions.
 
 
 \section{Background}
@@ -534,24 +534,23 @@ For the purpose of demonstrating GEEPERS, we gathered dichotomized data on which
 That is, $\st=1$ for students who, if assigned to the treatment condition, would request at least one bottom-out hint, and $\st=0$ for students who would not.
 The outcome of interest $Y$ in our example is students' total scores on a ten-item posttest completed within the online tutoring system; $Y$ is an integer ranging from 0 to 10.
 The goal of our analysis will be to determine the principal effects $\tau_1=\EE[\yt-\yc|\st=0]$ and $\tau_0=\EE[\yt-\yc|\st=0]$, the average effects of assignment to the treatment condition for bottom-outers and non-bottom-outers.
-We also gathered data on baseline covariates: total scores on a 10-item pretest, fifth-grade stanardized test scores, indicator variables for if students have an early intervention program (EIP)
+We also gathered data on baseline covariates: total scores on a 10-item pretest, fifth-grade stanardized test scores, race/ethnicity (white, Asian, Hispanic/Latino, or Other), indicator variables for if students have an early intervention program (EIP) or individualized educational plan (IEP) in place, if students are learning English as a second language (ESOL), students' average time on task for the pretest (logged), total scores from baseline evaluations of students' math anxiety, negative reaction to math, and numerical confidence, and an indicator for weather students began the school year in remote or in-person instruction.
+Students with missing pretest scores were dropped from the analysis; missing data in other covariates was imputed with a Random Forest algorithm \citep{missForest}.
+Table \ref{tab:tab1} describes each covariate--as well as the sucess of the randomForest imputation algorithm.
 
-or individualized educational plan (IEP) in place, if students are learning English as a second language (ESOL)students'
-
-empress
-Mperes
-
-
-
-M-estimation of Principal
-
-peseer per
+\begin{table}
+  \centering
+  \input{table1}
+  \caption{Descriptive statistics on baseline covariates, $S$, and $Y$ for the analysis data. Values are mean (SD) unless otherwise noted. Imputation error is the ``out of box'' error estimate from the Random Forest imputation algorithm---root mean squared error divided by the observed standard deviation for continuous variables and misclassification proportion for categorical variables.}
+  \label{tab:tab1}
+\end{table}
 
 
+The data analysis we present here is intended as a demonstration of GEEPERS, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition.
 
-M estimation regression principal effects
 
-M
+
+
 
 
 \section{Discussion}

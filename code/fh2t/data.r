@@ -172,7 +172,7 @@ binnedplot(mod4imp$fitted.values,resid(mod4imp,type='response'))
 psdat <- dat3%>%
   filter(Z%in%c('ASSISTments','FH2T'))%>%
   mutate(Z=ifelse(Z=='ASSISTments',1,0),
-         Y=ScaleScore7,
+         Y=post.total_math_score,
          S=as.numeric(anyBottom))
 
 save(psdat,dat3,file="data/psdat.RData")
@@ -181,7 +181,7 @@ save(psdat,dat3,file="data/psdat.RData")
 psdatBAU <- dat3%>%
   filter(Z%in%c('ASSISTments','BAU'))%>%
   mutate(Z=ifelse(Z=='ASSISTments',1,0),
-         Y=ScaleScore7,
+         Y=post.total_math_score,
          S=as.numeric(anyBottom))
 
 save(psdatBAU,dat3,file="data/psdatBAU.RData")
