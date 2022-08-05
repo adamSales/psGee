@@ -7,6 +7,10 @@ select <- dplyr::select
 load('data/psdatBAU.RData')
 load('data/psdat.RData')
 
+if(!exists('alt')) alt <- 'bau'
+
+dat <- if(alt=='bau') psdatBAU else psdat
+
 mod4imp <- glm(
   anyBottom ~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
   IEPIMP+ ESOLIMP+ GIFTEDIMP+ log(pre.avg_time_on_tasksIMP)+
@@ -20,14 +24,14 @@ binnedplot(mod4imp$fitted.values,resid(mod4imp,type='response'))
 
 
 
-estimate0 <- est(psdatBAU,covFormU = formula(mod4imp)[-2])
+estimate0 <- est(dat,covFormU = formula(mod4imp)[-2])
                 # covFormY=
                 #   update(formula(mod4imp)[-2],
                 #          .~.-virtualIMP),block = "class")
 plot(estimate0$outMod,which=1)
 effsFromFit(estimate0)
 
-estimate1 <- est(psdatBAU,covFormU = formula(mod4imp)[-2],
+estimate1 <- est(dat,covFormU = formula(mod4imp)[-2],
                 covFormY=
                   update(formula(mod4imp)[-2],
                          .~.-virtualIMP),block = "class")
@@ -40,8 +44,8 @@ probit=glm(
   S ~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
   IEPIMP+ ESOLIMP+ GIFTEDIMP+ log(pre.avg_time_on_tasksIMP)+
   pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP,
-  data=subset(psdatBAU,Z==1),family=binomial('probit'))
-estimate1.1 <- est(psdatBAU, psMod=probit,
+  data=subset(dat,Z==1),family=binomial('probit'))
+estimate1.1 <- est(dat, psMod=probit,
                 covFormY=
                   update(formula(mod4imp)[-2],
                          .~.-virtualIMP),block = "class")
@@ -52,8 +56,8 @@ bayes=bayesglm(
   S ~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
   IEPIMP+ ESOLIMP+ GIFTEDIMP+ log(pre.avg_time_on_tasksIMP)+
   pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP,
-  data=subset(psdatBAU,Z==1),family=binomial)
-estimate1.2 <- est(psdatBAU, psMod=bayes,
+  data=subset(dat,Z==1),family=binomial)
+estimate1.2 <- est(dat, psMod=bayes,
                 covFormY=
                   update(formula(mod4imp)[-2],
                          .~.-virtualIMP),block = "class")
@@ -70,7 +74,7 @@ AUCmod(mod5)
 
 binnedplot(mod5$fitted.values,resid(mod5,type='response'))
 
-estimate2 <- est(psdatBAU,covFormU = formula(mod5)[-2],
+estimate2 <- est(dat,covFormU = formula(mod5)[-2],
                 covFormY=
                   update(formula(mod5)[-2],
                          .~.-virtualIMP),block = "class")
@@ -85,7 +89,7 @@ AUCmod(mod6)
 
 binnedplot(mod6$fitted.values,resid(mod6,type='response'))
 
-estimate3 <- est(psdatBAU,covFormU = formula(mod6)[-2],
+estimate3 <- est(dat,covFormU = formula(mod6)[-2],
                 covFormY=
                   update(formula(mod6)[-2],
                          .~.-virtualIMP),block = "class")
@@ -98,14 +102,14 @@ rf=randomForest(  anyBottom ~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ vir
   pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP,
   data=subset(dat3,Z=='ASSISTments'))
 
-psRF=predict(rf,newdata=psdatBAU)
+psRF=predict(rf,newdata=dat)
 
-plot(predict(mod4imp,newdata=psdatBAU,type='response'),psRF,col=ifelse(psdatBAU$Z==1,'blue','red'))
+plot(predict(mod4imp,newdata=dat,type='response'),psRF,col=ifelse(dat$Z==1,'blue','red'))
 abline(0,1)
 
-boxplot(psRF[psdatBAU$Z==1]~psdatBAU$S[psdatBAU$Z==1])
+boxplot(psRF[dat$Z==1]~dat$S[dat$Z==1])
 
-rfDat=psdatBAU
+rfDat=dat
 rfDat$Sp=ifelse(rfDat$Z==1,rfDat$S,psRF)
 bbb=coef(lm(update(formula(mod5)[-2],
                          Y~.-virtualIMP+class+Z*Sp),data=rfDat))
@@ -117,7 +121,7 @@ with(as.list(bbb),
 
 rfbs=replicate(1000,
 {
-    ddd=psdatBAU[sample(1:nrow(psdatBAU),nrow(psdatBAU),replace=TRUE),]
+    ddd=dat[sample(1:nrow(dat),nrow(dat),replace=TRUE),]
     rf=randomForest(  S~ pretestIMP+ Scale.Score5IMP+ MALEIMP+ raceIMP+ virtualIMP+ EIPIMP+
   IEPIMP+ ESOLIMP+ GIFTEDIMP+ pre.avg_time_on_tasksIMP+
   pre_MA_total_scoreIMP+ pre_negative_reaction_scoreIMP+ pre_numerical_confindence_scoreIMP,
@@ -143,13 +147,13 @@ rfbs=replicate(1000,
 bs0=replicate(1000,
               effsFromFit(
                 est(
-                  psdat[sample(1:nrow(psdat),nrow(psdat),replace=TRUE),],
+                  dat[sample(1:nrow(dat),nrow(dat),replace=TRUE),],
                   covFormU = formula(mod4imp)[-2])))
 
 bs1=replicate(1000,
               effsFromFit(
                 est(
-                  psdat[sample(1:nrow(psdat),nrow(psdat),replace=TRUE),],
+                  dat[sample(1:nrow(dat),nrow(dat),replace=TRUE),],
                   covFormU = formula(mod4imp)[-2],
                    covFormY=update(formula(mod4imp)[-2],
                                    .~.-virtualIMP),block = "class")))
