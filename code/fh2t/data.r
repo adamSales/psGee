@@ -37,7 +37,20 @@ med <- median(dat$nbo[dat$rdm_condition=='ASSISTments'],na.rm=TRUE)
 
 dat$S <- dat$nbo>med
 
-dat <- dat%>%
-  select(StuID:Performance.Level5,EIP:PercentInAttendance6,starts_with("pre"),Y=post.total_math_score,S)
+psdat <- dat%>%
+  select(StuID:Performance.Level5,EIP:PercentInAttendance6,starts_with("pre"),Y=post.total_math_score,S)%>%
+  mutate(
+    raceEth=raceEthnicityFed%>%
+      factor()%>%
+      fct_lump_min(200)%>%
+      fct_recode(`Hispanic/Latino`="1",Asian="3",White="6")%>%
+      fct_relevel('White'),
+    Gender=as.factor(Gender))
+
+imp <- psdat%>%
+  select(virtual, Gender,raceEth,Performance.Level5,EIP,Scale.Score5:PercentInAttendance6,starts_with("pre"))%>%
+  missForest()
+
+names(imp$ximp) <- paste0(names(imp$xmiss)
 
 save(dat,file='psdat.RData')
