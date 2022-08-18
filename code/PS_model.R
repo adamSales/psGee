@@ -1,4 +1,4 @@
-#### Principal Startification Analysis ####
+#### Principal Stratification Analysis ####
 
 
 
