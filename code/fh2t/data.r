@@ -12,6 +12,31 @@ kirk <- read_csv('data/data_uptated_8_18.csv')
 dat$nbo <- kirk$num_problem_parts_used_bottom_out_hint[match(dat$StuID,kirk$StuID)]
 dat <- filter(dat,!is.na(post.total_math_score))
 
+## dat <- kirk%>%
+##   select(StuID,starts_with("num_")&contains("_parts_"))%>%
+##   right_join(dat)%>%
+##   rename(nbo=num_problem_parts_used_bottom_out_hint)%>%
+##   mutate(pbo1=nbo/num_problem_parts_started,
+##          pbo2=nbo/num_problem_parts_attempted,
+##          pbo3=nbo/num_graded_problem_parts_started,
+##          pbo4=nbo/num_graded_problem_parts_attempted)%>%
+##   mutate(across(starts_with("pbo"),~ifelse(is.finite(.),.,0)))%>%
+##   filter(!is.na(post.total_math_score))
+
+
+## dat%>%filter(rdm_condition=='ASSISTments')%>%
+##   select(starts_with("pbo"))%>%
+##   pivot_longer(everything(),names_to="pbo",values_to="prop")%>%
+##   ggplot(aes(log(prop+.01)))+geom_histogram()+facet_wrap(~pbo,ncol=1)
+
+## dat%>%filter(rdm_condition=='ASSISTments')%>%
+##   select(starts_with("pbo"))%>%
+##   map(quantile)
+
+## dat%>%filter(rdm_condition=='ASSISTments')%>%
+##   select(starts_with("pbo"))%>%
+##   map(~c(mean(.),mean(.<0.1)))
+
 
 cat(sum(is.na(dat$nbo)&dat$rdm_condition=='ASSISTments'),' students with NA for # bottom out hints; setting to 0\n')
 dat$nbo[is.na(dat$nbo)&dat$rdm_condition=='ASSISTments'] <- 0
@@ -19,7 +44,8 @@ dat$nbo[is.na(dat$nbo)&dat$rdm_condition=='ASSISTments'] <- 0
 plot(table(dat$nbo[dat$rdm_condition=='ASSISTments']),xlim=c(0,30))
 med <- median(dat$nbo[dat$rdm_condition=='ASSISTments'],na.rm=TRUE)
 
-dat$S <- dat$nbo>med
+dat$S <- #dat$pbo4>0.1#
+  dat$nbo>med
 
 psdat <- dat%>%
   select(StuID:Performance.Level5,EIP:PercentInAttendance6,starts_with("pre"),Y=post.total_math_score,S)%>%
@@ -64,6 +90,36 @@ V <- matrix(nrow=length(fac)-1,ncol=length(fac)-1,dimnames=list(names(fac)[-1],n
 for(i in 2:(length(fac))) for(j in 1:(i-1)) V[i-1,j] <- cramerV(impDat[,fac[i]],impDat[,fac[j]])
 ### keep all factors
 
+### some logical stuff
+impDat$pre.math_completed_num[is.na(impDat$pre.total_math_score)] <- 0
+impDat$pre.total_time_on_tasks[is.na(impDat$pre.total_math_score)] <- NA
+impDat$pre_PS_completed_num[is.na(impDat$pre_PS_tasks_total_score)] <- 0
+## idea: they didn't take pretest, but it'd be interesting to know how much time they would have spent
+
+### check on distributions of predictors
+table(sapply(impDat,class))
+par(mfrow=c(4,5))
+impDat%>%select(where(is.numeric))%>%
+  iwalk(~hist(.x,main=.y))
+par(mfrow=c(1,1))
+
+impDat <- impDat%>%
+  mutate(
+    across(contains("Days",ignore=FALSE),~log(.+1)),
+    fullYear5=as.factor(MEMBERSHIPDAYS5==max(MEMBERSHIPDAYS5,na.rm=TRUE)),
+    fullYear6=as.factor(MEMBERSHIPDAYS6==max(MEMBERSHIPDAYS6,na.rm=TRUE)),
+    pre.total_time_on_tasks=log(pre.total_time_on_tasks),
+    pre_PS_total_RT_sec=log(pre_PS_total_RT_sec))%>%
+  select(-starts_with("MEMBER"))
+
+table(sapply(impDat,class))
+par(mfrow=c(4,5))
+impDat%>%select(where(is.numeric))%>%
+  iwalk(~hist(.x,main=.y))
+par(mfrow=c(1,1))
+
+impDat$noUnexcused5 <- as.factor(impDat$UnexcusedDays5==0)
+
 imp <- missForest(impDat,variablewise = TRUE)
 
 save(imp,file='data/imputations.RData')
@@ -91,5 +147,21 @@ psdat <- psdat%>%
   mutate(across(ends_with('IDPre'),as.factor))
 
 psdat$TeaIDPre <- relevel(psdat$TeaIDPre,ref='78') ## biggest in ASSISTments group
+
+### get rid of covariates with only one level
+oneLev <- psdat%>%filter(trt=='ASSISTments')%>%droplevels()%>%select(-StuID,-TeaIDPre,-ClaIDPre,-trt,-S,-Y)%>%select(where(is.factor))%>%select(where(~nlevels(.)<2))%>%names()
+
+psdat <- psdat[,-which(names(psdat)%in%oneLev)]
+
+### the pre_PS_part variables all add up to the total score
+psdat$pre_PS_part1_score <- NULL
+
+### some factor variables have levels with very few
+psdat <- psdat%>%select(where(~n_distinct(.)>2|min(table(.[psdat$trt=='ASSISTments']))>9))
+
+psdat <- psdat%>%mutate(across(c(Scale.Score5,pre.total_time_on_tasks,pre_MSE_total_score,pre_PS_tasks_total_score),scale))
+
+### only 1 student in school 7
+psdat <- filter(psdat,SchIDPre!=7)%>%droplevels()
 
 save(psdat,file='data/psdat.RData')
