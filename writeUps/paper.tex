@@ -506,7 +506,7 @@ Across all conditions in the table, the M-estimation confidence intervals have h
 %% \begin{figure}
 %%   \centring
 %%   \includegraphics{../simFigs/InteractionPosB1.jpg}
-%%   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was normal, there were possibly interactions between covariates and $S$ or $Z$, $\muc1=0.3$, and $\alpha=0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
+%%   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was normal, there were possibly interactions between covariates and $S$ or $Z$, $\muc1=0.3$, and $\alpha=0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}ana
 %%   \label{fig:simUnif}
 %% \end{figure}
 
@@ -530,8 +530,9 @@ In a recent educational field experiment, middle school students completing thei
 
 The literature on hints in online learning is mixed \citep{stuff}, in particular when it comes to bottoming out. On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep{worked example stuff}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer, and use the software without ever working to solve any problems. However, in this experiment, the ability to bottom out was only one of several differnces between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects separately for subjects who would (if assigned to treatment) bottom out, and for subjects who would not. If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who do not bottom out, but a positive effect for students who do. (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
 
-For the purpose of demonstrating GEEPERS, we gathered dichotomized data on which students in the treatment condition requested at least one bottom-out hint.
-That is, $\st=1$ for students who, if assigned to the treatment condition, would request at least one bottom-out hint, and $\st=0$ for students who would not.
+For the purpose of demonstrating GEEPERS, we gathered dichotomized data on %which students in the treatment condition requested at least one bottom-out hint.
+whether students in the treatment condition requested more than the median number of bottom-out hints (11).
+That is, $\st=1$ for students who, if assigned to the treatment condition, would request at more than 11 bottom-out hints (``bottom-outers''), and $\st=0$ for students who would request 11 or fewer (``non-bottom-outers''). %least one bottom-out hint, and $\st=0$ for students who would not.
 The outcome of interest $Y$ in our example is students' total scores on a ten-item posttest completed within the online tutoring system; $Y$ is an integer ranging from 0 to 10.
 The goal of our analysis will be to determine the principal effects $\tau_1=\EE[\yt-\yc|\st=0]$ and $\tau_0=\EE[\yt-\yc|\st=0]$, the average effects of assignment to the treatment condition for bottom-outers and non-bottom-outers.
 We also gathered data on baseline covariates: total scores on a 10-item pretest, fifth-grade stanardized test scores, race/ethnicity (white, Asian, Hispanic/Latino, or Other), indicator variables for if students have an early intervention program (EIP) or individualized educational plan (IEP) in place, if students are learning English as a second language (ESOL), students' average time on task for the pretest (logged), total scores from baseline evaluations of students' math anxiety, negative reaction to math, and numerical confidence, and an indicator for weather students began the school year in remote or in-person instruction.
@@ -545,12 +546,19 @@ Table \ref{tab:tab1} describes each covariate--as well as the sucess of the rand
   \label{tab:tab1}
 \end{table}
 
+The data analysis we present here is intended as a demonstration of GEEPERS, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition and post-selection inference.
 
-The data analysis we present here is intended as a demonstration of GEEPERS, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition.
+\subsection{Principal Score Model}
+
+We considered several models for the principal score, and full results (which are largely similar to each other) can be found in the online appendix. Here we present results from our model of choice, a logistic regression of observed $S$ on baseline variables chosen with a combination of expert judgement and backwards selection based on the AIC. These included school fixed effects and a set of student-level demographic and educational data: fifth-grade mathematics standardized test scores, %Gender, Race/Ethnicity,
+indicator variables for special education status (IEP), whether the student was taking English as a second language (ESOL), whether the student was classified as gifted, and whether students attended a full year of school in 5th grade. Finally, we also included data collected from students at the beginning of the study: the natural logrithm of the  time spent on task during the pretest, scores on baseline measurements of mathematics anxiety and self-efficacy and perceputal sensitivity, along with a missingness indicator for these measurements.
+Binned residual plots \citep{gelman2006data} from an initial model fit indicated a curviliniar relationship between percentual sensitivity measurements (modeled as linear) and model errors, so in the final model we included perceptual sensitivity as a quadratic polynomial.
+
+The model was fairly successful in distinguishing bottom-outers from non-bottom-outers---the AUC, evaluated using out-of-sample predictions in a 10-fold cross-validation, was roughly 0.795. That is, in roughly 80\% of bottom-outer/non-bottom-outer pairs of subjects, the bottom-outer will have a higher predicted probability from the model.
+Table \ref{tab:results} show the model's coefficient estimates. Noteably, conditional on the other covariates, students with higher fifth-grade standardized test scores were less likely to request many bottom out hints, as were students who spent little time on task during the pretest, while IEP and ESOL students, and students without baseline measurement data, were relatively unlikely to be bottom-outers. The relationship between perceptual sensitivity and bottom out requests was not monotonic---students with average levels were more likely than those with more extreme high or low levels to be bottom-outers; bottom-outers tended to have lower math self-efficacy, but the data are also consistent with a small positive relationship, and there appears to be little to no relationship between math anxiety and bottom-outer status at all.
 
 
-
-
+\subsection{Outcome Model and
 
 
 \section{Discussion}
