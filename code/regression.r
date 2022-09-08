@@ -19,7 +19,18 @@ Attach <- function(.list,.names=names(.list),env=environment()){
 
 }
 
-AUC = function(probs, true_Y){
+auc <- function(x,y)
+  if(length(unique(y))==2 & length(y)==length(x)){
+    wilcox.test(x~y)$statistic/(sum(y)*(sum(1-y)))
+  }else
+    wilcox.test(x,y)$statistic/(legnth(x)*length(y))
+
+aucMod <- function(mod)
+  auc(mod$linear,1-mod$y)
+
+
+
+AUC1 = function(probs, true_Y){
     probsSort = sort(probs, decreasing = TRUE, index.return = TRUE)
     val = unlist(probsSort$x)
     idx = unlist(probsSort$ix)
@@ -32,7 +43,7 @@ AUC = function(probs, true_Y){
     return(auc)
 }
 AUCmod <- function(mod){
-    AUC(mod$linear,mod$y)
+    auc(mod$linear,1-mod$y)
 }
 
 datNames <- function(data,trt='Z',out='Y',use='S',block=NULL){
@@ -59,7 +70,7 @@ datNames <- function(data,trt='Z',out='Y',use='S',block=NULL){
 }
 
 ### computes/returns regression models
-pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,psMod=NULL){
+pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,intS=NULL,psMod=NULL){
 
   data$S[data$Z==0] <- NA
 
@@ -67,7 +78,10 @@ pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,psMod=NULL
       update(covFormU,S~.),
       data=data,family=binomial,
       subset=!is.na(S))
-    else covForm <- formula(psMod)[c(1,3)]
+    else covFormU <- formula(psMod)[c(1,3)]
+
+  if(is.null(covFormY)) covFormY <- covFormU
+
 
     attr(psMod,'auc') <- AUCmod(psMod)
 
@@ -75,10 +89,12 @@ pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,psMod=NULL
     if('Sp'%in%names(data)) warning('replacing Sp')
     data <- within(data,Sp <- ifelse(Z==1&!is.na(S),S,ps))
 
-    outForm <-
-      update(covFormY,
-        if(int) Y~Z*(Sp+.) else Y~Z*Sp+.
-        )
+  outForm <- update(covFormY,Y~Z*Sp+.)
+#  outForm <- update(covFormY,Y~Z*Sp+.)
+
+  if(!is.null(intS))
+    outForm <- update(outForm,as.formula(paste0('.~.+Sp:(',paste(intS,collapse='+'),')')))
+
 
   if('block'%in%names(data)) if(!is.null(data$block))
       outForm <- update(outForm,.~.+block)
@@ -97,9 +113,11 @@ intEst0 <- function(dat){
 
 ### estimating equations for stage 1 model (PS)
 EFps <- function(psMod,data){
-    efPStmp <- estfun(psMod)
-    efPS <- matrix(0,nrow(data),ncol(efPStmp))
+  efPStmp <- estfun(psMod)
+  efPS <- matrix(0,nrow(data),ncol(efPStmp))
+  if(is.null(rownames(data))){
     efPS[as.numeric(rownames(efPStmp)),] <- efPStmp
+  } else efPS[match(rownames(data),rownames(efPStmp)),] <- efPStmp
     efPS
 }
 
@@ -175,16 +193,18 @@ vcvPS <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(coef(out
 
 
 ### wrapper function for estimating regressions+vcov
-est <- function(data,covFormU=~x1+x2,covFormY=covFormU,psMod=NULL,clust=NULL,int=FALSE,
+est <- function(data,covFormU=~x1+x2,covFormY=NULL,psMod=NULL,clust=NULL,intS=NULL,
                 trt='Z',out='Y',use='S',block=NULL){
+
+  #if(!missing(psMod))
 
   data <- datNames(data,trt=trt,out=out,use=use,block=block)
 
-    Attach(pointEst(data=data,covFormU=covFormU,covFormY=covFormY,int=int,psMod=psMod))
+  Attach(pointEst(data=data,covFormU=covFormU,covFormY=covFormY,intS=intS,psMod=psMod))
 
-    vcv <- vcvPS(psMod,outMod,data=data,int=int,clust=clust)
+  vcv <- vcvPS(psMod,outMod,data=data,clust=clust)
 
-    list(outMod=outMod,psMod=psMod,vcv=vcv)
+  list(outMod=outMod,psMod=psMod,vcv=vcv)
 }
 
 ### estimates effects of interest, starting from est() output
@@ -220,8 +240,14 @@ effs <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,
 }
 
 ### estimates lower left of A (bread) matrix in A^{-1}BA^{-t}
-### FIX FOR MISSING S IN TRT GROUP
+### INTERACTION W SP ONLY WORKS IF NO MISSING S IN TRT GROUP
 A21 <- function(psMod,outMod,data){
+
+  intS <- any(grepl('Sp:',names(coef(outMod))))
+
+  if(intS&any(is.na(data$S[data$Z==1])))
+    warning("INTERACTION W SP ONLY WORKS IF NO MISSING S IN TRT GROUP")
+
     risp <- data$Z==0|is.na(data$S)#,1,0)
     Z <- data$Z[risp]
     Y0 <- data$Y[risp]
@@ -235,7 +261,9 @@ A21 <- function(psMod,outMod,data){
                                -c(which(names(coef(outMod))%in%c('Z','Sp')),
                                   grep('Z\\:|Sp\\:|\\:Z|\\:Sp',names(coef(outMod))))]
 
-    est <- list(beta=coef(outMod)[colnames(X0)[-1]],
+  if(intS) V0 <- cbind(model.matrix(outMod)[risp,grep('Sp\\:',names(coef(outMod)))])
+
+    EST <- list(beta=coef(outMod)[colnames(X0)[-1]],
                 betaZ=coef(outMod)['Z'],
                 betaZr=coef(outMod)['Z:Sp'],
                 eta=coef(outMod)['Sp'],
@@ -243,12 +271,25 @@ A21 <- function(psMod,outMod,data){
                 )
 
     a21=rbind(
-       t(est$eta*q+est$betaZr*Z)%*%W0, # 1 x p1
-       -t((Y0-est$mu0-est$betaZ*Z-X0[,-1]%*%est$beta)*q-est$eta*u)%*%W0,
-       t(Z*(est$eta*q+est$betaZr))%*%W0, # 1 x p1
-       -t(((Y0-est$mu0-est$betaZ*Z-X0[,-1]%*%est$beta)*q-est$eta*u)*Z)%*%W0,
-       t((est$eta*q+est$betaZr*Z)*X0[,-1])%*%W0 # p2 x p1
-    )/nrow(X0)
+       t((EST$eta+EST$betaZr*Z)*q)%*%W0, # 1 x p1
+       -t((Y0-EST$mu0-EST$betaZ*Z-X0[,-1]%*%EST$beta)*q-(EST$eta+EST$betaZr*Z)*u)%*%W0,
+       t(Z*(EST$eta*q+EST$betaZr))%*%W0, # 1 x p1
+       -t(((Y0-EST$mu0-EST$betaZ*Z-X0[,-1]%*%EST$beta)*q-EST$eta*u)*Z)%*%W0,
+       t((EST$eta*q+EST$betaZr*Z)*X0[,-1])%*%W0 # p2 x p1
+    )
+
+  if(intS){
+    deltaV <- V0%*%coef(outMod)[grep('Sp\\:',names(coef(outMod)))]
+      a21 <- rbind(
+        a21+
+        rbind(
+          t(deltaV*q)%*%W0,
+          t(deltaV*u)%*%W0,
+          0,
+          0,
+          t(as.vector(deltaV*q)*X0[,-1])%*%W0),
+        -t(as.vector((Y0-EST$mu0-EST$betaZ*Z-X0[,-1]%*%EST$beta)*q-as.vector(EST$eta+deltaV)*u)*V0)%*%W0)
+  }
     ## rownames(a21)[1:2] <- c('(Intercept)','Sp')
 
     ## t(vapply(
@@ -257,5 +298,5 @@ A21 <- function(psMod,outMod,data){
     ##         if(n %in% rownames(a21)) a21[n,] else rep(0,ncol(a21)),
     ##     numeric(ncol(a21)))
     ##   )
-    a21
+    a21/nrow(X0)
 }
