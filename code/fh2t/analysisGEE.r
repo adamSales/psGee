@@ -159,6 +159,8 @@ estimatesInt1 <- lapply(setNames(alts,alts),
                             pre.total_math_score+pre.total_math_scoreNA+ClaIDPre,
                           intS=c("Scale.Score5","pre.total_math_score")))
 
+ sapply(estimatesInt1,effsFromFit,simplify=F)
+
 ### test standard errors w bootstrap
 bsSchool <- function(dat){
   datS <- split(dat,dat$SchIDPre)
@@ -170,15 +172,19 @@ bsInt1 <- lapply(setNames(alts,alts),
                  function(alt){
                    print(alt)
                    datAlt <- getDat(alt)
-                   replicate(5000, effsFromFit(
-                                     est(bsSchool(datAlt),
-                                         covFormU=formula(psMod7)[-2],
-                                         covFormY=~Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+
-                                           pre_MSE_total_score+
-                                           fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
-                                           pre.total_math_score+pre.total_math_scoreNA+ClaIDPre,
-                                         intS=c("Scale.Score5","pre.total_math_score"))))})
+                   replicate(5000, {
+                     bsDat <- datAlt[sample(1:nrow(datAlt),nrow(datAlt),replace=TRUE),]
+                     if(!any(with(bsDat,table(SchIDPre,Z))==0))
+                       effsFromFit(
+                         est(bsDat,#bsSchool(datAlt),
+                             covFormU=formula(psMod7)[-2],
+                             covFormY=~Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+
+                               pre_MSE_total_score+
+                               fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
+                               pre.total_math_score+pre.total_math_scoreNA+ClaIDPre,
+                             intS=c("Scale.Score5","pre.total_math_score")))})})
 
+bsInt1a <- lapply(bsInt1,function(x) do.call("abind",list(x,along=0)))
 save(bsInt1,file='results/bsInt1.RData')
 
 par(mfrow=c(3,3))
@@ -187,11 +193,15 @@ for(alt in alts)
     hist(bsInt1[[alt]][ee,1,],main=paste(alt, ee))
 par(mfrow=c(1,1))
 
-bsSE1 <- lapply(bsInt1,function(x) apply(x[,1,],1,sd))
+lapply(alts, function(alt) cbind(effsFromFit(estimatesInt1[[alt]])[,'estimates'],
+                                 rowMeans(bsInt1[[alt]][,'estimates',])))
+
+
+bsSE1 <- lapply(bsInt1a,function(x) apply(x[,,1],2,sd))
 
 lapply(alts, function(alt) cbind(effsFromFit(estimatesInt1[[alt]])[,'SE'],bsSE1[[alt]]))
 
-bsSE1 <- lapply(bsInt1,function(x) cbind(apply(x[,2,]^2,1,mean),apply(x[,1,],1,var)))
+bsSE1comp <- lapply(bsInt1,function(x) cbind(apply(x[,2,]^2,1,mean),apply(x[,1,],1,var)))
 
 
 #### PSW

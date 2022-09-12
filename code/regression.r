@@ -4,6 +4,8 @@ library(sandwich)
 ### want them to print every time!
 print.vcv <- function(x,...) print(x[1:NROW(x),1:NCOL(x)],...)
 
+print.geepers <- function(x,...) print(effsFromFit(x),...)
+
 ### convenience function for functions that return lists
 ### why cant R be more like python in this regard??
 Attach <- function(.list,.names=names(.list),env=environment()){
@@ -117,7 +119,7 @@ EFps <- function(psMod,data){
   efPS <- matrix(0,nrow(data),ncol(efPStmp))
   if(is.null(rownames(data))){
     efPS[as.numeric(rownames(efPStmp)),] <- efPStmp
-  } else efPS[match(rownames(data),rownames(efPStmp)),] <- efPStmp
+  } else efPS[match(rownames(efPStmp),rownames(data)),] <- efPStmp
     efPS
 }
 
@@ -131,7 +133,7 @@ sandwichMats <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(c
     out <- list(
         a11inv = bread(psMod),#/sum(data$Z),
         a22inv = bread(outMod),#/nrow(data),
-        a21 = A21(psMod,outMod,data)/nrow(data),
+        a21 = A21(psMod,outMod,data),#/nrow(data),
         b11=(if(is.null(clust)) meat(psMod) else meatCL(psMod,cluster=clust[data$Z==1])),#*nrow(model.frame(psMod)),
         b22 = (if(is.null(clust)) meat(outMod) else meatCL(outMod,cluster=clust))#*nrow(data)#,adjust=TRUE)
     )
@@ -204,7 +206,9 @@ est <- function(data,covFormU=~x1+x2,covFormY=NULL,psMod=NULL,clust=NULL,intS=NU
 
   vcv <- vcvPS(psMod,outMod,data=data,clust=clust)
 
-  list(outMod=outMod,psMod=psMod,vcv=vcv)
+  out <- list(outMod=outMod,psMod=psMod,vcv=vcv)
+  class(out) <- c('geepers',class(out))
+  out
 }
 
 ### estimates effects of interest, starting from est() output
@@ -248,55 +252,36 @@ A21 <- function(psMod,outMod,data){
   if(intS&any(is.na(data$S[data$Z==1])))
     warning("INTERACTION W SP ONLY WORKS IF NO MISSING S IN TRT GROUP")
 
-    risp <- data$Z==0|is.na(data$S)#,1,0)
-    Z <- data$Z[risp]
-    Y0 <- data$Y[risp]
-    aW <- predict(psMod,data,type='link')[risp]
-    q <- family(psMod)$mu.eta(aW)      ## dp/dalpha=qX'
-    u <- 2*family(psMod)$linkinv(aW)*q   ## dp^2/dalpha=uX'
+  risp <- data$Z==0|is.na(data$S)#,1,0)
+  Z <- data$Z[risp]
+  Y0 <- data$Y[risp]
+  aW <- predict(psMod,data,type='link')[risp]
+  p <- family(psMod)$linkinv(aW)
+  q <- family(psMod)$mu.eta(aW)      ## dp/d(aW) so that dp/dalpha=qW'
 
-    W0 <- model.matrix(update(formula(psMod),Y~.),data=data)[risp,]
+  W0 <- model.matrix(update(formula(psMod),Y~.),data=data)[risp,]
 
-    X0 <- model.matrix(outMod)[risp,
+  X0 <- model.matrix(outMod)[risp,
                                -c(which(names(coef(outMod))%in%c('Z','Sp')),
-                                  grep('Z\\:|Sp\\:|\\:Z|\\:Sp',names(coef(outMod))))]
+                                  grep('Z\\:|Sp\\:|\\:Z|\\:Sp',names(coef(outMod))))][,-1]
 
   if(intS) V0 <- cbind(model.matrix(outMod)[risp,grep('Sp\\:',names(coef(outMod)))])
 
-    EST <- list(beta=coef(outMod)[colnames(X0)[-1]],
-                betaZ=coef(outMod)['Z'],
-                betaZr=coef(outMod)['Z:Sp'],
-                eta=coef(outMod)['Sp'],
-                mu0=coef(outMod)['(Intercept)']
-                )
+  Q <- rbind(coef(outMod)[c('(Intercept)','Z',colnames(X0))])%*%t(cbind(1,Z,X0))
+  U <- rbind(coef(outMod)[c('Sp','Z:Sp')])%*%t(cbind(1,Z))
+  if(intS) U <- U+(rbind(coef(outMod)[colnames(V0)])%*%t(V0))
 
-    a21=rbind(
-       t((EST$eta+EST$betaZr*Z)*q)%*%W0, # 1 x p1
-       -t((Y0-EST$mu0-EST$betaZ*Z-X0[,-1]%*%EST$beta)*q-(EST$eta+EST$betaZr*Z)*u)%*%W0,
-       t(Z*(EST$eta*q+EST$betaZr))%*%W0, # 1 x p1
-       -t(((Y0-EST$mu0-EST$betaZ*Z-X0[,-1]%*%EST$beta)*q-EST$eta*u)*Z)%*%W0,
-       t((EST$eta*q+EST$betaZr*Z)*X0[,-1])%*%W0 # p2 x p1
-    )
+  AA <- rbind(
+    -U,
+    Y0-(Q+2*p*U),
+    -Z*U,
+    Z*Y0-(Z*Q+2*p*Z*U),
+    -sweep(t(X0),2,U,"*")
+  )
 
-  if(intS){
-    deltaV <- V0%*%coef(outMod)[grep('Sp\\:',names(coef(outMod)))]
-      a21 <- rbind(
-        a21+
-        rbind(
-          t(deltaV*q)%*%W0,
-          t(deltaV*u)%*%W0,
-          0,
-          0,
-          t(as.vector(deltaV*q)*X0[,-1])%*%W0),
-        -t(as.vector((Y0-EST$mu0-EST$betaZ*Z-X0[,-1]%*%EST$beta)*q-as.vector(EST$eta+deltaV)*u)*V0)%*%W0)
-  }
-    ## rownames(a21)[1:2] <- c('(Intercept)','Sp')
+  if(intS) AA <- rbind(AA,(Y0-Q-2*p*U)[rep(1,ncol(V0)),]*t(V0))
 
-    ## t(vapply(
-    ##     names(coef(outMod)),
-    ##     function(n)
-    ##         if(n %in% rownames(a21)) a21[n,] else rep(0,ncol(a21)),
-    ##     numeric(ncol(a21)))
-    ##   )
-    a21/nrow(X0)
+  DD <- W0*q
+
+  AA%*%DD/nrow(X0)
 }
