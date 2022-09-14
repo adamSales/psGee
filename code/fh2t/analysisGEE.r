@@ -1,6 +1,7 @@
 library(tidyverse)
 library(arm)
 library(randomForest)
+library(estimatr)
 source('code/regression.r')
 select <- dplyr::select
 
@@ -14,13 +15,9 @@ psdat <- filter(psdat,SchIDPre!=7) ### only one student from school 7, in FH2T
 psdat$Z <- ifelse(psdat$trt=='ASSISTments',1,0)
 
 alts <- unique(psdat$trt[psdat$Z==0])
+alts <- setNames(alts,alts)
 
-### do a little "reloop"
-## remnantMods <- map(setNames(alts,alts),
-##                    ~psdat%>%
-##                    filter(!trt%in%c('ASSISTments',.x))%>%
-##                    select(-StuID,-TeaIDPre,-ClaIDPre,-S,-virtual,-Z,-trt)%>%
-##                    randomForest(Y~.,data=.))
+
 
 
 getDat <- function(alt){
@@ -31,31 +28,36 @@ getDat <- function(alt){
   droplevels(dat)
 }
 
-### overall ATEs
-## ateMods <- sapply(setNames(alts,alts),
-##                   function(alt)
-##                     estimatr::lm_robust(
-##                                 Y~Z+pred+
-##                                   Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+pre_MSE_total_score+
-##                             fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
-##                             splines::ns(pre.total_math_score,3)+pre.total_math_scoreNA,
-##                             data=getDat(alt),fixed_effects=~ClaIDPre),
-##                   simplify=FALSE)
 
-
-ateModsNoRem <- sapply(setNames(alts,alts),
+ates <- sapply(setNames(alts,alts),
                   function(alt)
                     estimatr::lm_robust(
                                 Y~Z+Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+pre_MSE_total_score+
                             fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
-                            splines::ns(pre.total_math_score,3)+pre.total_math_scoreNA,
+                            pre.total_math_score+pre.total_math_scoreNA+ClaIDPre,
                             data=getDat(alt),fixed_effects=~ClaIDPre),
                   simplify=FALSE)
 
-sapply(ateModsNoRem,function(x) x$std.error[x$term=='Z']^2)/sapply(ateMods,function(x) x$std.error[x$term=='Z']^2)
+estimates3 <- lapply(setNames(alts,alts),
+                    function(alt)
+                      est(getDat(alt),
+                          covFormU=formula(psMod7)[-2],
+                          covFormY=~Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+pre_MSE_total_score+
+                            fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
+                            pre.total_math_score+pre.total_math_scoreNA+ClaIDPre
+                                          ))
+
+estimatesInt1 <- lapply(setNames(alts,alts),
+                    function(alt)
+                      est(getDat(alt),
+                          covFormU=formula(psMod7)[-2],
+                          covFormY=~Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+pre_MSE_total_score+
+                            fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
+                            pre.total_math_score+pre.total_math_scoreNA+ClaIDPre,
+                          intS=c("Scale.Score5","pre.total_math_score")))
 
 
-estimates0 <- lapply(setNames(alts,alts),
+estimates0 <- lapply(alts,
                     function(alt)
                       est(getDat(alt),
                           covFormU=formula(psMod7)[-2])
@@ -111,14 +113,6 @@ imap_dfr(estimates2,~data.frame(fitted=fitted(.x$outMod),resid=resid(.x$outMod),
 
 
 
-estimates3 <- lapply(setNames(alts,alts),
-                    function(alt)
-                      est(getDat(alt),
-                          covFormU=formula(psMod7)[-2],
-                          covFormY=~Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+pre_MSE_total_score+
-                            fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
-                            pre.total_math_score+pre.total_math_scoreNA+ClaIDPre
-                                          ))
 
 imap_dfr(estimates3,~data.frame(fit=fitted(.x$outMod),res=resid(.x$outMod),alt=.y))%>%
   ggplot(aes(fit,res))+geom_jitter(height=0.3)+geom_smooth()+facet_wrap(~alt)
@@ -150,14 +144,6 @@ for(i in 0:3)
   aics <- rbind(aics,map_dbl(get(paste0('estimates',i),envir=.GlobalEnv),~AIC(.$outMod)))
 
 
-estimatesInt1 <- lapply(setNames(alts,alts),
-                    function(alt)
-                      est(getDat(alt),
-                          covFormU=formula(psMod7)[-2],
-                          covFormY=~Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+pre_MSE_total_score+
-                            fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
-                            pre.total_math_score+pre.total_math_scoreNA+ClaIDPre,
-                          intS=c("Scale.Score5","pre.total_math_score")))
 
  sapply(estimatesInt1,effsFromFit,simplify=F)
 
@@ -204,53 +190,6 @@ lapply(alts, function(alt) cbind(effsFromFit(estimatesInt1[[alt]])[,'SE'],bsSE1[
 bsSE1comp <- lapply(bsInt1,function(x) cbind(apply(x[,2,]^2,1,mean),apply(x[,1,],1,var)))
 
 
-#### PSW
-psw1 <- function(dat,psMod){
-
-  dat0=subset(dat,Z==0)
-  dat1=subset(dat,Z==1)
-  dat0$ps=predict(psMod,dat0,type='response')
-
-
-  muc0=with(dat0,sum(Y*(1-ps))/sum(1-ps))
-  muc1=with(dat0,sum(Y*ps)/sum(ps))
-
-  mut0=with(dat1,mean(Y[S==0]))
-  mut1=with(dat1,mean(Y[S==1]))
-
-  c(eff0=mut0-muc0,
-    eff1=mut1-muc1,
-    diff=mut1-muc1-mut0+muc0
-    )
-}
-
-print.psw <- function(x, ...) print(x$coef,...)
-
-
-psw <- function(alt,psMod,B=5000,verbose=TRUE){
-  dat <- getDat(alt)
-
-  est=psw1(dat,psMod)
-
-  if(verbose) step <- if(B>10) round(B/10) else 1
-  bs <- matrix(nrow=B,ncol=3)
-  for(i in 1:B){
-    if(verbose) if(i%%step==0) cat(round(i/B*100),' ')
-    datStar <- bsSchool(dat)
-    psModStar <- update(psMod,data=subset(datStar,Z==1))
-    bs[i,] <- psw1(datStar,psModStar)
-  }
-  if(verbose) cat('\n')
-  out <-
-    list(
-      coef=cbind(est=est,se=apply(bs,2,sd)),
-      bs=bs)
-  class(out) <- 'psw'
-  out
-}
-
-pswResults <- lapply(setNames(alts,alts),psw,psMod=psMod7)
-save(pswResults,file='results/psw.RData')
 
 ### robustness checks
 probit=glm(

@@ -5,6 +5,7 @@ library(tableone)
 library(kableExtra)
 library(xtable)
 source('code/regression.r')
+library(huxtable)
 select <- dplyr::select
 
 options(knitr.kable.NA = '')

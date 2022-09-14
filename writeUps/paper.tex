@@ -15,14 +15,32 @@
 
 \input{notation.tex}
 
-\title{M-Estimation of Principal Effects using Principal Scores}
+\title{GEEPERS: Principal Stratification using Principal Scores and Stacked Estimating Equations}
 
 \begin{document}
 \maketitle
 
 \section{Introduction}
 
+Randomized experiments easily admit subgroup analysis---estimation of treatment effects for a subset of the study population---when those subgroups are defined at baseline, and not themselves a function of treatment assignment.
+A simple, popular approach to estimating subgroup effects is to use ordinary least squares (OLS) regression, regressing the outcome on a treatment indicator interacted with an indicator for subgroup membership.
+However, when subgroup membership is a function of a post-treatment variable, then it may itself be affected by the treatment.
+Contrats between treatment and control conditions within those subgroups may not have a causal interpretation at all---and when they do, the same techniques that work for subgroups defined at baseline (such as OLS with interactions) will often produce inconsistant estimates.
+Principal stratification \citep{frangakis} is a broad framework for defining subgroup effects for post-treatment subgroups, based on the notition of \emph{potential} subgroups called principal strata, that is, groups of subjects defined based on the values a post-treatment variable would potentially take if the subject is assigned to one treatment condition or another.
+Since principal strata membership is based on subjects' responses to both factual and counter-factual treatment assignemtns, it is, in general unobserved.
+Nevertheless, researchers have devised estimators of principal effects, as average effects within principal strata are called, to address a broad range of applied statistical problems, including non-compliance in randomized experiments, the evaluation of surrogate outcomes \citep{}, the investigation of causal mechanisms \citep{lidsayPage}, and sample attrition \citep{zhouRubin, pengDing2011}.
 
+Because principal strata membership is generally unobserved, principal effects are not always identified, and when they are, estimation can still be difficult.
+Typically, principal effects are identified and estimated based on strong structural assumptions \citep[e.g.][]{air} and/or parametric modeling \citep[e.g.][]{imbensRubin98}.
+Parametric models for principal effects are often hard to specify and hard or impossible to test.
+Even when they are well-specified they can yield estimates that are severely biased and misleading \citep{griffin,feller}.
+Another route to identification and estimation of principal effects leads through auxilliary data, including baseline covariates \citep{} or secondary outcomes \citep{mealli}.
+Of particular importance is the ``principal score,'' \citep{jo,ding,feller}, or the probability that a subject belongs to a particular principal stratum, as a function of pre-treatment covariates.
+Under a strong, untestable assumption called ``principal ignorability,'' which is akin to the no-confounding assumption underlying observational studies, principal scores can be tranformed into weights, which in turn form an unbiased estimate of principal effects.
+
+In a separate, if related, line of research, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
+This paper expands on those identification results by presenting a new set of principal effect estimators, and associated standard error estimates, based on a generalized estimating equations (or M-estimation or method-of-moments) \citep{stefanskiBoos}.
+It turns out that, under certain general conditions, principal effects can be estimated with a simple, two-step procedure: first, estimate principal scores with logistic regression or another M-estimator; then, impute unknown principal subroup membership indicators with principal scores and estimate principal effects using OLS with interactions, just as in the pre-treatment subgroup case.
 
 
 We refer to the estimators presented here as ``GEEPERs'': generalized estimating equations for principal effects using regressions.
@@ -143,7 +161,7 @@ On the other hand, the principal ignorability assumption is strong and restricti
 \citet{feller2017principal} recommends the case-resampling bootstrap to estimate the sampling variance of $\hat{\muc0}_w$, $\hat{\muc1}_w$, and their associated principal effect estimators.
 
 
-\section{M-Estimator}
+\section{GEEPERS}
 
 The approach we introduce here incorporates principal scores into an M-Estimator for the mixture model \eqref{eq:mixtureModel}.
 Like principal score weighting, our M-estimator does not require distributional assumptions, but instead requires a conditional independence assumption.
@@ -256,7 +274,7 @@ To summarize, under strong monotonicity, randomization, and covariate ignorabili
 \item Estimate $\hat{\tau^0}=\hat{\beta}_2$ and $\hat{\tau^1}=\hat{\beta}_3-\hat{\beta}_2$
 \end{enumerate}
 
-\subsection{Relaxing Covariate Ignorability}
+\subsection{Relaxing Covariate Ignorability with Outcome Modeling}
 In most applications, identifying a set of covariates $\bxs$ satisfying CI will be difficult or impossible.
 Fortunately, CI may be relaxed or obviated by regression.
 Let $\bxy\in \mathbb{R}^k$, be a vector of covariates (possibly the same as $\bxs$); $\bxy$ can contain transformations and interactions of baseline covariates, allowing for a wide range of models.
@@ -526,16 +544,17 @@ Across all conditions in the table, the M-estimation confidence intervals have h
 
 \section{Application: Estimating Treatment Effects for Implementation Subgroups}
 
-In a recent educational field experiment, middle school students completing their math schoolwork on a computer program were randomized between two conditions. In one condition (which we arbitrarily label ``treatment''), students were instructed to work on a fixed number of math problems, and later informed of their scores. In a second condition, students received immediate, informative error messages after entering a wrong answer, and were required to enter a correct answer in order to proceed. Students in the second treatment arm (labeled ``control'') also had access to a series of hints for each problem, the last of which contained the correct answer. Students who ``bottomed out'' on a problem, i.e. requested all available hints on a problem, and were told the correct answer, did not receive credit for that problem. Students remained in their randomly-assigned condition over the course of a school year, and were assessed with a 10-item posttest administered within the computer program, as well with state standardized tests.
+In a recent educational field experiment, middle school students completing their math schoolwork on a computer program were randomized between four conditions. In all four conditions, students worked on their assigned math program in class on 12 different occassions---a prior assessmenent, a mid-test, a post-test, and nine learning sessions---spaced throughout the school year.  In three of the conditions, during the learning sessions, students worked through a series of math problems, while the forth condition was a computer game designed to teach math concepts. In this illustration, we will consider three different treatment effects, comparing one of the four conditions (which we arbitrarily label ``treatment''), with each of the three others (Business as Usual, or ``BAU'', From-Here-To-There!, or ``FH2T,'' and DragonBox), separately. During learning sessions, students in the treatment condition received immediate, informative error messages after entering a wrong answer, and were required to enter a correct answer in order to proceed. They also had access to a series of hints for each problem, the last of which (called the ``bottom out'' hint) contained the correct answer. Students in the other three conditions did not have access bottom out hints; our illustration will focus on that software feature.
 
-The literature on hints in online learning is mixed \citep{stuff}, in particular when it comes to bottoming out. On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep{worked example stuff}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer, and use the software without ever working to solve any problems. However, in this experiment, the ability to bottom out was only one of several differnces between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects separately for subjects who would (if assigned to treatment) bottom out, and for subjects who would not. If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who do not bottom out, but a positive effect for students who do. (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
+The literature on hints in online learning is mixed \citep{stuff}, in particular when it comes to requesting a bottom-out hint (called ``bottoming out''). On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep{worked example stuff}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer, and use the software without ever working to solve any problems. However, in this experiment, the ability to bottom out was only one of several differnces between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects separately for subjects who would (if assigned to treatment) bottom out, and for subjects who would not. If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who do not bottom out, but a positive effect for students who do. (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
 
 For the purpose of demonstrating GEEPERS, we gathered dichotomized data on %which students in the treatment condition requested at least one bottom-out hint.
 whether students in the treatment condition requested more than the median number of bottom-out hints (11).
 That is, $\st=1$ for students who, if assigned to the treatment condition, would request at more than 11 bottom-out hints (``bottom-outers''), and $\st=0$ for students who would request 11 or fewer (``non-bottom-outers''). %least one bottom-out hint, and $\st=0$ for students who would not.
 The outcome of interest $Y$ in our example is students' total scores on a ten-item posttest completed within the online tutoring system; $Y$ is an integer ranging from 0 to 10.
 The goal of our analysis will be to determine the principal effects $\tau_1=\EE[\yt-\yc|\st=0]$ and $\tau_0=\EE[\yt-\yc|\st=0]$, the average effects of assignment to the treatment condition for bottom-outers and non-bottom-outers.
-We also gathered data on baseline covariates: total scores on a 10-item pretest, fifth-grade stanardized test scores, race/ethnicity (white, Asian, Hispanic/Latino, or Other), indicator variables for if students have an early intervention program (EIP) or individualized educational plan (IEP) in place, if students are learning English as a second language (ESOL), students' average time on task for the pretest (logged), total scores from baseline evaluations of students' math anxiety, negative reaction to math, and numerical confidence, and an indicator for weather students began the school year in remote or in-person instruction.
+
+We also had access to data on a number of baseline covariates: total scores on a 10-item pretest, fifth-grade stanardized test scores, race/ethnicity (white, Asian, Hispanic/Latino, or Other), indicator variables for if students have an early intervention program (EIP) or individualized educational plan (IEP) in place, if students are learning English as a second language (ESOL), students' average time on task for the pretest (logged), total scores from baseline evaluations of students' math anxiety, negative reaction to math, and numerical confidence, and an indicator for weather students began the school year in remote or in-person instruction.
 Students with missing pretest scores were dropped from the analysis; missing data in other covariates was imputed with a Random Forest algorithm \citep{missForest}.
 Table \ref{tab:tab1} describes each covariate--as well as the sucess of the randomForest imputation algorithm.
 
@@ -546,19 +565,51 @@ Table \ref{tab:tab1} describes each covariate--as well as the sucess of the rand
   \label{tab:tab1}
 \end{table}
 
-The data analysis we present here is intended as a demonstration of GEEPERS, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition and post-selection inference.
+The data analysis we present here is intended as a demonstration of GEEPERS, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition and post-selection inference. For a more complete discussion of the experimental design, the conditions being compared, and the impact analysis, please see \citet{impactPaper}.
 
 \subsection{Principal Score Model}
+
+\begin{figure}
+  \centering
+  \includegraphics{../figure/psModCoef.jpg}
+  \caption{Principal Score Model Coefficients}
+  \label{fig:psMod}
+\end{figure}
+
 
 We considered several models for the principal score, and full results (which are largely similar to each other) can be found in the online appendix. Here we present results from our model of choice, a logistic regression of observed $S$ on baseline variables chosen with a combination of expert judgement and backwards selection based on the AIC. These included school fixed effects and a set of student-level demographic and educational data: fifth-grade mathematics standardized test scores, %Gender, Race/Ethnicity,
 indicator variables for special education status (IEP), whether the student was taking English as a second language (ESOL), whether the student was classified as gifted, and whether students attended a full year of school in 5th grade. Finally, we also included data collected from students at the beginning of the study: the natural logrithm of the  time spent on task during the pretest, scores on baseline measurements of mathematics anxiety and self-efficacy and perceputal sensitivity, along with a missingness indicator for these measurements.
 Binned residual plots \citep{gelman2006data} from an initial model fit indicated a curviliniar relationship between percentual sensitivity measurements (modeled as linear) and model errors, so in the final model we included perceptual sensitivity as a quadratic polynomial.
+The model was fit to data from students in the treatment group, for whom bottom-out status ($S$) was observed; hence, the same model fit was used for all three treatment contrasts.
 
 The model was fairly successful in distinguishing bottom-outers from non-bottom-outers---the AUC, evaluated using out-of-sample predictions in a 10-fold cross-validation, was roughly 0.795. That is, in roughly 80\% of bottom-outer/non-bottom-outer pairs of subjects, the bottom-outer will have a higher predicted probability from the model.
 Table \ref{tab:results} show the model's coefficient estimates. Noteably, conditional on the other covariates, students with higher fifth-grade standardized test scores were less likely to request many bottom out hints, as were students who spent little time on task during the pretest, while IEP and ESOL students, and students without baseline measurement data, were relatively unlikely to be bottom-outers. The relationship between perceptual sensitivity and bottom out requests was not monotonic---students with average levels were more likely than those with more extreme high or low levels to be bottom-outers; bottom-outers tended to have lower math self-efficacy, but the data are also consistent with a small positive relationship, and there appears to be little to no relationship between math anxiety and bottom-outer status at all.
 
 
 \subsection{Outcome Regression and Principal Effects}
+\begin{figure}
+  \centering
+  \includegraphics{../figure/prinEffs.pdf}
+  \caption{Principal Effects}
+  \label{fig:effects}
+\end{figure}
+
+Figure \ref{fig:effects} plots the estimated principal effects for bottom-outers and non-bottom-outers, using two different models---alongside estimates of the overall average treatment effect, labeled ``ATE.'' In both models, effects were adjusted for all of the variables that were in the principal score model, in addition to students' pretest scores; also, the models substituted class fixed effects for school fixed effects.\footnote{Why use a corser set of fixed effects for the principal score model than the outcome regression? There were two reasons: first, the principal score model was fit to a smaller sample (only students in the ``Instant'' condition), so some classrooms only included one student, which can lead to poor fit. Second, the asymptotics of logistic regression are more restricted than OLS, and so logistic regression tends to perform poorly when the number of parameters increases with the sample size \citep{agresti}.}
+The two sets of esimated differed in that the first assumed that coefficients on covariates were equal across principal strata, whereas the second set of results allowed the coefficients on pretest and 5th-grade standardized test scores---the most important predictors of outcomes and principal strata membership, respectively---to vary between strata.
+
+The results suggest little difference, if any, between the effects in the two principal strata.
+Estimated effects compared to BAU or DragonBox were slightly lower for bottom-outers than for non-bottom-outers, and estimated effects compared to FH2T were higher for non-bottom-outers.
+However, none of these differences is statistically significant, so opposite patterns, or no difference betweeen principal effects at all, would also be consistant with the data.
+In fact, 95\% confidence intervals for all principal effects include both positive and negative principal effects.
+There is no discernable difference between estimated principal effects when coefficients on pretest and grade-5 standardized tests were or were not allowed to vary between strata, though standard errors from the models including an interaction were somewhat higher.
+
+\subsection{Mixture Model and Principal Score Weighting}
+\begin{figure}
+  \centering
+  \includegraphics{../figure/compareMethods.pdf}
+  \caption{Principal Effects}
+  \label{fig:compare}
+\end{figure}
 
 
 

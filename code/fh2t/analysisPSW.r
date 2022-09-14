@@ -1,0 +1,73 @@
+library(tidyverse)
+library(arm)
+library(randomForest)
+library(estimatr)
+source('code/regression.r')
+select <- dplyr::select
+
+load('data/psdat.RData')
+
+
+load('results/psModGlm7.RData')
+
+psdat <- filter(psdat,SchIDPre!=7) ### only one student from school 7, in FH2T
+
+psdat$Z <- ifelse(psdat$trt=='ASSISTments',1,0)
+
+alts <- unique(psdat$trt[psdat$Z==0])
+alts <- setNames(alts,alts)
+
+bsSchool <- function(dat){
+  datS <- split(dat,dat$SchIDPre)
+  do.call("rbind",
+          lapply(datS,function(x) x[sample(1:nrow(x),nrow(x),replace=TRUE),]))
+}
+
+
+#### PSW
+psw1 <- function(dat,psMod){
+
+  dat0=subset(dat,Z==0)
+  dat1=subset(dat,Z==1)
+  dat0$ps=predict(psMod,dat0,type='response')
+
+
+  muc0=with(dat0,sum(Y*(1-ps))/sum(1-ps))
+  muc1=with(dat0,sum(Y*ps)/sum(ps))
+
+  mut0=with(dat1,mean(Y[S==0]))
+  mut1=with(dat1,mean(Y[S==1]))
+
+  c(eff0=mut0-muc0,
+    eff1=mut1-muc1,
+    diff=mut1-muc1-mut0+muc0
+    )
+}
+
+print.psw <- function(x, ...) print(x$coef,...)
+
+
+psw <- function(alt,psMod,B=5000,verbose=TRUE){
+  dat <- getDat(alt)
+
+  est=psw1(dat,psMod)
+
+  if(verbose) step <- if(B>10) round(B/10) else 1
+  bs <- matrix(nrow=B,ncol=3)
+  for(i in 1:B){
+    if(verbose) if(i%%step==0) cat(round(i/B*100),' ')
+    datStar <- bsSchool(dat)
+    psModStar <- update(psMod,data=subset(datStar,Z==1))
+    bs[i,] <- psw1(datStar,psModStar)
+  }
+  if(verbose) cat('\n')
+  out <-
+    list(
+      coef=cbind(est=est,se=apply(bs,2,sd)),
+      bs=bs)
+  class(out) <- 'psw'
+  out
+}
+
+pswResults <- lapply(setNames(alts,alts),psw,psMod=psMod7)
+save(pswResults,file='results/psw.RData')
