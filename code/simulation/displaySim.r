@@ -29,7 +29,7 @@ load('simResults/resultsB1s.RData')
               labels=c(bquote(mu[c]^1-mu[c]^0==0),bquote(mu[c]^1-mu[c]^0==0.3))),
     PE=paste('Stratum',eff),
     dist=paste(c(mix='Mixture',unif='Unform',norm='Normal')[errDist],'Errors'),
-    estimator=c(bayes='Mixture',mest='M-Est',psw='PSW')[estimator],
+    estimator=c(bayes='Mixture',mest='GEEPERs',psw='PSW')[estimator],
     interactionZ=ifelse(intZ,"Z interaction","No\nZ interaction"),
     interactionS=ifelse(intS,"S interaction","No\nS interaction"),
     N=paste0("n=",n)
@@ -122,7 +122,7 @@ ggsave('simFigs/byN.jpg',width=6,height=3)
               labels=c(bquote(mu[c]^1-mu[c]^0==0),bquote(mu[c]^1-mu[c]^0==0.3))),
     PE=paste('Stratum',eff),
     dist=paste(c(mix='Mixture',unif='Unform',norm='Normal')[errDist],'Errors'),
-    estimator=c(bayes='Mixture',mest='M-Est',psw='PSW')[estimator],
+    estimator=c(bayes='Mixture',mest='GEEPERs',psw='PSW')[estimator],
     interactionZ=ifelse(intZ,"Z interaction","No\nZ interaction"),
     interactionS=ifelse(intS,"S interaction","No\nS interaction"),
     N=paste0("n=",n)
@@ -204,7 +204,7 @@ pd <- results %>%
               labels=c(bquote(mu[c]^1==0),bquote(mu[c]^1==0.3))),
     PE=paste('Stratum',eff),
     dist=paste(c(mix='Mixture',unif='Unform',norm='Normal')[errDist],'Errors'),
-    estimator=c(bayes='Mixture',mest='M-Est',psw='PSW')[estimator],
+    estimator=c(bayes='Mixture',mest='GEEPERs',psw='PSW')[estimator],
     interactionZ=ifelse(intZ,"Z\ninteraction","No Z\ninteraction"),
     interactionS=ifelse(intS,"S\ninteraction","No S\ninteraction")
   ) %>%
@@ -417,7 +417,7 @@ bias%>%
   ggplot(aes(b1,bias,color=estimator,fill=estimator,group=estimator))+
   geom_point()+geom_line()+
   geom_hline(yintercept = 0)+
-  facet_grid(paste('intS=',intS,'\nintZ=',intZ)~mu01+n,scales='free')+
+   facet_grid(paste('intS=',intS,'\nintZ=',intZ)~mu01+n,scales='free')+
   ggtitle( 'mixture errors, stratum 1, interactions')%>%print()
 
 
@@ -457,10 +457,10 @@ rmse%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==0)%>%
 pivot_wider(names_from=estimator,values_from=rmse),
 rmse%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.2)%>%
   pivot_wider(names_from=estimator,values_from=rmse)%>%
-select(`M-Est`,`Mix.`=Mixture,PSW),
+select(`GEEPERs`,`Mix.`=Mixture,PSW),
 rmse%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.5)%>%
   pivot_wider(names_from=estimator,values_from=rmse)%>%
-select(`M-Est`,`Mix.`=Mixture,PSW))%>%
+select(`GEEPERs`,`Mix.`=Mixture,PSW))%>%
   kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
   add_header_above(c(" " = 3, "$\\\\alpha=0$" = 3, "$\\\\alpha=0.2$" = 3, "$\\\\alpha=0.5$" = 3),escape=FALSE)%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
@@ -493,10 +493,10 @@ pivot_wider(names_from=estimator,values_from=coverage)
 ,
 coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.2)%>%
   pivot_wider(names_from=estimator,values_from=coverage)%>%
-select(`M-Est`,`Mix.`=Mixture),
+select(`GEEPERs`,`Mix.`=Mixture),
 coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.5)%>%
   pivot_wider(names_from=estimator,values_from=coverage)%>%
-select(`M-Est`,`Mix.`=Mixture))%>%
+select(`GEEPERs`,`Mix.`=Mixture))%>%
   kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
   add_header_above(c(" " = 3, "$\\\\alpha=0$" = 2, "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
@@ -692,7 +692,7 @@ pd100 <- res100 %>%
               labels=c(bquote(mu[c]^1-mu[c]^0==0),bquote(mu[c]^1-mu[c]^0==0.3))),
     PE=paste('Stratum',eff),
     dist=paste(c(mix='Mixture',unif='Unform',norm='Normal')[errDist],'Errors'),
-    estimator=c(bayes='Mixture',mest='M-Est',psw='PSW')[estimator],
+    estimator=c(bayes='Mixture',mest='GEEPERs',psw='PSW')[estimator],
     interactionZ=ifelse(intZ,"Z interaction","No\nZ interaction"),
     interactionS=ifelse(intS,"S interaction","No\nS interaction")
   ) %>%

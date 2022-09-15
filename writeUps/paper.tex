@@ -15,7 +15,7 @@
 
 \input{notation.tex}
 
-\title{GEEPERS: Principal Stratification using Principal Scores and Stacked Estimating Equations}
+\title{GEEPERs: Principal Stratification using Principal Scores and Stacked Estimating Equations}
 
 \begin{document}
 \maketitle
@@ -38,12 +38,24 @@ Another route to identification and estimation of principal effects leads throug
 Of particular importance is the ``principal score,'' \citep{jo,ding,feller}, or the probability that a subject belongs to a particular principal stratum, as a function of pre-treatment covariates.
 Under a strong, untestable assumption called ``principal ignorability,'' which is akin to the no-confounding assumption underlying observational studies, principal scores can be tranformed into weights, which in turn form an unbiased estimate of principal effects.
 
-In a separate, if related, line of research, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
+In a separate, if related, line of research, \citet{jo2002}, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
 This paper expands on those identification results by presenting a new set of principal effect estimators, and associated standard error estimates, based on a generalized estimating equations (or M-estimation or method-of-moments) \citep{stefanskiBoos}.
 It turns out that, under certain general conditions, principal effects can be estimated with a simple, two-step procedure: first, estimate principal scores with logistic regression or another M-estimator; then, impute unknown principal subroup membership indicators with principal scores and estimate principal effects using OLS with interactions, just as in the pre-treatment subgroup case.
+We will refer to the estimators presented here as ``GEEPERs'': generalized estimating equations for principal effects using regressions.
+GEEPERs estimates rely on correct specification of regression functions, but unlike common fully-parametric methods, they make no assumptions about the distribution of regression errors.
+Unlike principal score weighting, GEEPERs does not assume principal ignorability, and admits to sandwich-style standard error estimates, which we provide in the appendix.
 
+This paper focuses on a special case of principal stratification---one-way, binary non-compliance---that is, there are only two principal strata, and principal stratum membership is observable in one treatment arm, but not in the other.
+This scenario would occur if, say, subjects in the control arm of a study had no access to the treatment, and not all subjects assigned to the treatment arm actually received the full treatment.
+While such a setup may represent the simpliest and easiest principal stratification problem, we believe it is a common scenario.
+Moreover, we believe that the methods developed here can extend to more complex scenarios, which we leave to future work.
 
-We refer to the estimators presented here as ``GEEPERs'': generalized estimating equations for principal effects using regressions.
+The following section gives a formal introduction to principal stratification and briefly describes two common estimation techniques, parametric mixture modeling and principal score weighting.
+Next, section \ref{sec:geepers} develops GEEPERs estimation, and gives conditions for its consistency.
+Section \ref{sec:simulation} describes a simulation study examining the operating characteristics of GEEPERs estimates and comparing them to estimates from parametric mixture modeling and principal score weighting.
+Under ideal circumstances, estimates from parametric mixture models and weighting estimators are somewhat more efficient than GEEPERs, but when assumptions are violated GEEPERs easily out-performs the other two methods.
+Section \ref{sec:fh2t} illustrates GEEPERs in analyzing data from a recent large-scale field trial of educational software, and Section \ref{sec:discussion} concludes.
+
 
 
 \section{Background}
@@ -161,7 +173,7 @@ On the other hand, the principal ignorability assumption is strong and restricti
 \citet{feller2017principal} recommends the case-resampling bootstrap to estimate the sampling variance of $\hat{\muc0}_w$, $\hat{\muc1}_w$, and their associated principal effect estimators.
 
 
-\section{GEEPERS}
+\section{GEEPERs}\label{sec:geepers}
 
 The approach we introduce here incorporates principal scores into an M-Estimator for the mixture model \eqref{eq:mixtureModel}.
 Like principal score weighting, our M-estimator does not require distributional assumptions, but instead requires a conditional independence assumption.
@@ -169,7 +181,7 @@ We will begin by describing a stronger-than-necessary conditional independence a
 
 \subsection{Building Intuition: Covariate Ignorability}\label{sec:ci}
 
-We begin by introducing an assumption that we term ``Covariate Ignorability,'' or CI.
+We begin by introducing an assumption that we term ``Covariate Ignorability,'' or CI. It is a slighty weaker version of \citet{jiangDing2021}'s ``auxilliary indpendence'' assumption.
 \begin{ass}[Covariate Ignorability]\label{ass:ci}
 \begin{equation}\label{eq:assumption}
 \EE[\yci|\bxsi,\sti]=\EE[\yci|\sti]=\muc0\text{ or }\muc1
@@ -238,6 +250,8 @@ are M-estimators, with $\hat{\eff0}\rightarrow_p\eff0$ and $\hat{\eff1}\rightarr
 \end{prop}
 
 Thus, given principal scores, Assumption \ref{ass:ci} enables an analyst to estimate principal effects with a simple regression.
+Proposition \ref{prop:reg1} builds on Theorem 2 of \citet{jiangDing2021} which establishes identification of $\eff0$ and $\eff1$ by representing the principal effect estimators as a familiar regression using estimated principal scores.
+
 If principal scores were known exactly, the M-estimation structure of $\hat{\eff0}$ and $\hat{\eff1}$ implies that their sampling variance could be estimated by the standard sandwich estimator for OLS \citep{sefanskiBoosArticle}.
 This will rarely be the case.
 However, if the principal scores are modeled as \eqref{eq:prinScoreMod}, and parameters $\bm{\alpha}$ are estimated by M-estimation, with estimating equations $\sum_{i: Z_i=1}\Omega_i=\bm{0}$, then the estimating equations for the principal score model and principal effect estimation can be stacked \citep[c.f.][]{boosStefanskiBook}, as
@@ -292,8 +306,9 @@ This leads to the following proposition:
 %      +\beta_3Z_i+\beta_4\sti Z_i+\bm{\beta_5}'\bxy_i\sti+
  %   \bm{\beta_6}'\bxy Z_i+\bm{\beta_7}'\bxy_i Z_i\sti+
   \end{equation}
-  with $\EE[\epsilon_i]=0$ and $\{Z_i,\sti,\bxy_i\}\independent \epsilon_i$.
-  Then say the following model is fit with OLS
+  with $\EE[\epsilon_i]=0$, $\{Z_i,\sti,\bxy_i\}\independent \epsilon_i$.
+  Say $\ppi$ linearly independent of $\bxy$, and
+  that the following model is fit with OLS
   \begin{equation}\label{eq:fullInteractionModel}
     Y_i=\beta_0+\bm{\beta_1}'\bxy_i+\beta_2\ri+\beta_3Z_i+\beta_4\ri Z_i+\bm{\beta_5}'\bxy_i\ri+
     \bm{\beta_6}'\bxy Z_i+\bm{\beta_7}'\bxy_i Z_i\ri+\epsilon_i
@@ -317,13 +332,14 @@ For instance, if there is one standard normal covariate $x$, and $\pp_i=\left[1+
 In contrast, an analogous simulation in which Assumption \ref{ass:ci} holds, and the estimation routine of Proposition \ref{prop:reg1} was used, $Var\left(\hat{\muc0}_{int}\right)/Var(Y_C)\approx 15/n$.
 
 Fortunately, simpler models can be fit much more efficiently. In particular, if interactions between covariates and treatment assignment are omitted, then data from the treatment group---in which $\st$ is fully observed---can be used to estimate the coefficients on covariates.
-Such a model implies a fairly strong assumption, that the only interactions between covariates and treatment assignment are due to differences between principal effects.
+Such a model relies on what \citet{bo2002} calls ``Additivity of Treatment Assignment Effect,'' that $\bm{\beta_1}^{C}=\bm{\beta_1}^{T}$.
+In other words, the only interactions between covariates and treatment assignment are due to differences between principal effects---a fairly strong assumpton.
 However, there are two mitigating points.
 First, since there is no requirement that all relevant covariates be included in the model, a researcher can exclude covariates from a model if he or she thinks their relationship with $Y$ may vary substantially between treatment groups, even in the same principal stratum.
 Second, simulation results in the next section suggest that some models excluding important interactions may still yield reliable inferences.
 
 As in the simpler case discussed in \S~\ref{sec:ci}, since the estimators in \eqref{eq:prinEffEst} are M-Estimators, their sampling variance can be estimated with a consistent sandwich estimator.
-Uncertainty in principal score estimation can be incorporated by stacking the estimating equations for the principal score model \eqref{eq:prinScoreMod} and estimating the combined covariance matrix \eqref{eq:sandwich}..
+Uncertainty in principal score estimation can be incorporated by stacking the estimating equations for the principal score model \eqref{eq:prinScoreMod} and estimating the combined covariance matrix \eqref{eq:sandwich}, formulas for which are given in the appendix.
 
 To summarize, incorporating covariates into an outcome regression can substantially relax covariate ignorability, but estimation is only practical if  if the regression omits interactions between covariates and $Z$.
 Standard errors can be estimated via stacked estimating equations.
@@ -331,11 +347,11 @@ Standard errors can be estimated via stacked estimating equations.
 
 \section{A Simulation Study}
 
-We conducted a simulation study to compare the performance of our regression estimator compared to a Bayesian mixture model and to a principal score weighting estimator, in both favorable and unfavorable circumstances.
+We conducted a simulation study to compare the performance of GEEPERs compared to a Bayesian mixture model and to a principal score weighting estimator, in both favorable and unfavorable circumstances.
 The study was designed to answer three sets of overarching questions.
-First, how does the performance of the M-estimator vary as sample size and the extent to which $\bx$ predicts $\st$, and the principal effects themselves vary, and when important interactions were omitted from the outcome model.
-Second, how does the M-estimator could compete with the mixture model? Is it competitive in circumstances favorable to both techniques? Does it avoid the pitfalls of mixture modeling when the parametric assumptions of the normal mixture model fail?
-Third, are there ways or circumstances when the principal score weighting estimator outperforms the M-estimator even though principal ignorability does not hold?
+First, how does the performance of the GEEPERs estimator vary under different conditions, including sample size, the extent to which $\bx$ predicts $\st$, the principal effects themselves vary, and when important interactions were omitted from the outcome model.
+Second, how does GEEPERs compare with mixture modeling? Is it competitive in circumstances favorable to both techniques? Does it avoid the pitfalls of mixture modeling when the parametric assumptions of the normal mixture model fail?
+Third, are there ways or circumstances when the principal score weighting estimator outperforms GEEPERs even though principal ignorability does not hold?
 
 
 
@@ -343,10 +359,8 @@ Third, are there ways or circumstances when the principal score weighting estima
 The simulation study was conducted in \texttt{R} \citep{rcite} and Stan \citep{rstan}, and full replication code is available at \url{www.github.com/[Redacted]}.
 \subsubsection{Data Generation}
 
-Across simulation runs, there were $n=500$ subjects in each treatment arm.
-
-Given three indpendent standard normal covariates, $x_k$ $k=1,\dots,3$,
-principal scores were simulated as
+In each run of the simulation, we simulated three indpendent standard normal covariates, $x_k$ $k=1,\dots,3$. However, only the first two covariates were ``observed,'' i.e. were included in the analysis model.
+Given the covariates, the (true) principal scores were defined as
 \begin{equation*}
   \ppi=logit^{-1}\left[\alpha(x_{1i}+x_{2i}+x_{3i})\right]
 \end{equation*}
@@ -358,26 +372,10 @@ Then principal stratum $\sti\in \{0,1\}$ was simulated as:
 S_i\sim Bern(\ppi)
 \end{equation*}
 
-In most simulation runs, there were no interactions between
-Control potential outcomes were generated as
-\begin{equation}\label{eq:yc-sim}
-  \yci=\beta_1(x_{1i}+x_{2i})+[\muc1+\beta_2(x_{1i}+x_{2i})]\sti +x_{3i}/\sqrt{6}+\epsilon_i
-\end{equation}
-where $\EE[\epsilon_i]=0$ $Var(\epsilon_i)=1/2$, and the distribution of $\epsilon_i$ and $\muc1$ were manipulated factors in the study.
-In most simulations, there was no interaction between $\st$ and $x_1$ and $x_2$; in those cases, $\beta_1=1/\sqrt{6}$, and $\beta_2=0$.
-In simulation runs including an interaction with $\st$, $\beta_1=3/(4\sqrt{6})$ and $\beta_2=5/(4\sqrt{6})$.
-
-Finally, treatment potential outcomes were generated as
-\begin{equation*}
-  \yti=\yci+(0.3-\muc1)\sti+\beta_3(x_{1i}+x_{2i})
-\end{equation*}
-and observed outcomes were $Y_i=Z_i\yti+(1-Z_i)\yci$, with even subjects assigned to treatment and odd subjects assigned to control.
-In most simulation runs, there were no interactions between treatment assignemnt and covariates, so $\beta_3=0$; when such interactions were included, $\beta_3=1/(2\sqrt{6})$.
-
-Since the covariates were all centered, $\muc0=\mut0=\eff0=0$ throughout the study.
-Similarly, $\mut1=0.3$, while $\muc1$, and hence $\eff1$, varied between runs.
-
-Note that when there were no interactions included in the model, since $Var(\beta_1(x_1+x2+x_3))=1/2$ and $Var(\epsilon_i)=1/2$, covariates explained half of the variance of $Y$ within treatment group and principal stratum. However, as we shall see, $x_3$ was ``unobserved,'' so observed covariates explained 1/3 of that variance.
+Finally, potential outcomes were generated as in \eqref{eq:interaction}, with $\bxy=[\bm{x_1},\bm{x_2},\bm{x_3}]$,
+and with $\EE[\epsilon_i]=0$ and $Var(\epsilon_i)=1/2$.
+Across simulation runs, intercepts $\beta_0^C=\beta_0^T=0$ and the coefficient on the unobserved covariate $x_3$, $\beta_{1,3}^C=\beta_{1,3}^T= 1/\sqrt{6}$.
+The distribution of $\epsilon_i$ and other coefficients $\bm{\beta}$ were manipulated factors in the study.
 
 
 \subsubsection{Manipulated Factors}
@@ -411,6 +409,20 @@ $\epsilon$ is the regression error in \eqref{eq:yc-sim}. Across simulation runs,
 
 The last two factors---the presence of interactions between covariates and $\st$ and $Z$, respectively---test the performance of a model that does not include interactions when that modeling assumption is false.
 
+In most simulations, there was no interaction between $\st$ and $x_1$ and $x_2$; in those cases, $\beta_1=1/\sqrt{6}$, and $\beta_2=0$.
+In simulation runs including an interaction with $\st$, $\beta_1=3/(4\sqrt{6})$ and $\beta_2=5/(4\sqrt{6})$.
+
+Finally, treatment potential outcomes were generated as
+\begin{equation*}
+  \yti=\yci+(0.3-\muc1)\sti+\beta_3(x_{1i}+x_{2i})
+\end{equation*}
+and observed outcomes were $Y_i=Z_i\yti+(1-Z_i)\yci$, with even subjects assigned to treatment and odd subjects assigned to control.
+In most simulation runs, there were no interactions between treatment assignemnt and covariates, so $\beta_3=0$; when such interactions were included, $\beta_3=1/(2\sqrt{6})$.
+
+Since the covariates were all centered, $\muc0=\mut0=\eff0=0$ throughout the study.
+Similarly, $\mut1=0.3$, while $\muc1$, and hence $\eff1$, varied between runs.
+
+Note that when there were no interactions included in the model, since $Var(\beta_1(x_1+x2+x_3))=1/2$ and $Var(\epsilon_i)=1/2$, covariates explained half of the variance of $Y$ within treatment group and principal stratum. However, as we shall see, $x_3$ was ``unobserved,'' so observed covariates explained 1/3 of that variance.
 
 
 \subsubsection{Analysis Models}\label{sec:simMods}
@@ -548,7 +560,7 @@ In a recent educational field experiment, middle school students completing thei
 
 The literature on hints in online learning is mixed \citep{stuff}, in particular when it comes to requesting a bottom-out hint (called ``bottoming out''). On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep{worked example stuff}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer, and use the software without ever working to solve any problems. However, in this experiment, the ability to bottom out was only one of several differnces between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects separately for subjects who would (if assigned to treatment) bottom out, and for subjects who would not. If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who do not bottom out, but a positive effect for students who do. (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
 
-For the purpose of demonstrating GEEPERS, we gathered dichotomized data on %which students in the treatment condition requested at least one bottom-out hint.
+For the purpose of demonstrating GEEPERs, we gathered dichotomized data on %which students in the treatment condition requested at least one bottom-out hint.
 whether students in the treatment condition requested more than the median number of bottom-out hints (11).
 That is, $\st=1$ for students who, if assigned to the treatment condition, would request at more than 11 bottom-out hints (``bottom-outers''), and $\st=0$ for students who would request 11 or fewer (``non-bottom-outers''). %least one bottom-out hint, and $\st=0$ for students who would not.
 The outcome of interest $Y$ in our example is students' total scores on a ten-item posttest completed within the online tutoring system; $Y$ is an integer ranging from 0 to 10.
@@ -565,9 +577,9 @@ Table \ref{tab:tab1} describes each covariate--as well as the sucess of the rand
   \label{tab:tab1}
 \end{table}
 
-The data analysis we present here is intended as a demonstration of GEEPERS, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition and post-selection inference. For a more complete discussion of the experimental design, the conditions being compared, and the impact analysis, please see \citet{impactPaper}.
+The data analysis we present here is intended as a demonstration of GEEPERs, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition and post-selection inference. For a more complete discussion of the experimental design, the conditions being compared, and the impact analysis, please see \citet{impactPaper}.
 
-\subsection{Principal Score Model}
+\subsection{Principal Score Model}\label{sec:psMod}
 
 \begin{figure}
   \centering
@@ -586,7 +598,7 @@ The model was fairly successful in distinguishing bottom-outers from non-bottom-
 Table \ref{tab:results} show the model's coefficient estimates. Noteably, conditional on the other covariates, students with higher fifth-grade standardized test scores were less likely to request many bottom out hints, as were students who spent little time on task during the pretest, while IEP and ESOL students, and students without baseline measurement data, were relatively unlikely to be bottom-outers. The relationship between perceptual sensitivity and bottom out requests was not monotonic---students with average levels were more likely than those with more extreme high or low levels to be bottom-outers; bottom-outers tended to have lower math self-efficacy, but the data are also consistent with a small positive relationship, and there appears to be little to no relationship between math anxiety and bottom-outer status at all.
 
 
-\subsection{Outcome Regression and Principal Effects}
+\subsection{Outcome Regression and Principal Effects}\label{sec:outMod}
 \begin{figure}
   \centering
   \includegraphics{../figure/prinEffs.pdf}
@@ -611,6 +623,13 @@ There is no discernable difference between estimated principal effects when coef
   \label{fig:compare}
 \end{figure}
 
+Figure \ref{fig:compare} shows principal effect estimates from GEEPERs (without the $S$-interactions) compared to analogous estimates using Bayesian mixture modeling and PSW.
+All three sets of estimates relied on the same principal score model described above, in Section \ref{sec:psMod}, though in the mixture model it was fit simultaneously with effect estimation using a Markov Chain Monte Carlo algorithm \citep{rstan}.
+The Bayesian mixture model assumed that outcomes were normally distributed, conditional on covariates (the same as in Section \ref{sec:outMod}) and principal stratum, with a residual standard deviation that varied between principal strata. This modeling assumption is necessarily false, since post-test scores were integers between 0 and 10. All model parameters with support in $\mathbb{R}$ were given standard normal priors, while standard deviation parameters were given half-standard normal priors.
+The PSW estimators did not include any covariate outcome modeling. Standard errors for the PSW estimates were estimated using the bootstrap, with resamping done within schools.
+For all three sets of estimators, approximate 95\% confidence intervals were estimated by subtracting twice the standard error from the point estimate (or twice the posterior standard deviation from the posterior mean, in the Bayesian mixture model).
+
+In this case, all three estimation strategies largely agreed. This may suggest that the estimators' various assumptions---additivity of treatment assignment effect for GEEPERs and the mixture model, normal residuals for the mixture model, and principal ignorability for PSW---were all innocuous and may have held approximately. Alternatively, violations of the different assumptions may have led to similar errors.
 
 
 \section{Discussion}
