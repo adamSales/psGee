@@ -233,7 +233,7 @@ Note that, in general, $(1-Z_i)\ppi=(1-Z_i)\ri$ and $Z_i\sti=Z_i\ri$, allowing $
 
 
 \begin{prop}\label{prop:reg1}
-  Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, and \ref{ass:ci}, if %principal scores are known exactly,
+  Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, \ref{ass:ci}, and suitible regularity conditions \citep[e.g.][p. 327]{boosStefanskiBook}, if %principal scores are known exactly,
   $\ri$ is defined as in \eqref{eq:ri} and the model
 \begin{equation}\label{eq:regression0}
   \EE[Y_i|Z_i,\ri]=\beta_0+\beta_1\ri+\beta_2Z_i+\beta_3Z_i\ri
@@ -444,7 +444,7 @@ For the treatment group, a normal regression:
 \end{equation}
 and for the control group, mixture model:
 \begin{equation}\label{eq:mix-sim}
-  f_{Y|Z=0}(y_i)=\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}}\phi\left(\frac{y_i-[\beta_0+\beta_1+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)}+(1-\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}})\phi\left(\frac{y_i-[\beta_0+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)}
+  f_{Y|Z=0}(y_i)=\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}}\phi\left(\frac{y_i-[\beta_0+\beta_1+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)+(1-\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}})\phi\left(\frac{y_i-[\beta_0+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)
 \end{equation}
 Note that the coefficients $\bm{\gamma}_1$ are the same across treatment groups and principal strata, while the residual variance differs across treatment groups, but not across principal strata.
 The models \eqref{eq:psModsim}, \eqref{eq:mix1-sim}, and \eqref{eq:mix-sim} were fit simultaneously using Bayesian Markov Chain Monte Carlo with Stan \citep{rstan}. We interpreted the posterior mean as a point estimate and the posterior standard deviation as a standard error.
@@ -643,7 +643,7 @@ GEEPERs is a straightforward approach to principal effect estimation under stron
 
 There is good reason to hope that extensions to GEEPERs may be straightforward.
 First, GEEPERs may be extended to situations in which there is two-way noncompliance, and only a weaker form of monotonicity (Assumption \ref{ass:sm}) holds.
-For instance, in truncation by death problems \citep{e.g.][]{zhangRubin,ding2011}, $S_i=1$ if participant $i$ survives (or, more generally, if the outcome $Y_i$ is measured) and 0 otherwise, and interest is is in the principal effect for the ``always survive'' principal stratum in which $\sti=S_{ci}=1$.
+For instance, in truncation by death problems \citep[e.g.][]{zhangRubin,ding2011}, $S_i=1$ if participant $i$ survives (or, more generally, if the outcome $Y_i$ is measured) and 0 otherwise, and interest is is in the principal effect for the ``always survive'' principal stratum in which $\sti=S_{ci}=1$.
 If, say, $\sti\ge S_{Ci}$, then every subject in the control condition with $S_i=1$ is in the always survive stratum, while those subjects in the treatment condition with $S_i=1$ are a mixture of the always survive and $\sti=1;\;S_{Ci}=0$ stratum.
 The scenario of truncation by death with (weak) monotonicity is broadly similar to the strong monotonicity, one-way noncompliance situation that this paper discussed.
 On the other hand, when no monotonicity assumption holds, both $\st$ and $S_C$ will have to be imputed for every subject; further research is necessary to determine the appropriate way to do so.
@@ -705,8 +705,8 @@ In the treatment group, $\st$ is observed, so
 
 Due to Assumption \ref{ass:rand} (randomization), $\EE[Y|Z=0]=\EE[Y_C]$, $\EE[Y|Z=1]=\EE[Y_T]$, $\EE[Y\pp|Z=0]=\EE[Y_C\pp]$ and $\EE[YS|Z=1]=\EE[Y_T\st]$, completing the proof.
 
-\subsection{Proof for Proposition \ref{prop:reg0}}
-Carrying out those replacements in \eqref{eq:estEq0}, and rearranging\footnote{Technically, replacing $\tilde{\Psi}_i$ with $\Psi_i=\begin{psmallmatrix} 1 & 0&1&0\\ 0&1&0&1\\0&0&1&0\\0&0&0&1\end{psmallmatrix}\tilde{\Psi}_i$.} gives an equivalent set of estimating equations:
+\subsection{Proof for Proposition \ref{prop:reg1}}
+replacing $\sti$ and $\pp$ in \eqref{eq:estEq0} with $\ri$, as in \eqref{eq:ri}, and replacing $\tilde{\Psi}_i$ with $\Psi_i=\begin{psmallmatrix} 1 & 0&1&0\\ 0&1&0&1\\0&0&1&0\\0&0&0&1\end{psmallmatrix}\tilde{\Psi}_i$ gives an equivalent set of estimating equations:
 \begin{equation}\label{eq:estEq1}
 \sum_{i=1}^{n_C}\Psi_i=\sum_{i=1}^{n_C}\begin{pmatrix}
     Y_i-\muc0-\ri(\muc1-\muc0)-Z_i(\mut0-\muc0)-Z_i\ri(\mut1-\mut0-\muc1+\muc0)\\
@@ -716,10 +716,17 @@ Carrying out those replacements in \eqref{eq:estEq0}, and rearranging\footnote{T
 
 \end{pmatrix}=\begin{pmatrix} 0\\0\\0\\0\end{pmatrix}
 \end{equation}
+These are equivalent to the estimating equations for OLS model \eqref{eq:regression0} with $\beta_0=\muc0$, $\beta_1=\muc1-\muc0$, $\beta_2=\mut0-\muc0$, and $\beta_3=\mut1-\mut0-\muc1-\muc0$.
+Therefore, under standard OLS regularity conditions the estimated parameter vector $\bm{\hat{\beta}}$ is consistent, completing the proof.
 
-\subsection{Proof for Proposition \ref{prop:interaction}}
+
+\subsection{Proof for Proposition \ref{prop:interactions}}
 First, note that $\EE[S]=\EE\EE[S|\bx]=\EE[\pp]$ and
-$$\EE[\bx S]=\EE[\bx S|Z=1]=\EE[\bx S|Z=0]=\EE[\bx \EE[\bx\EE[S|\bx]|Z=0]]=\EE[\bx\pp|Z=0]=\EE[\bx\pp]$$
+\begin{align*}
+  \EE[\bx S]&=\EE[\bx S|Z=1]=\EE[\bx S|Z=0] \mbox{ due to \eqref{ass:rand}}\\
+  &=\EE[\bx\EE[S|\bx]|Z=0]=\EE[\bx\pp|Z=0]=\EE[\bx\pp]
+\end{align*}
+
 implying that
 \begin{equation*}
   \begin{split}
