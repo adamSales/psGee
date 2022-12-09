@@ -2,6 +2,8 @@ library(tidyverse)
 library(broom)
 library(kableExtra)
 library(gridExtra)
+library(ggpubr)
+
 
 source('code/simulation/readSimFuncs.r')
 
@@ -56,7 +58,7 @@ seN <- pdns%>%
 
 full_join(seN,biasN)%>%filter(eff==1,estimator!="PSW")%>%summarize(across(c(se,bias),max),coef=round(se/bias))
 
-bind_rows(
+plotByN=bind_rows(
   seN%>%mutate(se=se/3,meas="SE")%>%rename(what=se),
   biasN%>%mutate(meas="Bias")%>%rename(what=bias))%>%
   filter(eff==1,estimator!="PSW")%>%
@@ -65,9 +67,10 @@ bind_rows(
   scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*3,name='Standard Error'))+
   scale_shape_manual(values=c(0,16))+
   annotate('text',600,.125,label=list(bquote(atop("Normal Resid., No Interactions, ",alpha==0.5~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
-  scale_x_continuous(name="Sample Size Per Group",breaks=c(seq(100,500,200),1000))+
-  ggtitle("Bias and Standard Error by n")+theme(legend.title=element_blank())
-ggsave("simFigs/biasSEbyN.jpg",width=6,height=3)
+  scale_x_continuous(name="Sample Size Per Group (n)",breaks=c(seq(100,500,200),1000))+
+  #ggtitle("Bias and Standard Error by n")+
+  theme(legend.title=element_blank())
+ggsave("simFigs/biasSEbyN.jpg",plot=plotByN,width=6,height=3)
 
 
 ##### table for appendix
@@ -150,7 +153,7 @@ seB1 <- pdb1%>%
 
 full_join(seB1,biasB1)%>%filter(eff==1,estimator!="PSW",b1>0)%>%summarize(across(c(se,bias),max),coef=round(se/bias))
 
-bind_rows(
+plotByAlpha=bind_rows(
   seB1%>%mutate(se=se/5,meas="SE")%>%rename(what=se),
   biasB1%>%mutate(meas="Bias")%>%rename(what=bias))%>%
   filter(b1>0,eff==1,estimator!="PSW")%>%
@@ -158,9 +161,17 @@ bind_rows(
   geom_point()+geom_line()+geom_hline(yintercept=0)+#,linetype="dashed")+
   scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*5,name='Standard Error'))+
   scale_shape_manual(values=c(0,16))+
-  annotate('text',.7,.1,label=list(bquote(atop("Normal Resid., No Interactions, ",n==500~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+xlab(bquote(alpha))+ggtitle(bquote("Bias and Standard Error by "~alpha))
-ggsave("simFigs/biasSEbyB1.jpg",width=6,height=3)
+  annotate('text',.7,.1,label=list(bquote(atop("Normal Resid., No Interactions, ",n==500~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
+  xlab(bquote(alpha))#+ggtitle(bquote("Bias and Standard Error by "~alpha))
+ggsave("simFigs/biasSEbyB1.jpg",plot=plotByAlpha,width=6,height=3)
 
+
+#### combine results by n and B1
+ggarrange(plotByN,plotByAlpha,ncol=1,common.legend = TRUE, legend = "bottom")
+ggsave("simFigs/biasSEbyB1n.jpg",width=5,height=4)
+
+%>%
+ggexport(filename="simFigs/biasSEbyB1n.jpg")
 
 #### table for appendix
 rmseB1 <- pdb1%>%
