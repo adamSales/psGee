@@ -1,4 +1,4 @@
-\documentclass[11pt]{article} % use larger type; default would be 10pt
+\documentclass{statsoc} % use larger type; default would be 10pt
 
 \usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
 \usepackage{amsmath,amssymb}
@@ -15,6 +15,8 @@
 
 \input{notation.tex}
 
+
+
 %%% TO DO
 %% Add detail to application section
 %% fill in missing citations
@@ -25,10 +27,24 @@
 %%   look for what else I promised and either put it in or delete promise
 %% proofread
 
-\title{GEEPERs: Principal Stratification using Principal Scores and Stacked Estimating Equations}
+\title[GEEPERS]{GEEPERs: Principal Stratification using Principal Scores and Stacked Estimating Equations}
+
+\author[Sales and Vanacore]{Adam C Sales}
+
+\author{Kirk Vanacore}
+\address{Worcester Polytechnic Institute,
+Worcester, MA,
+USA.}
+\email{asales@wpi.edu}
+
 
 \begin{document}
 \maketitle
+
+\begin{abstract}
+Principal stratification is a framework for making sense of causal effects conditioned on variables that themselves may have been affected by treatment. Most principal stratification estimators rely on strong structural or modeling assumptions, and many require advanced statistical training to fit and to check. In this paper, we introduce a new M-estimation principal effect estimator for one-way noncompliance based on a binary indicator. Estimates may be computed using conventional regressions (though the standard errors require a specialized sandwich formula) and do not rely on distributional assumptions. We illustrate the new technique in an analysis of student log data from a recent educational technology field experiment.  
+\end{abstract}
+\keywords{Causal Inference; Principal Stratification; Educational Technology}
 
 \section{Introduction}
 
@@ -393,11 +409,12 @@ We manipulated six factors in the simulation, listed in Table \ref{tab:factor}.
 The six factors are not completely crossed---in particular, we let $n$ and $\alpha$ each vary across all the levels listed while holding the other five factors fixed.
 
 \begin{table}
+    \caption{\label{tab:factor} Manipulated factors in simulation study}
   \centering
-  \begin{tabular}{cc}
-    \hline
-    Factor &Levels\\
-    \hline
+\begin{tabular}{*{2}{c}}
+  \hline
+  Factor &Levels\\
+  \hline
 Sample size per condition $n$ &$100,200,\dots,1000$\\
 $\alpha$ &$0,0.2,0.3,\dots,1$\\
 The distribution of $\epsilon_i$& Normal, Uniform\\
@@ -406,8 +423,6 @@ Interactions between $\st$ and covariates & No, Yes\\
 Interactions between $Z$ and covariates& No, Yes\\
 \hline
   \end{tabular}
-  \caption{Manipulated factors in simulation study}
-  \label{tab:factor}
   \end{table}
 
 \textbf{\emph{Sample Size per condition $\bm{n}$:}} The guarantees of M-estimation are all asymptotic, so we examined the behavior of our M-estimator at a range of sample sizes to determine its finite-sample properties.
@@ -451,7 +466,10 @@ For the treatment group, a normal regression:
 \end{equation}
 and for the control group, mixture model:
 \begin{equation}\label{eq:mix-sim}
-  f_{Y|Z=0}(y_i)=\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}}\phi\left(\frac{y_i-[\beta_0+\beta_1+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)+(1-\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}})\phi\left(\frac{y_i-[\beta_0+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)
+\begin{split}
+  f_{Y|Z=0}(y_i)&=\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}}\phi\left(\frac{y_i-[\beta_0+\beta_1+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)\\
+  &+(1-\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}})\phi\left(\frac{y_i-[\beta_0+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)
+\end{split}
 \end{equation}
 Note that the coefficients $\bm{\gamma}_1$ are the same across treatment groups and principal strata, while the residual variance differs across treatment groups, but not across principal strata.
 The models \eqref{eq:psModsim}, \eqref{eq:mix1-sim}, and \eqref{eq:mix-sim} were fit simultaneously using Bayesian Markov Chain Monte Carlo with Stan \citep{rstan}. We interpreted the posterior mean as a point estimate and the posterior standard deviation as a standard error.
@@ -485,24 +503,24 @@ For the remainder of the simulation, we focus on the moderate cases of $n=500$ a
 
 \begin{figure}
   \centering
-  \includegraphics{../simFigs/biasSEbyN.jpg}
-  \caption{Empirical bias and standard error of M- and Mixture estimates of $\muc1$ as sample size per treatment group $n$ varies from 0 to 1. There were 500 replications for each $n$. Other factors were held fixed at the noted values.}
-  \label{fig:n}
+  \includegraphics[width=\textwidth]{../simFigs/biasSEbyB1N.jpg}
+  \caption{Empirical bias and standard error of GEEPERs and Mixture estimates of $\muc1$ as sample size per treatment group $n$ or $\alpha$ varies. There were 500 replications for each $n$ or $\alpha$. Other factors were held fixed at the noted values.}
+  \label{fig:alphan}
 \end{figure}
 
-\begin{figure}
-  \centering
-  \includegraphics{../simFigs/biasSEbyB1.jpg}
-  \caption{Empirical bias and standard error of M- and Mixture estimates of $\muc1$ as $\alpha$ varies from 0.1 to 1. There were 500 replications for each $n$. Other factors were held fixed at the noted values.}
-  \label{fig:alpha}
-\end{figure}
+% \begin{figure}
+%   \centering
+%   \includegraphics{../simFigs/biasSEbyB1.jpg}
+%   \caption{Empirical bias and standard error of M- and Mixture estimates of $\muc1$ as $\alpha$ varies from 0.1 to 1. There were 500 replications for each $n$. Other factors were held fixed at the noted values.}
+%   \label{fig:alpha}
+% \end{figure}
 
 \subsubsection{Other Factors}
 
 
 \begin{figure}
   \centering
-  \includegraphics{../simFigs/boxplots.pdf}
+  \includegraphics[width=\textwidth]{../simFigs/boxplots.pdf}
   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} under varying conditions. For all plots, $n=500$; there were 500 replications for each set of conditions. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
   \label{fig:boxplots}
 \end{figure}
@@ -551,18 +569,18 @@ Across all conditions in the table, the GEEPERs confidence intervals have higher
 %% \end{figure}
 
 
-  \begin{table}
-    \centering
-  \input{rmseTab}
-  \caption{Empirical root-mean-squared error (RMSE) estimates for GEEPERs, Bayesian mixture modeling, and PSW under varying conditions.}
-  \label{tab:rmse}
-\end{table}
+%   \begin{table}
+%     \centering
+%   \input{rmseTab}
+%   \caption{Empirical root-mean-squared error (RMSE) estimates for GEEPERs, Bayesian mixture modeling, and PSW under varying conditions.}
+%   \label{tab:rmse}
+% \end{table}
 
 \begin{table}
+\caption{Empirical coverage of nominal 95\% confidence intervals for GEEPERs and Bayesian mixture modeling under varying conditions.}
+  \label{tab:coverage}
 \centering
   \input{coverageTab}
-  \caption{Empirical coverage of nominal 95\% confidence intervals for GEEPERs and Bayesian mixture modeling under varying conditions.}
-  \label{tab:coverage}
 \end{table}
 
 
