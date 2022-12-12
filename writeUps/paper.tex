@@ -4,7 +4,7 @@
 \usepackage{amsmath,amssymb}
 \usepackage{bm}
 \usepackage{natbib}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{graphicx}
 \usepackage{mathtools}
 \usepackage{fullpage}
@@ -49,12 +49,14 @@ Principal stratification is a framework for making sense of causal effects condi
 \section{Introduction}
 
 Randomized experiments easily admit subgroup analysis---estimation of treatment effects for a subset of the study population---when those subgroups are defined at baseline, and not themselves a function of treatment assignment.
-A simple, popular approach to estimating subgroup effects is to use ordinary least squares (OLS) regression, regressing the outcome on a treatment indicator interacted with an indicator for subgroup membership.
+%A simple, popular approach to estimating subgroup effects is to use ordinary least squares (OLS) regression, regressing the outcome on a treatment indicator interacted with an indicator for subgroup membership.
 However, when subgroup membership is a function of a post-treatment variable, then it may itself be affected by the treatment.
-Contrasts between treatment and control conditions within those subgroups may not have a causal interpretation at all---and when they do, the same techniques that work for subgroups defined at baseline (such as OLS with interactions) will often produce inconsistent estimates.
-Principal stratification \citep{frangakis} is a broad framework for defining subgroup effects for post-treatment subgroups, based on the notion of \emph{potential} subgroups called principal strata, that is, groups of subjects defined based on the values a post-treatment variable would potentially take if the subject is assigned to one treatment condition or another.
-Since principal strata membership is based on subjects' responses to both factual and counter-factual treatment assignments, it is, in general unobserved.
-Nevertheless, researchers have devised estimators of principal effects, as average effects within principal strata are called, to address a broad range of applied statistical problems, including non-compliance in randomized experiments, the evaluation of surrogate outcomes \citep{li2010bayesian}, the investigation of causal mechanisms \citep{lidsayPage}, and sample attrition \citep{zhangRubin, ding2011}.
+Contrasts between treatment and control conditions within those subgroups may not have a causal interpretation at all---and when they do, the same techniques that work for subgroups defined at baseline %(such as OLS with interactions) 
+will often produce inconsistent estimates.
+
+Principal stratification \citep{frangakis} is a broad framework for defining subgroup effects for post-treatment subgroups. It relies on the notion of \emph{potential} subgroups called principal strata: groups of subjects defined based on the values a post-treatment variable would potentially take if the subject were assigned to one treatment condition or another.
+Since principal strata membership is based on subjects' responses to both factual and counter-factual treatment assignments, it is in general unobserved.
+Nonetheless, researchers have devised estimators of principal effects, as average effects within principal strata are called, to address a broad range of applied statistical problems, including non-compliance in randomized experiments \citep{air}, the evaluation of surrogate outcomes \citep{li2010bayesian}, the investigation of causal mechanisms \citep{lidsayPage}, and sample attrition \citep{zhangRubin, ding2011}.
 
 Because principal strata membership is generally unobserved, principal effects are not always identified, and when they are, estimation can still be difficult.
 Typically, principal effects are identified and estimated based on strong structural assumptions \citep[e.g.][]{air} and/or parametric modeling \citep[e.g.][]{imbens1997bayesian}.
@@ -65,10 +67,10 @@ Of particular importance is the ``principal score,'' \citep{jo,ding2017principal
 Under a strong, untestable assumption called ``principal ignorability,'' which is akin to the no-confounding assumption underlying observational studies, principal scores can be transformed into weights, which in turn form an unbiased estimate of principal effects.
 
 In a separate, if related, line of research, \citet{jo2002}, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
-This paper expands on those identification results by presenting a new set of principal effect estimators, and associated standard error estimates, based on a generalized estimating equations (or M-estimation or method-of-moments) \citep{stefanskiBoos}.
-It turns out that, under certain general conditions, principal effects can be estimated with a simple, two-step procedure: first, estimate principal scores with logistic regression or another M-estimator; then, impute unknown principal subgroup membership indicators with principal scores and estimate principal effects using OLS with interactions, just as in the pre-treatment subgroup case.
+This paper expands on those identification results by presenting a new set of principal effect estimators, and associated standard error estimates, based on a general estimating equations (or M-estimation or method-of-moments) \citep{stefanskiBoos}.
+It turns out that, under certain general conditions, principal effects can be estimated with a simple, two-step procedure: first, estimate principal scores with logistic regression or another M-estimator; then, impute unknown principal subgroup membership indicators with principal scores and estimate principal effects using ordinary least squares (OLS) regression with interactions. %, just as in the pre-treatment subgroup case.
 We will refer to the estimators presented here as ``GEEPERs'': generalized estimating equations for principal effects using regressions.
-GEEPERs estimates rely on correct specification of regression functions, but unlike common fully-parametric methods, they make no assumptions about the distribution of regression errors.
+GEEPERs estimates rely on correct specification of regression functions, but unlike common fully-parametric methods, they make no assumptions about the shape of the distribution of regression errors.
 Unlike principal score weighting, GEEPERs does not assume principal ignorability, and admits to sandwich-style standard error estimates, which we provide in the appendix.
 
 This paper focuses on a special case of principal stratification---one-way, binary non-compliance---that is, there are only two principal strata, and principal stratum membership is observable in one treatment arm, but not in the other.
@@ -86,7 +88,7 @@ Section \ref{sec:fh2t} illustrates GEEPERs in analyzing data from a recent large
 
 \section{Background}
 In a randomized experiment with two conditions, let $Z_i=0$ if subject $i$, $i=1,\dots,n$ is assigned to the treatment condition, and let $Z_i=0$ otherwise.
-If interest is in the effect of $Z$ on an outcome $Y$, under the ``stable unit treatment value assumption'' \citep{air} of no interference between units and no hidden versions of the treatment, define potential outcomes \citep{splawa1990application,air} $\yti$ as the value of $Y$ that $i$ would exhibit if $Z_i=1$, and let $\yci$ be the value if $Z_i=0$. Then the observed value of $Y$ satisfies $Y_i=Z_i\yti+(1-Z_i)\yci$, and the treatment effect of $Z$ on $Y$ for subject $i$ may be defined as $\tau_i=\yti-\yci$. The average treatment effect (ATE) is $\EE[\tau]$. %
+If interest is in the effect of $Z$ on an outcome $Y$, under the ``stable unit treatment value assumption'' \citep{air} of no interference between units and no hidden versions of the treatment, define potential outcomes \citep{splawa1990application} $\yti$ as the value of $Y$ that $i$ would exhibit if $Z_i=1$, and let $\yci$ be the value if $Z_i=0$. Then the observed value of $Y$ satisfies $Y_i=Z_i\yti+(1-Z_i)\yci$, and the treatment effect of $Z$ on $Y$ for subject $i$ may be defined as $\tau_i=\yti-\yci$. The average treatment effect (ATE) is $\EE[\tau]$. %
 
 Let $S_i\in\{0,1\}$ be a measurement on subject $i$ taken subsequent to treatment assignment, so that $S$ may be affected by $Z$.
 Then $S$ itself has potential values $\sti$ and $\sci$, which $i$ would exibit if $Z_i=1$ or $Z_i=0$, respectively.
@@ -101,23 +103,25 @@ The average treatment effect in each principal stratum, $\eff1=\EE[\tau|\st=1]$ 
 The challenge in estimating principal effects is due to the fact that strata membership $\sti$ is only observed when $Z_i=1$, in which case $\sti=S_i$, the observed value of $S$.
 
 \subsection{Estimating Principal Effects}
-In estimating principal effects for a binary $S$, it will be useful to define four conditional means:
+In estimating principal effects for a binary $S$, it will be useful to define four conditional means. For $s\in\{0,1\}$, let 
 \begin{equation}\label{eq:mus}
-  \begin{split}
-    \muc0&=\EE[Y_C|\st=0]\\
-    \muc1&=\EE[Y_C|\st=1]\\
-    \mut0&=\EE[Y_T|\st=0]\\
-    \mut1&=\EE[Y_T|\st=1]
-  \end{split}
+\mucs=\EE[Y_C|\st=s] \mbox{ and }\muts=\EE[Y_T|\st=s]%\mbox{ for }s=0,1
+  % \begin{split}
+  %   \muc0&=\EE[Y_C|\st=0]\\
+  %   \muc1&=\EE[Y_C|\st=1]\\
+  %   \mut0&=\EE[Y_T|\st=0]\\
+  %   \mut1&=\EE[Y_T|\st=1]
+  % \end{split}
 \end{equation}
 Then, since
 \begin{equation*}
-  \begin{split}
-    \eff0&=\mut0-\muc0\\
-    \eff1&=\mut1-\muc1
-  \end{split}
+  \effs=\muts-\mucs
+  % \begin{split}
+  %   \eff0&=\mut0-\muc0\\
+  %   \eff1&=\mut1-\muc1
+  % \end{split}
 \end{equation*}
-estimating principal effects is equivalent to estimating the four conditional means.
+estimating principal effects requires estimating the four conditional means.
 
 We will focus on estimation in completely randomized experiments, that is, we will assume
 \begin{ass}[Randomization]\label{ass:rand}
@@ -130,12 +134,13 @@ where $\bm{x}_i$ is a vector of pre-treatment covariates.
 Under Assumptions \ref{ass:sm} and \ref{ass:rand}, conditional means $\mut0$ and $\mut1$ are non-parametrically identified.
 In particular, the means of observed outcomes for subjects with $Z=1$ and $S=0$ or $S=1$ are unbiased for $\mut0$ and $\mut1$, respectively, since when $Z_i=1$, $Y_i=\yti$ and $S_i=\sti$.
 In contrast, $\muc0$ and $\muc1$ are not fully identified without further assumptions because $\sti$ and $\yci$ are never observed simultaneously (though they may be nonparametrically bounded; see, e.g., \citealt{bounding}).
-When $S$ is a measure of compliance, and $\tau_i=0$ whenever $\sti=0$ (the ``exclusion restriction''), $\muc1$---and hence $\eff1$---may be estimated with instrumental variables methods \citep{air}.
-In this case, $\eff1$ is often called the ``local average treatment effect'' or the average effect of the treatment on the treated.
-We will briefly review two approaches to estimating $\muc0$ and $\muc1$ that do not assume the exclusion restriction---finite mixture modeling and weighting---with some comments on the role for covariates in-between.
+% When $S$ is a measure of compliance, and $\tau_i=0$ whenever $\sti=0$ (the ``exclusion restriction''), $\muc1$---and hence $\eff1$---may be estimated with instrumental variables methods \citep{air}.
+% In this case, $\eff1$ is often called the ``local average treatment effect'' or the average effect of the treatment on the treated.
+We will briefly review two approaches to estimating $\muc0$ and $\muc1$% that do not assume the exclusion restriction
+---normal mixture modeling and weighting---with some comments in-between on the role for covariates.
 
-\subsubsection{Finite Mixture Modeling}
-The finite mixture modeling approch to estimating $\muc0$ and $\muc1$ \citep{imbens1997bayesian} assumes that, conditional on $\st$, $Y_C$ is normally distributed.
+\subsubsection{Normal Mixture Modeling}
+The normal mixture modeling approach to estimating $\muc0$ and $\muc1$ \citep{imbens1997bayesian} assumes that, conditional on $\st$, $Y_C$ is normally distributed.
 Then the probability density of $Y_C$ may be written as
 \begin{equation}\label{eq:mixtureModel}
   f_{Y_C}(y)=Pr(\st=0)\phi\left(\frac{y-\muc0}{\sigma_C^0}\right)+Pr(\st=1)\phi\left(\frac{y-\muc1}{\sigma_C^1}\right)
@@ -153,11 +158,11 @@ The principal score \citep[e.g.][]{jo2009use} is defined as
 \begin{equation}\label{eq:pscore}
   \ppi=Pr(\sti=1|\bxsi)
 \end{equation}
-where $\bxsi\subseteq\bm{x}_i$, a not-necessarily-proper subset of covariates used to model $S$.
+where $\bxsi\subseteq\bm{x}_i$, the set of covariates used to model $S$.
 Note that under randomization, $Pr(\sti=1|\bxsi,Z_i)=Pr(\sti=1|\bxsi)$, so a model for principal scores can be estimated using data from the treatment group and extrapolated to the control group.
 Assume a model for principal scores:
 \begin{equation}\label{eq:prinScoreMod}
-  \ppip{\bm{\alpha}}=f(\bxs;\bm{\alpha})
+  \ppip{\bm{\alpha}}=f(\bxsi;\bm{\alpha})
 \end{equation}
 with parameter vector $\bm{\alpha}$. An analyst may estimate $\bm{\alpha}$ by fitting model \eqref{eq:prinScoreMod} using observed $\bm{S}$ and $\bxs$ for subjects with $Z=1$, and then compute estimated principal scores $\ppip{\bm{\hat{\alpha}}}$ for subjects with $Z_i=1$.
 
@@ -167,15 +172,16 @@ In order for principal scores to be useful, they need to vary with $\bm{x}$. Oth
 \begin{ass}[Variable Principal Scores]\label{ass:vps}
  $\pp$ takes at least 3 distinct values
 \end{ass}
-In some estimators we will discuss below, two distinct values suffice. For a broader discussion, see \citet{ding2011,jiangDing2021}.
+%In some estimators we will discuss below, two distinct values suffice. 
+For a broader discussion, see \citet{ding2011,jiangDing2021}.
 
 Principal scores can potentially improve inference in a finite mixture model, by re-writing \eqref{eq:mixtureModel} as
 \begin{equation}\label{eq:mixtureModelPS}
   f_{Y_C}(y)=(1-\ppip{\bm{\alpha}})\phi\left(\frac{y-\muc0}{\sigma_C^0}\right)+\ppip{\bm{\alpha}}\phi\left(\frac{y-\muc1}{\sigma_C^1}\right)
 \end{equation}
-Ideally, a statistician will estimate parameters $\muc0$, $\muc1$, $\mut0$, $\mut1$, $\sigma^0_C$, $\sigma^1_C$, and $\bm{\alpha}$ simultaneously, using maximum likelihood or Bayesian techniques.
+%Ideally, a statistician will estimate parameters $\muc0$, $\muc1$, $\mut0$, $\mut1$, $\sigma^0_C$, $\sigma^1_C$, and $\bm{\alpha}$ simultaneously, using maximum likelihood or Bayesian techniques.
 
-Alternatively, assume ``principal ignorability'' \citep{jo2009use,dingLu}:
+Alternatively, an analyst may assume ``principal ignorability'' \citep{jo2009use,dingLu}:
 \begin{ass}[Principal Ignorability]\label{ass:PI}
 \begin{equation}\label{eq:pi}
   Y_{C}\independent \st |\bxs
@@ -184,8 +190,8 @@ Alternatively, assume ``principal ignorability'' \citep{jo2009use,dingLu}:
 or a somewhat weaker version, $\EE[Y_C|\st,\bxs]=\EE[Y_C|\bxs]$ \citep{feller2017principal}.
 That is, the principal stratum is unrelated to control potential outcomes conditional on covariates.
 Principal ignorability \eqref{eq:pi} is reminiscent of ignorability assumptions typical in observational studies \citep[e.g.][]{rosenbaum2010design}.
-Both require a rich set of covariates and background knowledge of the determinants of $S$; in particular, an unobserved covariate $u$ that is correlated with both $\st$ and $Y_C$ would invalidate \eqref{eq:pi}.
-
+% Both require a rich set of covariates and background knowledge of the determinants of $S$; 
+In particular, an unobserved covariate $u$ that is correlated with both $\st$ and $Y_C$ would invalidate \eqref{eq:pi}.
 
 Under principal ignorability, $\muc0$ and $\muc1$ can be estimated via weighting:
 \begin{equation}\label{eq:psw}
@@ -206,7 +212,7 @@ We will begin by describing a stronger-than-necessary conditional independence a
 
 \subsection{Building Intuition: Covariate Ignorability}\label{sec:ci}
 
-We begin by introducing an assumption that we term ``Covariate Ignorability,'' or CI. It is a slighty weaker version of \citet{jiangDing2021}'s ``auxiliary independence'' assumption.
+We begin by introducing an assumption that we term ``Covariate Ignorability,'' or CI. It is a slightly weaker version of \citet{jiangDing2021}'s ``auxiliary independence'' assumption.
 \begin{ass}[Covariate Ignorability]\label{ass:ci}
 \begin{equation}\label{eq:assumption}
 \EE[\yci|\bxsi,\sti]=\EE[\yci|\sti]=\muc0\text{ or }\muc1
@@ -219,7 +225,7 @@ However, in some circumstances researchers can identify a subset of observed cov
 
 It turns out that under strong monotonicity, randomization, and CI, and given a set of principal scores, the two principal effects $\eff0$ and $\eff1$ can be estimated by a simple OLS regression.
 To see how, we'll %first
-derive the estimating equations for $\muc0$, $\muc1$, $\mut0$, and $\mut1$, and show that they are equivalent to estimating equations for a model fit by OLS.% assuming that principal scores are known exactly, and then generalize to the case in which they are estimated using data from the treatment group.
+derive the estimating equations for $\muc0$, $\muc1$, $\mut0$, and $\mut1$, and show that they are equivalent to estimating equations for a model fit by OLS. % assuming that principal scores are known exactly, and then generalize to the case in which they are estimated using data from the treatment group.
 The details of the calculations and the proofs are in the appendix.
 
 The argument stems from a set of expressions for expectations, summarized in the following lemma:
@@ -227,7 +233,7 @@ The argument stems from a set of expressions for expectations, summarized in the
   Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, and \ref{ass:ci}, %if principal scores $\ppi$, for $i:Z_i=0$ are known exactly, then:
   \begin{equation*}
     \begin{split}
-      \EE[Y|Z=0]=&\muc0+\EE\pp(\muc1-\muc0)\\
+      \EE[Y|Z=0]&=\muc0+\EE\pp(\muc1-\muc0)\\
       \EE[Y\pp|Z=0]&=\EE[\pp]\muc0+\EE[\pp^2](\muc1-\muc0)\\
       \EE[Y|Z=1]&=\mut0+\EE[\st](\mut1-\mut0)\\
       \EE[YS|Z=1]&=\EE[\st]\mut0+\EE[\st^2](\mut1-\mut0)
@@ -266,20 +272,21 @@ Note that, in general, $(1-Z_i)\ppi=(1-Z_i)\ri$ and $Z_i\sti=Z_i\ri$, allowing $
 \end{equation}
 is fit with OLS, yielding coefficient estimates $\hat{\beta}_k$, $k=0,\dots,3$, then
 \begin{equation}
-  \begin{split}
-    \hat{\eff0}&\equiv \hat{\beta}_2\\
-    \hat{\eff1}&\equiv \hat{\beta}_3-\hat{\beta}_2
-  \end{split}
+  %\begin{split}
+    \heff0\equiv \hat{\beta}_2\mbox{ and }
+    \heff1\equiv \hat{\beta}_3-\hat{\beta}_2
+%  \end{split}
 \end{equation}
-are M-estimators, with $\hat{\eff0}\rightarrow_p\eff0$ and $\hat{\eff1}\rightarrow_p\eff1$ as $n\rightarrow\infty$
+are M-estimators, with $\heff0\rightarrow_p\eff0$ and $\heff1\rightarrow_p\eff1$ as $n\rightarrow\infty$
 \end{prop}
 
 Thus, given principal scores, Assumption \ref{ass:ci} enables an analyst to estimate principal effects with a simple regression.
 Proposition \ref{prop:reg1} builds on Theorem 2 of \citet{jiangDing2021} which establishes identification of $\eff0$ and $\eff1$ by representing the principal effect estimators as a familiar regression using estimated principal scores.
 
-If principal scores were known exactly, the M-estimation structure of $\hat{\eff0}$ and $\hat{\eff1}$ implies that their sampling variance could be estimated by the standard sandwich estimator for OLS \citep{stefanskiBoos}.
-This will rarely be the case.
-However, if the principal scores are modeled as \eqref{eq:prinScoreMod}, and parameters $\bm{\alpha}$ are estimated by M-estimation, with estimating equations $\sum_{i: Z_i=1}\Omega_i=\bm{0}$, then the estimating equations for the principal score model and principal effect estimation can be stacked \citep[c.f.][]{boosStefanskiBook}, as
+% If principal scores were known exactly, the M-estimation structure of $\heff0$ and $\heff1$ implies that their sampling variance could be estimated by the standard sandwich estimator for OLS \citep{stefanskiBoos}.
+% This will rarely be the case.
+%However, 
+If the principal scores are modeled as \eqref{eq:prinScoreMod}, and parameters $\bm{\alpha}$ are estimated by M-estimation, with estimating equations $\sum_{i: Z_i=1}\Omega_i=\bm{0}$, then the estimating equations for the principal score model and principal effect estimation can be stacked \citep[c.f.][]{boosStefanskiBook}, as
 \begin{equation}\label{eq:stacked}
   \sum_{i=1}^n \begin{pmatrix}
     Z_i\Omega_i(\bxsi,S_i;\bm{\alpha})\\
@@ -289,7 +296,7 @@ where $\ri\left(\bm{\alpha}\right)=S_iZ_i+\ppip{\bm{\alpha}}(1-Z_i)$ emphasizes 
 In practice, the principal score model \eqref{eq:prinScoreMod} could be fit first, yielding estimates $\bm{\hat{\alpha}}$, and model \eqref{eq:regression0} could be fit next, using $\ri=\ri\left(\bm{\hat{\alpha}}\right)$.
 Together, the vector of estimates $[\bm{\hat{\alpha}},\bm{\hat{\beta}}]$ represents a zero of the stacked estimating equations \eqref{eq:stacked}.
 
-Then, the standard error matrix for $[\bm{\hat{\alpha}},\bm{\hat{\beta}}$ can be estimated as \citep[][ch. 7]{boosStefanskiBook}:
+Then, the standard error matrix for $[\bm{\hat{\alpha}},\bm{\hat{\beta}}]$ can be estimated as \citep[][ch. 7]{boosStefanskiBook}:
 \begin{equation}\label{eq:sandwich}
   \widehat{var}(\bm{\hat{\beta}})=A^{-1}BA'
 \end{equation}
@@ -310,23 +317,26 @@ To summarize, under strong monotonicity, randomization, and covariate ignorabili
 \item Estimate principal scores for subjects with $Z_i=0$ as $\ppip{\bm{\hat{\alpha}}}$
 \item Set $\ri=Z_iS_i+(1-Z_i)\ppip{\bm{\hat{\alpha}}}$
 \item Using OLS, fit model \eqref{eq:regression0}
-\item Estimate $\hat{\tau^0}=\hat{\beta}_2$ and $\hat{\tau^1}=\hat{\beta}_3-\hat{\beta}_2$
+\item Estimate $\heff0=\hat{\beta}_2$ and $\heff1=\hat{\beta}_3-\hat{\beta}_2$ with sampling variance \eqref{eq:sandwich}
 \end{enumerate}
 
 \subsection{Relaxing Covariate Ignorability with Outcome Modeling}\label{sec:regression}
 In most applications, identifying a set of covariates $\bxs$ satisfying CI will be difficult or impossible.
 Fortunately, CI may be relaxed or obviated by regression (see \citealt[][\S 3.4]{jiangDing2021} for an analogous identification result).
 Let $\bxy\in \mathbb{R}^k$, be a vector of covariates (possibly the same as $\bxs$); $\bxy$ can contain transformations and interactions of baseline covariates, allowing for a wide range of models.
-Then note that $\st$ is, essentially, a covariate, so by randomization, (Assumption \ref{ass:rand}), $\EE[\bxy|\st]=\EE[\bxy|\st,Z=0]=\EE[\bxy|\st,Z=1]$.
-Then information about the stratum-specific means of $\bxy$ can be extrapolated from the treatment to the control group.
+By randomization, (Assumption \ref{ass:rand}), $\EE[\bxy|\st]=\EE[\bxy|\st,Z=0]=\EE[\bxy|\st,Z=1]$, so 
+estimates of principal-stratum-specific means of $\bxy$ can be extrapolated from the treatment to the control group.
 This leads to the following proposition:
 \begin{prop}\label{prop:interactions}
   Say, for $i=1,\dots,n$, principal scores $\ppi$ are generated as \eqref{eq:pscore}, with parameters $\bm{\alpha}$ identified and estimable with M-estimation, and outcomes are generated as
   \begin{equation}\label{eq:interaction}
-    Y_i=\beta_0+\beta_1\sti+\beta_2 Z_i+\beta_3Z_i\sti+\bm{\gamma_1}'\bxy_i+\bm{\gamma_2}'\bxy_i\sti+
+    \begin{split}
+    Y_i=&\beta_0+\beta_1\sti+\beta_2 Z_i+\beta_3Z_i\sti\\
+    &+\bm{\gamma_1}'\bxy_i+\bm{\gamma_2}'\bxy_i\sti+
     \bm{\gamma_3}'\bxy Z_i+\bm{\gamma_4}'\bxy_i Z_i\sti+\epsilon_i
+    \end{split}
   \end{equation}
-  with $\EE[\epsilon_i]=0$, $\{Z_i,\sti,\bxy_i\}\independent \epsilon_i$, and $\epsilon_i\independent\epsilon_j$ when $i\ne j$.
+  with $\EE[\epsilon_i|\bxi,Z_i]=\EE[\epsilon_i|\bxi,Z_i,\sti]=0$ and $\epsilon_i\independent\epsilon_j$ when $i\ne j$.
 
   Then, under Assumptions \ref{ass:sm}, \ref{ass:rand}, and \ref{ass:vps}, if $\ppi$ is linearly independent of $\bxy$, a researcher may follow the following procedure to estimate principal effects:
   \begin{enumerate}
@@ -335,17 +345,20 @@ This leads to the following proposition:
   \item Estimate principal effects as:
    \begin{equation}\label{eq:prinEffEst}
   \begin{split}
-    \hat{\eff0}_{int}&\equiv \hat{\beta}_2+\bm{\hat{\gamma}_3}'\overline{\bxy}_{Z=1,S=0}\\
-    \hat{\eff1}_{int}&\equiv \hat{\beta}_2+\hat{\beta}_3+(\bm{\hat{\gamma}_3}+\bm{\hat{\gamma}_4})'\overline{\bxy}_{Z=1,S=1}
+    \heff0_{int}&\equiv \hat{\beta}_2+\bm{\hat{\gamma}_3}'\overline{\bxy}_{Z=1,S=0}\\
+    \heff1_{int}&\equiv \hat{\beta}_2+\hat{\beta}_3+(\bm{\hat{\gamma}_3}+\bm{\hat{\gamma}_4})'\overline{\bxy}_{Z=1,S=1}
   \end{split}
    \end{equation}
    where $\overline{\bxy}_{Z=1,S=0}$ and $\overline{\bxy}_{Z=1,S=0}$ are the vector of covariate sample means for the subsets of subjects with $Z=1$ and $S=0$ or $S=1$, respectively.
   \end{enumerate}
-  Then $\hat{\eff0}_{G}$ and $\hat{\eff1}_{int}$ are M-estimators, with $\hat{\eff0}_{int}\rightarrow_p\eff0$ and $\hat{\eff1}_{G}\rightarrow_p\eff1$ as $n\rightarrow\infty$.
+  Then $\heff0_{G}$ and $\heff1_{int}$ are M-estimators, with $\heff0_{int}\rightarrow_p\eff0$ and $\heff1_{G}\rightarrow_p\eff1$ as $n\rightarrow\infty$.
   Under suitible regularity conditions, they are jointly asymptotically normal, with a variance of the form \eqref{eq:sandwich}.
 \end{prop}
 
 In short, researchers can estimate principal effects under strong monotonicity by simply imputing missing $\st$ values with estimated principal scores, and fitting an OLS regression with appropriate interaction terms---just as if $\st$ were completely observed.
+
+As in the simpler case discussed in \S~\ref{sec:ci}, since the estimators in \eqref{eq:prinEffEst} are M-Estimators, their sampling variance can be estimated with a consistent sandwich estimator.
+Uncertainty in principal score estimation can be incorporated by stacking the estimating equations for the principal score model \eqref{eq:prinScoreMod} and estimating the combined covariance matrix \eqref{eq:sandwich}, formulas for which are given in the appendix.
 
 Proposition \ref{prop:interactions} would seem to nearly solve the problem of estimating principal effects under strong monotonicity, or at least seem to reduce it to the difficulty of other common problems in causal modeling.
 Unfortunately, simulation studies presented in the appendix suggest that, although consistent estimates for principal effects may be available, these estimates are far too inefficient for practical use; standard errors will be prohibitively high in all but the largest sample sizes.
@@ -354,13 +367,10 @@ In contrast, an analogous simulation in which Assumption \ref{ass:ci} holds, and
 
 Fortunately, simpler models can be fit much more efficiently. In particular, if interactions between covariates and treatment assignment are omitted, then data from the treatment group---in which $\st$ is fully observed---can be used to estimate the coefficients on covariates.
 Such a model relies on what \citet{jo2002} calls ``Additivity of Treatment Assignment Effect,'' that $\bm{\gamma_3}=\bm{\gamma_4}=0$.
-In other words, the only interactions between covariates and treatment assignment are due to differences between principal effects---a fairly strong assumpton.
+In other words, the only interactions between covariates and treatment assignment are due to differences between principal effects---a fairly strong assumption.
 However, there are two mitigating points.
 First, since there is no requirement that all relevant covariates be included in the model, a researcher can exclude covariates from a model if he or she thinks their relationship with $Y$ may vary substantially between treatment groups, even in the same principal stratum.
 Second, simulation results in the next section suggest that some models excluding important interactions may still yield reliable inferences.
-
-As in the simpler case discussed in \S~\ref{sec:ci}, since the estimators in \eqref{eq:prinEffEst} are M-Estimators, their sampling variance can be estimated with a consistent sandwich estimator.
-Uncertainty in principal score estimation can be incorporated by stacking the estimating equations for the principal score model \eqref{eq:prinScoreMod} and estimating the combined covariance matrix \eqref{eq:sandwich}, formulas for which are given in the appendix.
 
 To summarize, incorporating covariates into an outcome regression can substantially relax covariate ignorability, but estimation is only practical if  if the regression omits interactions between covariates and $Z$.
 
@@ -386,20 +396,22 @@ Given the covariates, the (true) principal scores were defined as
   \ppi=logit^{-1}\left[\alpha(x_{1i}-x_{2i}+x_{3i})\right]
 \end{equation*}
 where $\alpha$ is a manipulated factor.
-When $\alpha$ was higher, $\st$ was more easily predicted by covariates; when $\alpha=0$, Assumption \ref{ass:vps}, was violated, i.e. $Var(\ppi)=0$.
+When $\alpha$ was higher, $\st$ was more easily predicted by covariates; when $\alpha=0$, Assumption \ref{ass:vps}, was violated, i.e. $Var(\pp)=0$.
 Then principal stratum $\sti\in \{0,1\}$ was simulated as $S_i\sim Bern(\ppi)$
 
 Finally, potential and observed outcomes were generated as in \eqref{eq:interaction}, with $\bxy=[\bm{x_1},\bm{x_2},\bm{x_3}]$,
 and with $\EE[\epsilon_i]=0$ and $Var(\epsilon_i)=1/2$.
 Specifically,
 \begin{equation}\label{eq:y-sim}
-  \begin{split}
-  \yci&=\beta_1\sti+(\gamma_1+\gamma_2\sti)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i\\
-  \yti&=0.3\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i\\
-  Y_i&=Z_i\yti+(1-Z_i)\yci
-  \end{split}
+Y_i=\beta_1\sti+\beta_3Z_i\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i%\\
 \end{equation}
-Hence, $\beta_0=\beta_2=0$, and $\beta_3=0.3-\beta_1$. When $\gamma_3=0$ (i.e. no interaction between $Z$ and covariates), there is no average treatment effect in the $\st=0$ stratum, the coefficient for the unobserved covariate $x_3$ is constant across treatment groups and principal strata, and we do not consider three-way interactions between $x_1$ or $x_2$, $\st$, and $Z$.
+%   \begin{split}
+%   \yci&=\beta_1\sti+(\gamma_1+\gamma_2\sti)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i\\
+%   \yti&=0.3\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i\\
+%   Y_i&=Z_i\yti+(1-Z_i)\yci
+%   \end{split}
+% \end{equation}
+with $\beta_3=0.3-\beta_1$. Hence, $\beta_0=\beta_2=\gamma_4=0$, when $\gamma_3=0$ (i.e. no interaction between $Z$ and covariates), there is no average treatment effect in the $\st=0$ stratum, the coefficient for the unobserved covariate $x_3$ is constant across treatment groups and principal strata, and we do not consider three-way interactions between $x_1$ or $x_2$, $\st$, and $Z$.
 
 The distribution of $\epsilon_i$, $\beta_1$, and coefficients $\gamma_1$, $\gamma_2$, and $\gamma_3$ were manipulated factors in the study.
 
@@ -482,10 +494,10 @@ For GEEPERs, we used the estimated principal scores in the control group, along 
 with OLS.
 To estimate standard errors, we used the \texttt{sandwich} package \citep{sandwich} to extract estimating equations from \eqref{eq:psModsim} and \eqref{eq:simReg} and computed the sandwich covariance matrix following the procedure detailed in the appendix.
 
-For the Bayesian mixture model and GEEPERs we estimated treatment effects as $\hat{\eff0}=\hat{\beta}_2$ and $\hat{\eff1}=\hat{\beta}_2+\hat{\beta}_3$.
+For the Bayesian mixture model and GEEPERs we estimated treatment effects as $\heff0=\hat{\beta}_2$ and $\heff1=\hat{\beta}_2+\hat{\beta}_3$.
 
 For principal score weighting we extracted the estimated probabilities from \eqref{eq:psModsim}---the principal scores---plugged them in to \eqref{eq:psw} to estimate $\muc0$ and $\muc1$, and estimated $\mut0$ and $\mut1$ with the sample means of subjects with $Z=1$ and $S=0$ or $S=1$, respectively.
-Since the PSW estimate did not use an outcome model, we estimated $\hat{\eff0}=\hat{\mut0}-\hat{\muc0}$ and $\hat{\eff1}=\hat{\mut1}-\hat{\muc1}$.
+Since the PSW estimate did not use an outcome model, we estimated $\heff0=\hat{\mut0}-\hat{\muc0}$ and $\heff1=\hat{\mut1}-\hat{\muc1}$.
 
 \subsection{Results}
 In this section we present the subset of simulation results that we think is the most telling and interesting; a fuller set of results is available in the online appendix.
@@ -694,7 +706,6 @@ GEEPERs is a flexible, easily-implementable method for principal effect estimati
 \bibliography{MOM}
 \appendix
 
-[NOTE: I NEED TO MAKE SURE THE NOTATION HERE MATCHES ABOVE]
 \section{Proofs and Calculations}
 \subsection{Proof for Lemma \ref{lemma:expectation}}
 As a preliminary, note that
@@ -789,7 +800,8 @@ Therefore,
 Analogous reasoning leads to expressions for $\EE[RY]$, $\EE[\bxy Y]$, $\EE[ZY]$,  $\EE[ZRY]$, $\EE[\bxy YZ]$, and $\EE[\bxy RZY]$.
 These, in turn, give rise to estimating equations
 \begin{equation*}
-  \displaystyle\sum_i \begin{pmatrix}
+\begin{split}
+  &\psi_i=\\ &\begin{pmatrix}
   Y_i\\
   \phantom{}\\
   Y_i\ri\\
@@ -805,25 +817,27 @@ These, in turn, give rise to estimating equations
   Y_i\bxy_iZ_i\\
   \phantom{}\\
   Y_i\bxy_iZ_i\ri\\
-  \phantom{}\end{pmatrix} - \begin{pmatrix}
-    \beta_0+\beta_1R_i+\beta_2Z_i+\beta_3Z_iR_i\phantom{-----}\\
-    \hfill+\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
-    \beta_0\ri+\beta_1R_i^2+\beta_2Z_i\ri+\beta_3Z_iR_i^2\phantom{-----}\\
-    \hfill+\ri\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
-    (\beta_0+\beta_2)Z_i+(\beta_1+\beta_3)R_iZ_i\phantom{-----}\\
-    \hfill+Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
-    \beta_0Z_i\ri+(\beta_1+\beta_3)Z_iR_i^2+\beta_2Z_i\ri\phantom{-----}\\
-    \hfill+Z_iR_i\left\{\bm{\gamma_1}'+\bm{\gamma_3}'+R_i(\bm{\gamma_2}'+\bm{\gamma_4}')\right\}\bxy \hfill\\
-    \beta_0\bxyt+\beta_1R_i\bxyt+\beta_2Z_i\bxyt+\beta_3Z_iR_i\bxyt\phantom{---}\\
-    \hfill {}+\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
-    \beta_0\ri\bxyt+\beta_1R_i^2\bxyt+\beta_2Z_i\ri\bxyt+\beta_3Z_iR_i^2\bxyt\phantom{---}\\
-    \hfill {}+\ri\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
-        (\beta_0+\beta_2)Z_i\bxyt+(\beta_1+\beta_3)R_iZ_i\bxyt\phantom{-----}\\
-    \hfill {}+Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
-\beta_0\ri Z_i\bxyt+\beta_1R_i^2Z_i\bxyt+\beta_2\ri Z_i\bxyt+\beta_3Z_iR_i^2\bxyt\phantom{---}\\
-    \hfill {}+\ri Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
-  \end{pmatrix}=\bm{0}
+  \phantom{}\end{pmatrix} - \begin{pmatrix*}[l]
+    \beta_0+\beta_1R_i+\beta_2Z_i+\beta_3Z_iR_i\\
+    \quad+\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
+    \beta_0\ri+\beta_1R_i^2+\beta_2Z_i\ri+\beta_3Z_iR_i^2\\
+    \quad+\ri\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
+    (\beta_0+\beta_2)Z_i+(\beta_1+\beta_3)R_iZ_i\\
+    \quad+Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
+    \beta_0Z_i\ri+(\beta_1+\beta_3)Z_iR_i^2+\beta_2Z_i\ri\\
+    \quad+Z_iR_i\left\{\bm{\gamma_1}'+\bm{\gamma_3}'+R_i(\bm{\gamma_2}'+\bm{\gamma_4}')\right\}\bxy \\
+    \beta_0\bxyt+\beta_1R_i\bxyt+\beta_2Z_i\bxyt+\beta_3Z_iR_i\bxyt\\
+    \quad {}+\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
+    \beta_0\ri\bxyt+\beta_1R_i^2\bxyt+\beta_2Z_i\ri\bxyt+\beta_3Z_iR_i^2\bxyt\\
+    \quad {}+\ri\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
+        (\beta_0+\beta_2)Z_i\bxyt+(\beta_1+\beta_3)R_iZ_i\bxyt\\
+    \quad {}+Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
+\beta_0\ri Z_i\bxyt+\beta_1R_i^2Z_i\bxyt+\beta_2\ri Z_i\bxyt+\beta_3Z_iR_i^2\bxyt\\
+    \quad {}+\ri Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
+  \end{pmatrix*}
+  \end{split}
 \end{equation*}
+with $\EE[\psi_i]=0$.
 These are the estimating equations for the regression model \eqref{eq:interaction}, with $R$ replacing $\st$, fit by OLS. 
 Under standard OLS regularity conditions, the estimated coefficients of that model are consistent, completing the proof.  
 
@@ -850,8 +864,9 @@ Finally, fit model
 to estimate $\bm{\beta}$ and hence principal effects, where $\bm{x}_i$ is a set of covariates predictive of $Y$ within principal strata.
 Let $\bm{\beta}=[\beta_0,\beta_1,\beta_2,\beta_3,\bm{\gamma}']'$.
 
+\sloppy
 Following \eqref{eq:stacked}, let $\blam(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\alpha},\bm{\beta})=\begin{pmatrix} Z_i\Omega(\bxsi,S_i;\bm{\alpha})\\ \Psi(\bxy_i,\bxsi,Y_i,Z_i,\ri(\bm{\alpha});\bm{\beta})\end{pmatrix}$, the stacked estimating equations of \eqref{eq:psMod} and \eqref{eq:regression}.
-Going forward, for the sake of brevety, we will write $\blam_i(\bm{\alpha},\bm{\beta})=\blam(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\hat{\alpha}},\bm{\hat{\beta}})$, where dependence on the data for $i$ is captured in the subscript $i$, with similiar meanings for $\Psi_i(\bm{\alpha},\bm{\beta})$ and $\blam_i(\bm{\alpha},\bm{\beta})$. 
+Going forward, for the sake of brevety, we will write $\blam_i(\bm{\alpha},\bm{\beta})=\blam(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\hat{\alpha}},\bm{\hat{\beta}})$, where dependence on the data for $i$ is captured in the subscript $i$, with similar meanings for $\Psi_i(\bm{\alpha},\bm{\beta})$ and $\omega_i(\bm{\alpha})$. 
 %Then let $\blamh_i=\blam_i(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\hat{\alpha}},\bm{\hat{\beta}})$ be the estimating equations evaluated at the estimated parameters, and let 
 %\begin{equation*}
 %\dblam_i=\frac{\partial}{\partial [\alpha,\beta]'} \blam_i\Bigr|_{\substack{\bm{\alpha}=\bm{\hat{\alpha}}\\\bm{\beta}=\bm{\hat{\beta}}}}
