@@ -63,8 +63,11 @@ estimates0 <- lapply(alts,
                           covFormU=formula(psMod7)[-2])
                     )
 
+save(ates,estimates0,estimates3,estimatesInt1,file='results/geeResults.RData')
+
 sapply(estimates0,effsFromFit,simplify=F)
 
+### model checking
 pdf('results/outcomeModels0.pdf')
 iwalk(estimates0,~plot(.x$outMod,which=1,main=.y))
 dev.off()
@@ -84,32 +87,32 @@ iwalk(estimates1,
       ~print(ggplot(aes(fitted(.x$outMod),resid(.x$outMod)))+geom_jitter(height=0.3)+ggtitle(.y)))#",main=.y)))
 dev.off()
 
-estimates2 <- lapply(setNames(alts,alts),
-                    function(alt)
-                      est(getDat(alt),#droplevels(filter(psdat,trt%in%c('ASSISTments',alt))),
-                          covFormU=formula(psMod7)[-2],
-                          covFormY=update(formula(psMod7)[-2],.~.-SchIDPre+pred+
-                                                                splines::ns(pre.total_math_score,3)+
-                                                                raceEth+
-                                                                Gender+
-                                                                GIFTED
-                                          ),
-                          block='ClaIDPre')
-                    )
+# estimates2 <- lapply(setNames(alts,alts),
+#                     function(alt)
+#                       est(getDat(alt),#droplevels(filter(psdat,trt%in%c('ASSISTments',alt))),
+#                           covFormU=formula(psMod7)[-2],
+#                           covFormY=update(formula(psMod7)[-2],.~.-SchIDPre+pred+
+#                                                                 splines::ns(pre.total_math_score,3)+
+#                                                                 raceEth+
+#                                                                 Gender+
+#                                                                 GIFTED
+#                                           ),
+#                           block='ClaIDPre')
+#                     )
 
 
-iwalk(estimates2,
-      ~print(ggplot(mapping=aes(fitted(.x$outMod),resid(.x$outMod)))+geom_jitter(height=0.3)+ggtitle(.y)))#",main=.y)))
+# iwalk(estimates2,
+#       ~print(ggplot(mapping=aes(fitted(.x$outMod),resid(.x$outMod)))+geom_jitter(height=0.3)+ggtitle(.y)))#",main=.y)))
 
-for(alt in names(estimates2))
-print(getDat(alt)%>%
-  select(-(StuID:Y),-Z)%>%select(where(is.numeric)&where(~n_distinct(.)>2))%>%
-  imap_dfr(~data.frame(x=.x,resid=resid(estimates2[[alt]]$outMod),predictor=.y))%>%
-  ggplot(aes(x,resid))+geom_jitter(height=0.3)+geom_hline(yintercept=0)+geom_smooth()+facet_wrap(~predictor,scales="free")+ggtitle(alt))
+# for(alt in names(estimates2))
+# print(getDat(alt)%>%
+#   select(-(StuID:Y),-Z)%>%select(where(is.numeric)&where(~n_distinct(.)>2))%>%
+#   imap_dfr(~data.frame(x=.x,resid=resid(estimates2[[alt]]$outMod),predictor=.y))%>%
+#   ggplot(aes(x,resid))+geom_jitter(height=0.3)+geom_hline(yintercept=0)+geom_smooth()+facet_wrap(~predictor,scales="free")+ggtitle(alt))
 
 
-imap_dfr(estimates2,~data.frame(fitted=fitted(.x$outMod),resid=resid(.x$outMod),alt=.y))%>%
-  ggplot(aes(fitted,resid))+geom_jitter(height=0.3)+geom_hline(yintercept=0)+geom_smooth()+facet_wrap(~alt,scales="free")
+# imap_dfr(estimates2,~data.frame(fitted=fitted(.x$outMod),resid=resid(.x$outMod),alt=.y))%>%
+#   ggplot(aes(fitted,resid))+geom_jitter(height=0.3)+geom_hline(yintercept=0)+geom_smooth()+facet_wrap(~alt,scales="free")
 
 
 
