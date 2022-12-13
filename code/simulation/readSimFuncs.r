@@ -141,7 +141,7 @@ bp <- function(pd,subset,facet,title=deparse(substitute(subset)),ylim,Labeller="
       draw_quantiles = 0.5) +
     geom_hline(yintercept = 0) +
     coord_cartesian(ylim =ylim)+
-    facet_grid(facet , scales = "free",
+    facet_grid(facet , #scales = "free",
                labeller = Labeller)+
     ggtitle(title)+
                                         #labs(title = title,

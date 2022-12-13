@@ -257,7 +257,7 @@ int<-bp(pd,
    subset=b1 > 0& errDist=='norm'& n==500&PE=='Stratum 1'&b1==.5&mu01==0.3,
    title="S&Z Interactions",
    facet = interactionZ~interactionS,
-   ylim=NULL
+   ylim=c(-1,1)
    )+
   labs(subtitle=bquote(~alpha==0.5~","~mu[C]^1==0.3~"Norm. Resid"),x=NULL,y=NULL)+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
