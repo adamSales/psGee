@@ -230,20 +230,7 @@ The details of the calculations and the proofs are in the appendix.
 
 The argument stems from a set of expressions for expectations, summarized in the following lemma:
 \begin{lemma}\label{lemma:expectation}
-  Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, and \ref{ass:ci}, %if principal scores $\ppi$, for $i:Z_i=0$ are known exactly, then:
-  \begin{equation*}
-    \begin{split}
-      \EE[Y|Z=0]&=\muc0+\EE\pp(\muc1-\muc0)\\
-      \EE[Y\pp|Z=0]&=\EE[\pp]\muc0+\EE[\pp^2](\muc1-\muc0)\\
-      \EE[Y|Z=1]&=\mut0+\EE[\st](\mut1-\mut0)\\
-      \EE[YS|Z=1]&=\EE[\st]\mut0+\EE[\st^2](\mut1-\mut0)
-    \end{split}
-  \end{equation*}
-\end{lemma}
-Since $\st=\st^2$, the expression for $\EE[\st Y_T]$ in Lemma \ref{lemma:expectation} can be simplified to $\EE[\st]\mut1$; however, we retain the unsimplified version, since its similarity with the analogous expression when $Z_i=0$ simplifies the reasoning below.
-
-Lemma \ref{lemma:expectation} in turn implies a set of estimating equations $\sum_{i=1}^n\tilde{\Psi}_i=\bm{0}$, where
-\begin{equation}\label{eq:estEq0}
+Let \begin{equation}\label{eq:estEq0}
 \tilde{\Psi}_i=\begin{pmatrix}
     (1-Z_i)\left[Y_i-\muc0-\ppi(\muc1-\muc0)\right]\\
     (1-Z_i)\left[\ppi Y_i-\ppi\muc0-\ppi^2(\muc1-\muc0)\right]\\
@@ -251,7 +238,10 @@ Lemma \ref{lemma:expectation} in turn implies a set of estimating equations $\su
     Z_i\left[\sti Y_i -\sti\mut0-\sti^2(\mut1-\mut0)\right]
   \end{pmatrix}
 \end{equation}
-Note that Lemma \ref{lemma:expectation} implies that $\EE[\Psi_i]=\bm{0}$.
+Then under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, and \ref{ass:ci}, $\EE[\Psi_i]=\bm{0}$.
+\end{lemma}
+
+Lemma \ref{lemma:expectation} implies a set of estimating equations $\sum_{i=1}^n\tilde{\Psi}_i=\bm{0}$.
 
 Now, the estimating equations $\sum_i\tilde{\Psi}_i=\bm{0}$ are algebraically equivalent to the estimating equations for a particular OLS fit, after some transformations, the most important of which follows.
 Let
@@ -261,8 +251,7 @@ Let
 \sti &Z_i=1
 \end{cases}
 \end{equation}
-Note that, in general, $(1-Z_i)\ppi=(1-Z_i)\ri$ and $Z_i\sti=Z_i\ri$, allowing $\ri$ to take the place of $\ppi$ and $S_i$ throughout $\tilde{\Psi}_i$.
-
+In general, $(1-Z_i)\ppi=(1-Z_i)\ri$ and $Z_i\sti=Z_i\ri$, allowing $\ri$ to take the place of $\ppi$ and $S_i$ throughout $\tilde{\Psi}_i$.
 
 \begin{prop}\label{prop:reg1}
   Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, \ref{ass:ci}, and suitible regularity conditions \citep[e.g.][p. 327]{boosStefanskiBook}, if %principal scores are known exactly,
@@ -273,11 +262,11 @@ Note that, in general, $(1-Z_i)\ppi=(1-Z_i)\ri$ and $Z_i\sti=Z_i\ri$, allowing $
 is fit with OLS, yielding coefficient estimates $\hat{\beta}_k$, $k=0,\dots,3$, then
 \begin{equation}
   %\begin{split}
-    \heff0\equiv \hat{\beta}_2\mbox{ and }
-    \heff1\equiv \hat{\beta}_3-\hat{\beta}_2
+    \heff0_{CI}\equiv \hat{\beta}_2\mbox{ and }
+    \heff1_{CI}\equiv \hat{\beta}_3+\hat{\beta}_2
 %  \end{split}
 \end{equation}
-are M-estimators, with $\heff0\rightarrow_p\eff0$ and $\heff1\rightarrow_p\eff1$ as $n\rightarrow\infty$
+are M-estimators, with $\heff0_{CI}\rightarrow_p\eff0$ and $\heff1_{CI}\rightarrow_p\eff1$ as $n\rightarrow\infty$
 \end{prop}
 
 Thus, given principal scores, Assumption \ref{ass:ci} enables an analyst to estimate principal effects with a simple regression.
@@ -311,70 +300,48 @@ and
 where $[Z_i \Omega_i, \Psi_i]$ is the stacked vector of estimating equations evaluated at $Z_i$, $\bxsi$, $S_i$, and $Y_i$.
 The appendix gives details of this calculation, giving a consistent variance estimator.
 
-To summarize, under strong monotonicity, randomization, and covariate ignorability \eqref{eq:assumption}, principal effects can be estimated with the following procedure:
-\begin{enumerate}
-\item Estimate parameters $\bm{\alpha}$ as $\bm{\hat{\alpha}}$ by fitting model \eqref{eq:prinScoreMod} using data from subjects with $Z=1$.
-\item Estimate principal scores for subjects with $Z_i=0$ as $\ppip{\bm{\hat{\alpha}}}$
-\item Set $\ri=Z_iS_i+(1-Z_i)\ppip{\bm{\hat{\alpha}}}$
-\item Using OLS, fit model \eqref{eq:regression0}
-\item Estimate $\heff0=\hat{\beta}_2$ and $\heff1=\hat{\beta}_3-\hat{\beta}_2$ with sampling variance \eqref{eq:sandwich}
-\end{enumerate}
-
 \subsection{Relaxing Covariate Ignorability with Outcome Modeling}\label{sec:regression}
 In most applications, identifying a set of covariates $\bxs$ satisfying CI will be difficult or impossible.
 Fortunately, CI may be relaxed or obviated by regression (see \citealt[][\S 3.4]{jiangDing2021} for an analogous identification result).
-Let $\bxy\in \mathbb{R}^k$, be a vector of covariates (possibly the same as $\bxs$); $\bxy$ can contain transformations and interactions of baseline covariates, allowing for a wide range of models.
-By randomization, (Assumption \ref{ass:rand}), $\EE[\bxy|\st]=\EE[\bxy|\st,Z=0]=\EE[\bxy|\st,Z=1]$, so 
-estimates of principal-stratum-specific means of $\bxy$ can be extrapolated from the treatment to the control group.
-This leads to the following proposition:
-\begin{prop}\label{prop:interactions}
-  Say, for $i=1,\dots,n$, principal scores $\ppi$ are generated as \eqref{eq:pscore}, with parameters $\bm{\alpha}$ identified and estimable with M-estimation, and outcomes are generated as
-  \begin{equation}\label{eq:interaction}
-    \begin{split}
-    Y_i=&\beta_0+\beta_1\sti+\beta_2 Z_i+\beta_3Z_i\sti\\
-    &+\bm{\gamma_1}'\bxy_i+\bm{\gamma_2}'\bxy_i\sti+
-    \bm{\gamma_3}'\bxy Z_i+\bm{\gamma_4}'\bxy_i Z_i\sti+\epsilon_i
-    \end{split}
-  \end{equation}
-  with $\EE[\epsilon_i|\bxi,Z_i]=\EE[\epsilon_i|\bxi,Z_i,\sti]=0$ and $\epsilon_i\independent\epsilon_j$ when $i\ne j$.
 
-  Then, under Assumptions \ref{ass:sm}, \ref{ass:rand}, and \ref{ass:vps}, if $\ppi$ is linearly independent of $\bxy$, a researcher may follow the following procedure to estimate principal effects:
-  \begin{enumerate}
-  \item Estimate principal scores by fitting model \eqref{eq:pscore} to data from the treatment group
-  \item Replace $\sti$ with $\ri$ (as defined in \ref{eq:ri}) in model \eqref{eq:interaction} and fit with OLS
-  \item Estimate principal effects as:
-   \begin{equation}\label{eq:prinEffEst}
+The assumption we'll state here is stronger than necessary, but leads to an attractively simple method; a weaker version of the assumption and corresponding method, along with the proof, can be found in an online appendix.
+
+\begin{ass}[Residualized Covariate Ignorability]\label{ass:rci}
+There exists $\bxy$, a (known) transformation of covariates $\bx$, and an (unknown) vector of coefficients $\bm{\gamma}$ such that
+\begin{equation}\label{eq:ass:rci}
+\begin{split}
+\EE[\yc-\bm{\gamma}'\bxy|\bxs,\st]&=\EE[\yc-\bm{\gamma}'\bxy|\st]\\
+\EE[\yt-\bm{\gamma}'\bxy|\bxs,\st]&=\EE[\yt-\bm{\gamma}'\bxy|\st]
+\end{split}
+\end{equation}
+\end{ass}
+That is, CI may not hold for potential outcomes themselves, but an analogous assumption holds for \emph{residualized} potential outcomes---i.e. $\yc$ and $\yt$ after subtracting out a linear function of (possibly transformed) covariates.
+By forcing $\bm{\gamma}$ to be the same for both treatment groups, and (implicitly) for both principal strata, Assumption \ref{ass:rci} assumes that there are no interactions between columns of $\bxy$ and either condition or principal stratum.
+This is akin to the ``Additivity of Treatment Assignment Effect'' assumption in \citet{jo2002}.
+Proposition \ref{prop:interactions} in the online appendix relaxes these requirements, but some preliminary simulations suggest that standard errors from estimates allowing for these interactions will be prohibitively large. 
+Simulation results in the following section address some cases in which interactions are present in the data generating model but not in the data analysis. 
+
+In any event, Assumption \ref{ass:rci} allows principal effects to be estimated with an OLS model including $\bxy$:
+
+\begin{prop}{GEEPERs}\label{prop:reg2}
+
+Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, and \ref{ass:rci}, let principal scores be estimated as in \eqref{eq:prinScoreMod} using data from the treatment group and assume they are linearly independent of $\bxy$. Then say the researcher fits the following model with OLS:
+\begin{equation}\label{eq:reg2}
+Y_i=\beta_0+\beta_1\ri+\beta_2 Z_i+\beta_3Z_i\ri+\bm{\gamma_1}'\bxy_i+\epsilon_i
+\end{equation}
+where $\ri$ is defined as in \eqref{eq:ri}. 
+Then let 
+\begin{equation}\label{eq:prinEffEst}
   \begin{split}
-    \heff0_{int}&\equiv \hat{\beta}_2+\bm{\hat{\gamma}_3}'\overline{\bxy}_{Z=1,S=0}\\
-    \heff1_{int}&\equiv \hat{\beta}_2+\hat{\beta}_3+(\bm{\hat{\gamma}_3}+\bm{\hat{\gamma}_4})'\overline{\bxy}_{Z=1,S=1}
+    \heff0_{RCI}&\equiv \hat{\beta}_2\\
+    \heff1_{RCI}&\equiv \hat{\beta}_2+\hat{\beta}_3
   \end{split}
    \end{equation}
-   where $\overline{\bxy}_{Z=1,S=0}$ and $\overline{\bxy}_{Z=1,S=0}$ are the vector of covariate sample means for the subsets of subjects with $Z=1$ and $S=0$ or $S=1$, respectively.
-  \end{enumerate}
-  Then $\heff0_{G}$ and $\heff1_{int}$ are M-estimators, with $\heff0_{int}\rightarrow_p\eff0$ and $\heff1_{G}\rightarrow_p\eff1$ as $n\rightarrow\infty$.
+  $\heff0_{RCI}$ and $\heff1_{RCI}$ are M-estimators, with $\heff0_{RCI}\rightarrow_p\eff0$ and $\heff1_{RCI}\rightarrow_p\eff1$ as $n\rightarrow\infty$.
   Under suitible regularity conditions, they are jointly asymptotically normal, with a variance of the form \eqref{eq:sandwich}.
 \end{prop}
-
-In short, researchers can estimate principal effects under strong monotonicity by simply imputing missing $\st$ values with estimated principal scores, and fitting an OLS regression with appropriate interaction terms---just as if $\st$ were completely observed.
-
-As in the simpler case discussed in \S~\ref{sec:ci}, since the estimators in \eqref{eq:prinEffEst} are M-Estimators, their sampling variance can be estimated with a consistent sandwich estimator.
-Uncertainty in principal score estimation can be incorporated by stacking the estimating equations for the principal score model \eqref{eq:prinScoreMod} and estimating the combined covariance matrix \eqref{eq:sandwich}, formulas for which are given in the appendix.
-
-Proposition \ref{prop:interactions} would seem to nearly solve the problem of estimating principal effects under strong monotonicity, or at least seem to reduce it to the difficulty of other common problems in causal modeling.
-Unfortunately, simulation studies presented in the appendix suggest that, although consistent estimates for principal effects may be available, these estimates are far too inefficient for practical use; standard errors will be prohibitively high in all but the largest sample sizes.
-For instance, if there is one standard normal covariate $x$, and $\pp_i=\left[1+exp\{-x_i/2\right]^{-1}$, then $Var\left(\hat{\muc0}_{int}\right)/Var(Y_C)\approx 8,500/n$.
-In contrast, an analogous simulation in which Assumption \ref{ass:ci} holds, and the estimation routine of Proposition \ref{prop:reg1} was used, $Var\left(\hat{\muc0}_{int}\right)/Var(Y_C)\approx 15/n$.
-
-Fortunately, simpler models can be fit much more efficiently. In particular, if interactions between covariates and treatment assignment are omitted, then data from the treatment group---in which $\st$ is fully observed---can be used to estimate the coefficients on covariates.
-Such a model relies on what \citet{jo2002} calls ``Additivity of Treatment Assignment Effect,'' that $\bm{\gamma_3}=\bm{\gamma_4}=0$.
-In other words, the only interactions between covariates and treatment assignment are due to differences between principal effects---a fairly strong assumption.
-However, there are two mitigating points.
-First, since there is no requirement that all relevant covariates be included in the model, a researcher can exclude covariates from a model if he or she thinks their relationship with $Y$ may vary substantially between treatment groups, even in the same principal stratum.
-Second, simulation results in the next section suggest that some models excluding important interactions may still yield reliable inferences.
-
-To summarize, incorporating covariates into an outcome regression can substantially relax covariate ignorability, but estimation is only practical if  if the regression omits interactions between covariates and $Z$.
-
-
+In short, researchers can estimate principal effects under strong monotonicity by simply imputing missing $\st$ values with estimated principal scores, fitting an OLS regression, and estimating standard errors with a sandwich formula. 
+For the remainder of the paper, we will refer to principal effect estimators $\heff1_{RCI}$ and $\heff0_{RCI}$---our preferred estimators---as ``GEEPERs.'' 
 
 \section{A Simulation Study}\label{sec:simulation}
 
@@ -463,57 +430,37 @@ Interactions between covariates and $Z$ were controlled by $\gamma_3$: when ther
 
 Using each simulated dataset, we estimated $\eff0$ and $\eff1$ with three methods: a mixture model \eqref{eq:mixtureModelPS} including principal scores, GEEPERs, and third, the principal score weighting estimator \eqref{eq:psw}.
 
-The methods all used the same ``observed'' dataset, consisting of outcomes $Y$, treatment assignments $Z$, two covariates $x_1$ and $x_2$, and $S$ observed only when $Z=1$.
+The methods all used the same ``observed'' dataset, consisting of outcomes $Y$, treatment assignments $Z$, two covariates $\bxs=\bxy=\bx=[x_1,x_2]$, and $S$ observed only when $Z=1$.
 The third covariate used in the data generating model, $x_3$, was ``unobserved''--since $x_3$ was correlated with both $\st$ and $Y$, Principal Ignorability (Assumption \ref{ass:PI}) was violated.
 
-All three methods used the same principal score model, fit using data from the treatment group in which $S=\st$ was observed:
-\begin{equation}\label{eq:psModsim}
-  \ppf{\bm{\alpha}}{x_1,x_2}=logit^{-1}(\alpha_0+\alpha_1x_1+\alpha_2x_2)
-\end{equation}
+All three methods used the same principal score model, a logistic regression of $S$ on $\bx$, and an intercept, fit using data from the treatment group in which $S=\st$ was observed, i.e. $\ppf{\bm{\alpha}}{\bx}=logit^{-1}(\alpha_0+\bm{\alpha}'\bx)$.
 
-The mixture estimator then fit two outcome models.
-For the treatment group, a normal regression:
-\begin{equation}\label{eq:mix1-sim}
-  f_{Y|Z=1}(y_i)=\phi\left(\frac{y_i-[\beta_0+\beta_1S_i+\beta_2 +\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_T}\right)
-\end{equation}
-and for the control group, mixture model:
-\begin{equation}\label{eq:mix-sim}
-\begin{split}
-  f_{Y|Z=0}(y_i)&=\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}}\phi\left(\frac{y_i-[\beta_0+\beta_1+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)\\
-  &+(1-\ppf{\bm{\alpha}}{\bm{x}_{i,1:2}})\phi\left(\frac{y_i-[\beta_0+\bm{\gamma}_1^T\bm{x}_{i,1:2}]}{\sigma_C}\right)
-\end{split}
-\end{equation}
-Note that the coefficients $\bm{\gamma}_1$ are the same across treatment groups and principal strata, while the residual variance differs across treatment groups, but not across principal strata.
-The models \eqref{eq:psModsim}, \eqref{eq:mix1-sim}, and \eqref{eq:mix-sim} were fit simultaneously using Bayesian Markov Chain Monte Carlo with Stan \citep{rstan}. We interpreted the posterior mean as a point estimate and the posterior standard deviation as a standard error.
+The mixture estimator then fit two outcome models:
+For the treatment group, the regression model $Y=\beta_0^T+\beta_1^TS+\bm{\gamma}'\bx+\epsilon$ and for the control group, a mixture model of the form \eqref{eq:mixtureModelPS}, but with $\muc0$ and $\muc1$ replaced by regression functions $\beta_0^C+\bm{\gamma}'\bx$ and $\beta_0^C+\beta_1^C+\bm{\gamma}'\bx$, respectively.
+Residual variance were allowed to differ across treatment groups, but not across principal strata.
+These models were fit simultaneously using Bayesian Markov Chain Monte Carlo with Stan \citep{rstan}, and principal effects $\eff0$ and $\eff1$ estimated as $\beta_0^T-\beta_0^C$ and $\beta_0^T+\beta_1^T-\beta_0^C-\beta_1^T$, respectively. We interpreted the posterior mean as a point estimate and the posterior standard deviation as a standard error.
 
-In contrast, for GEEPERs and principal score weighting the principal score model \eqref{eq:psModsim} was fit by itself, to data from the treatment group, using standard maximum likelihood methods.
-For GEEPERs, we used the estimated principal scores in the control group, along with the observed $S$ in the treatment group, to construct $R$, and then fit the model
-\begin{equation}\label{eq:simReg}
-  Y_i=\beta0+\beta_1 \ri+\beta_2Z_i+\beta_3Z_iR_i+\bm{\gamma}_1^T\bm{x}_{i,1:2}+\epsilon_i
-\end{equation}
-with OLS.
+
+In contrast, for GEEPERs and principal score weighting the principal score model was fit by itself, to data from the treatment group, using standard maximum likelihood methods.
+For GEEPERs, we used the estimated principal scores in the control group, along with the observed $S$ in the treatment group, to construct $R$, and then fit the model \eqref{eq:reg2} with OLS. 
 To estimate standard errors, we used the \texttt{sandwich} package \citep{sandwich} to extract estimating equations from \eqref{eq:psModsim} and \eqref{eq:simReg} and computed the sandwich covariance matrix following the procedure detailed in the appendix.
 
-For the Bayesian mixture model and GEEPERs we estimated treatment effects as $\heff0=\hat{\beta}_2$ and $\heff1=\hat{\beta}_2+\hat{\beta}_3$.
-
-For principal score weighting we extracted the estimated probabilities from \eqref{eq:psModsim}---the principal scores---plugged them in to \eqref{eq:psw} to estimate $\muc0$ and $\muc1$, and estimated $\mut0$ and $\mut1$ with the sample means of subjects with $Z=1$ and $S=0$ or $S=1$, respectively.
-Since the PSW estimate did not use an outcome model, we estimated $\heff0=\hat{\mut0}-\hat{\muc0}$ and $\heff1=\hat{\mut1}-\hat{\muc1}$.
+For principal score weighting we plugged estimated principal scores in to \eqref{eq:psw} to estimate $\muc0$ and $\muc1$, estimated $\mut0$ and $\mut1$ with the sample means of subjects with $Z=1$ and $S=0$ or $S=1$, respectively, and estimated $\heff0=\hat{\mut0}-\hat{\muc0}$ and $\heff1=\hat{\mut1}-\hat{\muc1}$.
 
 \subsection{Results}
 In this section we present the subset of simulation results that we think is the most telling and interesting; a fuller set of results is available in the online appendix.
 
 \subsubsection{Varying $n$ and $\alpha$}
 When $\alpha=0$, Assumption \ref{ass:vps} is violated, and M-estimates are highly erratic; however, as Table \ref{tab:coverage} shows, when other assumptions hold inference remains valid.
-For the sake of clarity, we will focus here on cases where $\alpha>0$; results for $\alpha=0$ are in Tables \ref{tab:rmse} and \ref{tab:coverage} and in the online appendix.
 
-Figures \ref{fig:n} and \ref{fig:alpha} show the empirical bias and standard error (SE) of the M-estimator and mixture estimator of $\eff1$ as sample size and $\alpha$ vary.
+Figure \ref{fig:alphan} shows the empirical bias and standard error (SE) of the GEEPERs and mixture estimator of $\eff1$ as sample size and $\alpha$ vary.
 Across $n$ and $\alpha$, GEEPERs has lower bias and higher SE than the mixture estimator.
 GEEPERs is positively biased for low $n$ with bias converging to close to 0 (up to simulation error) for $n\ge 300$, and appears to be roughly unbiased (up to simulation error) for $\alpha \ge 0.2$, with $n$ fixed at 500.
 The SE of the GEEPERs decreases rapidly for $100\le n \le 500$ and $0.2\le \alpha \le 0.5$ and more gradually for higher values of $n$ and $\alpha$.
 
 For the remainder of the simulation, we focus on the moderate cases of $n=500$ and $\alpha=0.2$ or 0.5.
 
-\begin{figure}
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=\textwidth]{../simFigs/biasSEbyB1N.jpg}
   \caption{Empirical bias and standard error of GEEPERs and Mixture estimates of $\muc1$ as sample size per treatment group $n$ or $\alpha$ varies. There were 500 replications for each $n$ or $\alpha$. Other factors were held fixed at the noted values.}
@@ -530,7 +477,7 @@ For the remainder of the simulation, we focus on the moderate cases of $n=500$ a
 \subsubsection{Other Factors}
 
 
-\begin{figure}
+\begin{figure}[!ht]
   \centering
   \includegraphics[width=\textwidth]{../simFigs/boxplots.pdf}
   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} under varying conditions. For all plots, $n=500$; there were 500 replications for each set of conditions. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
@@ -538,17 +485,16 @@ For the remainder of the simulation, we focus on the moderate cases of $n=500$ a
 \end{figure}
 
 
-Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatterplots, showing estimation error for GEEPERs, the mixture estimator, and the PSW estimator of $\eff1$ under various sets of conditions, and Table \ref{tab:rmse} shows root mean squared error (RMSE) estimates under a somewhat wider set of circumstances when $\muc1=0.3$.
-The leftmost panel of Figure \ref{fig:boxplots} and the top line of Tables \ref{tab:rmse} and \ref{tab:coverage} show results under ``standard'' conditions---normal residuals and no interactions in the data generating model between covariates and either $S$ or $Z$.
+Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatterplots, showing estimation error for GEEPERs, the mixture estimator, and the PSW estimator of $\eff1$ under various sets of conditions, and Table \ref{tab:coverage} shows empirical covarage of nominal 95\% confidence interval estimates under a somewhat wider set of circumstances when $\muc1=0.3$.
+The leftmost panel of Figure \ref{fig:boxplots} and the top line of Table \ref{tab:coverage} show results conditions favorable to both the mixture model and to GEEPERs---normal residuals and no interactions in the data generating model between covariates and either $S$ or $Z$.
 In this case, GEEPERs is roughly unbiased, but less precise than the other two methods---when $\alpha=0.2$ it is much noisier, and when $\alpha=0.5$ it is only slightly less precise.
 The mixture estimator's bias depends on $\muc1$---when $\muc1=0$, the bias is slight, and when $\muc1=0.3$ the bias is more substantial. This is somewhat surprising, because when $\muc1=0$, there is no separation between the principal strata in the control group, and previous literature \citep{griffin2008application} has identified this scenario as a particular challenge for mixture modeling.
-The PSW estimator is also biased---due, presumably, to the violation of Principal Ignorability, Assumption \ref{ass:PI}--inherent in the data generating model. On the other hand, the PSW estimator has easily the lowest sampling variance of the three estimators.
-In fact, Table \ref{tab:rmse} shows that despite its bias, the PSW estimator has lower RMSE than GEEPERs when $\alpha=0$ or 0.2.
-The middle panel of Figure \ref{fig:boxplots} and the fifth line of Table \ref{tab:rmse} shows a similar set of results for when the residuals in \eqref{eq:y-sim} are uniformly distributed.
+The PSW estimator is also biased---due, presumably, to the violation of Principal Ignorability, Assumption \ref{ass:PI}---inherent in the data generating model. On the other hand, the PSW estimator has easily the lowest sampling variance of the three estimators.
+The middle panel of Figure \ref{fig:boxplots} and the fifth line of Table \ref{tab:coverage} show a similar set of results for when the residuals in \eqref{eq:y-sim} are uniformly distributed.
 In this case, GEEPERs and PSW estimator behave in a similiar fashion to the normal case, but the mixture estimator shows a bimodal pattern--sometimes over-estimating $\eff1$ and sometimes underestimating, but rarely estimating $\eff1$ accurately.
 
+\sloppy
 The rightmost panel of Figure \ref{fig:boxplots} returns to the case of normal residuals---and only shows results when $\muc1=0.3$ and $\alpha=0.5$---but introduces interactions in the data generating model between covariates and either $\st$, $Z$, or both. That is, the coefficients on the covariates in the outcome model vary between principal strata and/or between treatment groups.
-Corresponding RMSE results, along with analogous results for uniform residuals and other values for $\alpha$, are in Table \ref{tab:rmse}.
 Presence of interactions could undermine the GEEPERs by inducing a relationship between principal scores and potential outcomes, even after adjusting the outcomes for covariate effects.
 Fortunately, the presence of interactions in the data generating model in this scenario appear to make little difference, though RMSEs were slightly higher when interactions between $Z$ and covariates are present.
 Table \ref{tab:rmse} shows that when $\alpha=.2$, GEEPERs RMSE can be substantially higher when $Z$ interactions are present than when they are not; plots in the online appendix suggest that this is due to an increase in sampling variance and kurtosis rather than bias.
@@ -559,40 +505,34 @@ When $\alpha=0$ or 0.2, GEEPERs confidence intervals undercover in the presence 
 Across all conditions in the table, the GEEPERs confidence intervals have higher empirical coverage than their mixture-model counterparts.
 
 
-%% \begin{figure}
-%%   \centring
-%%   \includegraphics{../simFigs/normalOutcomesNoInteractionPosB1.jpg}
-%%   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was normal, there were no interactions between covariates and $S$ or $Z$, and $\alpha=0.2,0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
-%%   \label{fig:simNorm}
-%% \end{figure}
-
-%% \begin{figure}
-%%   \centring
-%%   \includegraphics{../simFigs/unifOutcomesNoInteractionPosB1.jpg}
-%%   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was uniform, there were no interactions between covariates and $S$ or $Z$, and $\alpha=0.2,0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}
-%%   \label{fig:simUnif}
-%% \end{figure}
-
-%% \begin{figure}
-%%   \centring
-%%   \includegraphics{../simFigs/InteractionPosB1.jpg}
-%%   \caption{Violin and scatterplots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} when the distribution of residuals in \eqref{eq:yc-sim} was normal, there were possibly interactions between covariates and $S$ or $Z$, $\muc1=0.3$, and $\alpha=0.5$. Annotations at the upper and lower edges of the plot indicate the number of extreme outliers excluded from the plotting area.}ana
-%%   \label{fig:simUnif}
-%% \end{figure}
-
-
-%   \begin{table}
-%     \centering
-%   \input{rmseTab}
-%   \caption{Empirical root-mean-squared error (RMSE) estimates for GEEPERs, Bayesian mixture modeling, and PSW under varying conditions.}
-%   \label{tab:rmse}
-% \end{table}
 
 \begin{table}
-\caption{Empirical coverage of nominal 95\% confidence intervals for GEEPERs and Bayesian mixture modeling under varying conditions.}
-  \label{tab:coverage}
+
+\caption{\label{tab:coverage}Empirical coverage of nominal 95\% confidence intervals for GEEPERs and Bayesian mixture modeling under varying conditions.}
 \centering
-  \input{coverageTab}
+\begin{tabular}{*{9}{c}}%*{6}{r}}
+\toprule
+\multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0$} & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
+\cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9}
+\makecell[l]{Residual\\Dist.} & \makecell[c]{X:Z\\Int.?} & \makecell[r]{X:S\\Int.?} & \rotatebox[origin=c]{300}{GEEPERs} & \rotatebox[origin=c]{300}{Mixture}  & \rotatebox[origin=c]{300}{GEEPERs} & \rotatebox[origin=c]{300}{Mixture}& \rotatebox[origin=c]{300}{GEEPERs} & \rotatebox[origin=c]{300}{Mixture}\\
+\midrule
+ & No & No & 0.99 & 0.99  & 0.97 & 0.97 & 0.96 & 0.96\\
+
+ & Yes & No & 0.88 & 0.74  & 0.88 & 0.74 & 0.94 & 0.89\\
+
+ & No & Yes & 1.00 & 1.00  & 0.98 & 0.97 & 0.97 & 0.96\\
+\multirow{-4}{*}{\raggedright\arraybackslash Normal} & Yes & Yes & 0.90 & 0.77  & 0.90 & 0.77 & 0.94 & 0.88\\
+\cmidrule{1-9}
+ & No & No & 0.99 & 0.29  & 0.97 & 0.40 & 0.95 & 0.61\\
+
+ & Yes & No & 0.83 & 0.11  & 0.87 & 0.20 & 0.93 & 0.48\\
+
+ & No & Yes & 1.00 & 0.47  & 0.98 & 0.53 & 0.96 & 0.57\\
+
+\multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & 0.83 & 0.15 & 0.88 & 0.21 & 0.94 & 0.53\\
+\bottomrule
+
+\end{tabular}
 \end{table}
 
 
@@ -764,7 +704,40 @@ These are equivalent to the estimating equations for OLS model \eqref{eq:regress
 Therefore, under standard OLS regularity conditions the estimated parameter vector $\bm{\hat{\beta}}$ is consistent, completing the proof.
 
 
-\subsection{Proof for Proposition \ref{prop:interactions}}
+\subsection{A Stronger Version of Proposition \ref{prop:reg2} and a Proof}
+
+
+
+\begin{prop}\label{prop:interactions}
+  Say, for $i=1,\dots,n$, principal scores $\ppi$ are generated as \eqref{eq:pscore}, with parameters $\bm{\alpha}$ identified and estimable with M-estimation, and there exist $\beta_0$, $\beta_1$, $\beta_2$, $\beta_3$, $\bm{\gamma_1}$, $\bm{\gamma_2}$, $\bm{\gamma_3}$ amd $\bm{\gamma_4}$ such that
+  \begin{equation}\label{eq:interaction}
+    \begin{split}
+    \EE[Y_i|\st,Z,\bx]=&\beta_0+\beta_1\sti+\beta_2 Z_i+\beta_3Z_i\sti\\
+    &+\bm{\gamma_1}'\bxy_i+\bm{\gamma_2}'\bxy_i\sti+
+    \bm{\gamma_3}'\bxy Z_i+\bm{\gamma_4}'\bxy_i Z_i\sti
+    \end{split}
+  \end{equation}
+  
+  Then, under Assumptions \ref{ass:sm}, \ref{ass:rand}, and \ref{ass:vps}, if $\ppi$ is linearly independent of $\bxy$, a researcher may follow the following procedure to estimate principal effects:
+  \begin{enumerate}
+  \item Estimate principal scores by fitting model \eqref{eq:pscore} to data from the treatment group
+  \item Replace $\sti$ with $\ri$ (as defined in \ref{eq:ri}) in model \eqref{eq:interaction} and fit with OLS
+  \item Estimate principal effects as:
+   \begin{equation}\label{eq:prinEffEst}
+  \begin{split}
+    \heff0_{int}&\equiv \hat{\beta}_2+\bm{\hat{\gamma}_3}'\overline{\bxy}_{Z=1,S=0}\\
+    \heff1_{int}&\equiv \hat{\beta}_2+\hat{\beta}_3+(\bm{\hat{\gamma}_3}+\bm{\hat{\gamma}_4})'\overline{\bxy}_{Z=1,S=1}
+  \end{split}
+   \end{equation}
+   where $\overline{\bxy}_{Z=1,S=0}$ and $\overline{\bxy}_{Z=1,S=0}$ are the vector of covariate sample means for the subsets of subjects with $Z=1$ and $S=0$ or $S=1$, respectively.
+  \end{enumerate}
+  Then $\heff0_{G}$ and $\heff1_{int}$ are M-estimators, with $\heff0_{int}\rightarrow_p\eff0$ and $\heff1_{G}\rightarrow_p\eff1$ as $n\rightarrow\infty$.
+  Under suitible regularity conditions, they are jointly asymptotically normal, with a variance of the form \eqref{eq:sandwich}.
+\end{prop}
+
+Equation \eqref{eq:interaction} implies Assumption \ref{ass:rci} with $\bm{\gamma_2}=\bm{\gamma_3}=\bm{\gamma_4}=0$. 
+
+\begin{proof}
 First of all, by \eqref{eq:interaction}, 
 \begin{equation*}
   \EE[Y_T-Y_C|\st=0]=\EE[Y|Z=1,\st=0]-\EE[Y|Z=1,\st=0]=\beta_2+\bm{\gamma_3}'\EE[\bxy|\st=0]
@@ -840,6 +813,7 @@ These, in turn, give rise to estimating equations
 with $\EE[\psi_i]=0$.
 These are the estimating equations for the regression model \eqref{eq:interaction}, with $R$ replacing $\st$, fit by OLS. 
 Under standard OLS regularity conditions, the estimated coefficients of that model are consistent, completing the proof.  
+\end{proof}
 
 \subsection{Sandwich Matrix Calculations}
 
