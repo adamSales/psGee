@@ -66,7 +66,7 @@ plotByN=bind_rows(
   geom_point()+geom_line()+geom_hline(yintercept=0)+#,linetype="dotted",size=2)+
   scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*3,name='Standard Error'))+
   scale_shape_manual(values=c(0,16))+
-  annotate('text',600,.125,label=list(bquote(atop("Normal Resid., No Interactions, ",alpha==0.5~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
+  annotate('text',600,.11,label=list(bquote(atop("Normal Resid., No Interactions, ",alpha==0.5~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
   scale_x_continuous(name="Sample Size Per Group (n)",breaks=c(seq(100,500,200),1000))+
   #ggtitle("Bias and Standard Error by n")+
   theme(legend.title=element_blank())
@@ -161,7 +161,7 @@ plotByAlpha=bind_rows(
   geom_point()+geom_line()+geom_hline(yintercept=0)+#,linetype="dashed")+
   scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*5,name='Standard Error'))+
   scale_shape_manual(values=c(0,16))+
-  annotate('text',.7,.1,label=list(bquote(atop("Normal Resid., No Interactions, ",n==500~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
+  annotate('text',.7,.08,label=list(bquote(atop("Normal Resid., No Interactions, ",n==500~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
   xlab(bquote(alpha))#+ggtitle(bquote("Bias and Standard Error by "~alpha))
 ggsave("simFigs/biasSEbyB1.jpg",plot=plotByAlpha,width=6,height=3)
 
