@@ -88,7 +88,8 @@ coverageN <- pdns%>%
    summarize(coverage=mean(CInormL<=pop & CInormU>=pop,na.rm=TRUE))%>%ungroup()
 
 
-bind_rows(
+
+tab1 <- bind_rows(
   biasN%>%filter(eff==1)%>%select(-eff)%>%
   pivot_wider(names_from=n,names_prefix="n=",values_from=bias)%>%mutate(measure="Bias"),
   seN%>%filter(eff==1)%>%select(-eff)%>%
@@ -97,7 +98,10 @@ bind_rows(
   pivot_wider(names_from=n,names_prefix="n=",values_from=rmse)%>%mutate(measure="RMSE"),
   coverageN%>%filter(eff==1)%>%select(-eff)%>%
   pivot_wider(names_from=n,names_prefix="n=",values_from=coverage)%>%mutate(measure="95% CI Coverage"))%>%
-  select(measure,everything())%>%
+  select(measure,everything())
+  
+  
+  #%>%
   kbl()%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
 
@@ -111,7 +115,7 @@ ggsave('simFigs/byN.jpg',width=6,height=3)
 ### results across B1
 ###############################################################################
 
- pdb1 <- resultsB1s %>%
+ pdb1 <- reausultsB1s %>%
   group_by(b1)%>%
   mutate(AUCf=mean(auc,na.rm=TRUE))%>%
   ungroup()%>%
@@ -477,6 +481,48 @@ select(`GEEPERs`,`Mix.`=Mixture,PSW))%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
 sink()
 
+#######################################################
+#### rmse appendix
+#######################################################
+
+rmse <- pd%>%
+  filter(rhat<1.1|estimator=='PSW')%>%
+  group_by(n,mu01,errDist,b1,intS,intZ,interactionS,interactionZ,eff,estimator)%>%
+   summarize(rmse=sqrt(mean(errP^2,na.rm=TRUE)))%>%ungroup()
+
+rmse%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1>0)%>%
+  ggplot(aes(b1,rmse,color=estimator,fill=estimator,group=estimator))+
+  geom_point()+geom_line()+#geom_hline(yintercept=0.95)+
+  facet_grid(interactionS~errDist+interactionZ)
+
+sink('writeUps/rmseTabAppendix.tex')
+cbind(
+
+rmse%>%filter(errDist!='mix',mu01==0.3,eff!="Diff",b1==.2)%>%
+  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
+         n,
+         `\\\\beta_1`=mu01,
+         `Prin. Eff`=paste0('$\\\\tau^',eff,'$'),
+         rmse)%>%
+pivot_wider(names_from=estimator,values_from=rmse),
+rmse%>%filter(errDist!='mix',mu01==0.3,eff!="Diff",b1==.5)%>%
+  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
+         n,
+         `\\\\beta_1`=mu01,
+         `Prin. Eff`=paste0('$\\\\tau^',eff,'$'),
+         rmse)%>%
+pivot_wider(names_from=estimator,values_from=rmse))%>%
+  kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
+  add_header_above(c(" " = 3, "$\\\\alpha=0$" = 3, "$\\\\alpha=0.2$" = 3, "$\\\\alpha=0.5$" = 3),escape=FALSE)%>%
+  collapse_rows(columns=1,latex_hline="major",valign="middle")
+sink()
+
 
 
 #######################################################
@@ -510,6 +556,34 @@ coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.5)%>%
 select(`GEEPERs`,`Mix.`=Mixture))%>%
   kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
   add_header_above(c(" " = 3, "$\\\\alpha=0$" = 2, "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
+  collapse_rows(columns=1,latex_hline="major",valign="middle")
+sink()
+
+
+sink('writeUps/coverageTabAppendix.tex')
+cbind(
+coverage%>%filter(errDist!='mix',mu01==0.3,eff!="Diff",b1==.2,estimator!='PSW')%>%
+  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
+         n,
+         `\\\\beta_1`=mu01,
+         `Prin. Eff`=paste0('$\\\\tau^',eff,'$'),
+         coverage)%>%
+pivot_wider(names_from=estimator,values_from=coverage),
+coverage%>%filter(errDist!='mix',mu01==0.3,eff!="Diff",b1==.5,estimator!='PSW')%>%
+  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
+         n,
+         `\\\\beta_1`=mu01,
+         `Prin. Eff`=paste0('$\\\\tau^',eff,'$'),
+         coverage)%>%
+pivot_wider(names_from=estimator,values_from=coverage))%>%
+  kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
+  add_header_above(c(" " = 3, "$\\\\alpha=0$" = 3, "$\\\\alpha=0.2$" = 3, "$\\\\alpha=0.5$" = 3),escape=FALSE)%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
 sink()
 
@@ -716,7 +790,8 @@ pd100 <- res100 %>%
 resultsB1s%>%
   group_by(b1)%>%
   mutate(meanAUC=mean(auc))%>%
-  ggplot(aes(as.factor(b1),auc))+geom_boxplot()+geom_point(aes(y=meanAUC))+geom_smooth(se=FALSE)
+  ggplot(aes(as.factor(b1),auc))+geom_boxplot()+geom_point(aes(y=meanAUC))+geom_smooth(se=FALSE)+ylab('AUC')+xlab(bquote(alpha))
+  ggsave('simFigs/alphaAUC.pdf',width=5,height=4)
                                         #  scale_y_continuous('Avg. AUC',seq(.5,1,.1))
 resultsB1s%>%
   group_by(b1)%>%
