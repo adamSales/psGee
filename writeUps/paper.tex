@@ -12,9 +12,11 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{numdef}
+\usepackage{multibib}
 
 \input{notation.tex}
 
+\newcites{supp}{Supplementary References}
 
 
 %%% TO DO
@@ -63,8 +65,8 @@ Typically, principal effects are identified and estimated based on strong struct
 Parametric models for principal effects are often hard to specify and hard or impossible to test.
 Even when they are well-specified they can yield estimates that are severely biased and misleading \citep{griffin2008application,feller2016principal}.
 Another route to identification and estimation of principal effects leads through auxiliary data, including baseline covariates or secondary outcomes \citep{mattei2013exploiting}.
-Of particular importance is the ``principal score,'' \citep{jo,ding2017principal,feller2017principal}, or the probability that a subject belongs to a particular principal stratum, as a function of pre-treatment covariates.
-Under a strong, untestable assumption called ``principal ignorability,'' which is akin to the no-confounding assumption underlying observational studies, principal scores can be transformed into weights, which in turn form an unbiased estimate of principal effects.
+Of particular importance is the ``principal score,'' \citep{jo,dingLu,feller2017principal}, or the probability that a subject belongs to a particular principal stratum, as a function of pre-treatment covariates.
+Under a strong, untestable assumption called ``principal ignorability,''  principal scores can be transformed into weights to compute form an unbiased estimate of principal effects.
 
 In a separate, if related, line of research, \citet{jo2002}, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
 This paper expands on those identification results by presenting a new set of principal effect estimators, and associated standard error estimates, based on a general estimating equations (or M-estimation or method-of-moments) \citep{stefanskiBoos}.
@@ -79,7 +81,7 @@ While such a setup may represent the simplest and easiest principal stratificati
 Moreover, we believe that the methods developed here can extend to more complex scenarios, which we leave to future work.
 
 The following section gives a formal introduction to principal stratification and briefly describes two common estimation techniques, parametric mixture modeling and principal score weighting.
-Next, section \ref{sec:geepers} develops GEEPERs estimation, and gives conditions for its consistency.
+Next, Section \ref{sec:geepers} develops GEEPERs estimation, and gives conditions for its consistency.
 Section \ref{sec:simulation} describes a simulation study examining the operating characteristics of GEEPERs estimates and comparing them to estimates from parametric mixture modeling and principal score weighting.
 Under ideal circumstances, estimates from parametric mixture models and weighting estimators are somewhat more efficient than GEEPERs, but when assumptions are violated GEEPERs easily out-performs the other two methods.
 Section \ref{sec:fh2t} illustrates GEEPERs in analyzing data from a recent large-scale field trial of educational software, and Section \ref{sec:discussion} concludes.
@@ -92,7 +94,7 @@ If interest is in the effect of $Z$ on an outcome $Y$, under the ``stable unit t
 
 Let $S_i\in\{0,1\}$ be a measurement on subject $i$ taken subsequent to treatment assignment, so that $S$ may be affected by $Z$.
 Then $S$ itself has potential values $\sti$ and $\sci$, which $i$ would exibit if $Z_i=1$ or $Z_i=0$, respectively.
-Assume ``strong monotonicity'' \citep[c.f.][]{dingLu} (also referred to as ``one-way noncompliance'' \citealt{wing2017can}):
+Assume ``strong monotonicity'' \citep[c.f.][]{dingLu} (also referred to as ``one-way noncompliance''):%\citealt{wing2017can}):
 \begin{ass}[Strong Monotonicity]\label{ass:sm}
 \begin{equation*}%\label{eq:strongMonotonicity}
   \sci=0\text{ for all }i
@@ -154,7 +156,7 @@ First, the conditional normality assumption is untestable and limiting.
 Unfortunately, even when it holds, mixture model estimates can be unreliable and, in some cases, severely biased \citep{griffin2008application,feller2017principal}.
 
 \subsection{Principal Scores}
-The principal score \citep[e.g.][]{jo2009use} is defined as
+The principal score \citep[e.g.][]{jo} is defined as
 \begin{equation}\label{eq:pscore}
   \ppi=Pr(\sti=1|\bxsi)
 \end{equation}
@@ -181,7 +183,7 @@ Principal scores can potentially improve inference in a finite mixture model, by
 \end{equation}
 %Ideally, a statistician will estimate parameters $\muc0$, $\muc1$, $\mut0$, $\mut1$, $\sigma^0_C$, $\sigma^1_C$, and $\bm{\alpha}$ simultaneously, using maximum likelihood or Bayesian techniques.
 
-Alternatively, an analyst may assume ``principal ignorability'' \citep{jo2009use,dingLu}:
+Alternatively, an analyst may assume ``principal ignorability'' \citep{jo,dingLu}:
 \begin{ass}[Principal Ignorability]\label{ass:PI}
 \begin{equation}\label{eq:pi}
   Y_{C}\independent \st |\bxs
@@ -189,7 +191,7 @@ Alternatively, an analyst may assume ``principal ignorability'' \citep{jo2009use
 \end{ass}
 or a somewhat weaker version, $\EE[Y_C|\st,\bxs]=\EE[Y_C|\bxs]$ \citep{feller2017principal}.
 That is, the principal stratum is unrelated to control potential outcomes conditional on covariates.
-Principal ignorability \eqref{eq:pi} is reminiscent of ignorability assumptions typical in observational studies \citep[e.g.][]{rosenbaum2010design}.
+Principal ignorability \eqref{eq:pi} is reminiscent of ignorability assumptions typical in observational studies. % \citep[e.g.][]{rosenbaum2010design}.
 % Both require a rich set of covariates and background knowledge of the determinants of $S$; 
 In particular, an unobserved covariate $u$ that is correlated with both $\st$ and $Y_C$ would invalidate \eqref{eq:pi}.
 
@@ -198,10 +200,10 @@ Under principal ignorability, $\muc0$ and $\muc1$ can be estimated via weighting
   \hat{\muc0}_w=\frac{\sum_{i: Z_i=0} Y_i(1-\pp)}{\sum_{i:Z_i=0}1-\pp}\text{ and } \hat{\muc1}_w=\frac{\sum_{i: Z_i=0} Y_i(\pp)}{\sum_{i:Z_i=0}\pp}
 \end{equation}
 
-Principal score weighting does not require any distributional assumptions and (after estimating principal scores) very easy to implement.
+Principal score weighting does not require any distributional assumptions and (after estimating principal scores) is very easy to implement.
 On the other hand, the principal ignorability assumption is strong and restrictive.
 
-\citet{feller2017principal} recommends the case-resampling bootstrap to estimate the sampling variance of $\hat{\muc0}_w$, $\hat{\muc1}_w$, and their associated principal effect estimators.
+\citet{feller2017principal} recommends the case-resampling bootstrap to estimate the sampling variances of $\hat{\mu}_{Cw}^0$, $\hat{\mu}_{Cw}^1$, and their associated principal effect estimators.
 
 
 \section{GEEPERs}\label{sec:geepers}
@@ -347,7 +349,7 @@ For the remainder of the paper, we will refer to principal effect estimators $\h
 
 We conducted a simulation study to compare the performance of GEEPERs compared to a Bayesian mixture model and to a principal score weighting estimator, in both favorable and unfavorable circumstances.
 The study was designed to answer three sets of overarching questions.
-First, how does the performance of the GEEPERs estimator vary under different conditions, including sample size, the extent to which $\bx$ predicts $\st$, the principal effects themselves vary, and when important interactions were omitted from the outcome model.
+First, how does the performance of the GEEPERs estimator vary under different conditions, including sample size, the extent to which $\bx$ predicts $\st$, whether and how the principal effects themselves vary, and when important interactions are omitted from the outcome model.
 Second, how does GEEPERs compare with mixture modeling? Is it competitive in circumstances favorable to both techniques? Does it avoid the pitfalls of mixture modeling when the parametric assumptions of the normal mixture model fail?
 Third, are there ways or circumstances when the principal score weighting estimator outperforms GEEPERs even though principal ignorability does not hold?
 
@@ -363,12 +365,10 @@ Given the covariates, the (true) principal scores were defined as
   \ppi=logit^{-1}\left[\alpha(x_{1i}-x_{2i}+x_{3i})\right]
 \end{equation*}
 where $\alpha$ is a manipulated factor.
-When $\alpha$ was higher, $\st$ was more easily predicted by covariates; when $\alpha=0$, Assumption \ref{ass:vps}, was violated, i.e. $Var(\pp)=0$.
-Then principal stratum $\sti\in \{0,1\}$ was simulated as $S_i\sim Bern(\ppi)$
+When $\alpha$ was higher, $\st$ was more easily predicted by covariates; when $\alpha=0$, Assumption \ref{ass:vps} was violated, i.e. $Var(\pp)=0$.
+Principal stratum $\sti\in \{0,1\}$ was simulated as $S_i\sim Bern(\ppi)$
 
-Finally, potential and observed outcomes were generated as in \eqref{eq:interaction}, with $\bxy=[\bm{x_1},\bm{x_2},\bm{x_3}]$,
-and with $\EE[\epsilon_i]=0$ and $Var(\epsilon_i)=1/2$.
-Specifically,
+Potential and observed outcomes were generated as 
 \begin{equation}\label{eq:y-sim}
 Y_i=\beta_1\sti+\beta_3Z_i\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i%\\
 \end{equation}
@@ -378,7 +378,7 @@ Y_i=\beta_1\sti+\beta_3Z_i\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i}
 %   Y_i&=Z_i\yti+(1-Z_i)\yci
 %   \end{split}
 % \end{equation}
-with $\beta_3=0.3-\beta_1$. Hence, $\beta_0=\beta_2=\gamma_4=0$, when $\gamma_3=0$ (i.e. no interaction between $Z$ and covariates), there is no average treatment effect in the $\st=0$ stratum, the coefficient for the unobserved covariate $x_3$ is constant across treatment groups and principal strata, and we do not consider three-way interactions between $x_1$ or $x_2$, $\st$, and $Z$.
+with $\beta_3=0.3-\beta_1$, $\EE[\epsilon_i]=0$, and $Var(\epsilon_i)=1/2$. When $\gamma_3=0$ (i.e. no interaction between $Z$ and covariates), there is no average treatment effect in the $\st=0$ stratum.
 
 The distribution of $\epsilon_i$, $\beta_1$, and coefficients $\gamma_1$, $\gamma_2$, and $\gamma_3$ were manipulated factors in the study.
 
@@ -404,7 +404,7 @@ Interactions between $Z$ and covariates& No, Yes\\
   \end{tabular}
   \end{table}
 
-\textbf{\emph{Sample Size per condition $\bm{n}$:}} The guarantees of M-estimation are all asymptotic, so we examined the behavior of our M-estimator at a range of sample sizes to determine its finite-sample properties.
+\textbf{\emph{Sample Size per condition $\bm{n}$:}} The guarantees of M-estimation are all asymptotic, so we examined the behavior of our GEEPERs at a range of sample sizes to determine its finite-sample properties.
 
 $\bm{\alpha}$\textbf{:} As mentioned above, $\alpha$ controls the variance of the principal scores, i.e. the extent to which $\st$ is predictable as a function of covariates. When $\alpha=0$, the covariates are unrelated to $\st$ and principal scores do not vary between participants, violating \eqref{ass:vps}. We expect that the more predictive the covariates, the better the performance of all three estimators.
 To aid in the interpretation of the $\alpha$ parameter, the online appendix plots $\alpha$ against the area under the receiver operating characteristic curve for each fitted model (AUC), a common measure of classification accuracy \citep{bradley1997use}---an AUC of 0.5 implies that the model is no better than random guessing, and AUC of 1 implies perfect prediction. For $0.5\le \alpha \le 1$, the average AUC varies from roughly 0.53 to 0.77; for $\alpha=0.5$, the average AUC was roughly 0.675.
@@ -858,7 +858,7 @@ and
   B=\sum_i \blam_i(\bm{\hat{\alpha}},\bm{\hat{\beta}})\blam_i(\bm{\hat{\alpha}},\bm{\hat{\beta}})'
 \end{equation*}
 
-Following \citet[][p. 373]{carroll2006measurement}, we %separate the estimating equations $\Psi$ into $\phi$ and $\psi$, estimating equations for models \eqref{
+Following \citetsupp[][p. 373]{carroll2006measurement}, we %separate the estimating equations $\Psi$ into $\phi$ and $\psi$, estimating equations for models \eqref{
 can decompose the matrices into diagonal elements 
 \begin{equation*}
     \begin{split}
@@ -946,6 +946,8 @@ Then if $r_i=p_i$,
 
 If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},\bm{\alpha})=0$.
 
+\bibliographystylesupp{plainnat}
+\bibliographysupp{MOM}
 
 
 \end{document}
