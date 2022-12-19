@@ -29,7 +29,7 @@
 %%   look for what else I promised and either put it in or delete promise
 %% proofread
 
-\title[GEEPERS]{GEEPERs: Principal Stratification using Principal Scores and Stacked Estimating Equations}
+\title[\textsc{geepers}]{\textsc{geepers}: Principal Stratification using Principal Scores and Stacked Estimating Equations}
 
 \author[Sales and Vanacore]{Adam C Sales}
 
@@ -71,9 +71,9 @@ Under a strong, untestable assumption called ``principal ignorability,''  princi
 In a separate, if related, line of research, \citet{jo2002}, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
 This paper expands on those identification results by presenting a new set of principal effect estimators, and associated standard error estimates, based on a general estimating equations (or M-estimation or method-of-moments) \citep{stefanskiBoos}.
 It turns out that, under certain general conditions, principal effects can be estimated with a simple, two-step procedure: first, estimate principal scores with logistic regression or another M-estimator; then, impute unknown principal subgroup membership indicators with principal scores and estimate principal effects using ordinary least squares (OLS) regression with interactions. %, just as in the pre-treatment subgroup case.
-We will refer to the estimators presented here as ``GEEPERs'': generalized estimating equations for principal effects using regressions.
-GEEPERs estimates rely on correct specification of regression functions, but unlike common fully-parametric methods, they make no assumptions about the shape of the distribution of regression errors.
-Unlike principal score weighting, GEEPERs does not assume principal ignorability, and admits to sandwich-style standard error estimates, which we provide in the appendix.
+We will refer to the estimators presented here as ``\textsc{geepers}'': generalized estimating equations for principal effects using regressions.
+\textsc{geepers} estimates rely on correct specification of regression functions, but unlike common fully-parametric methods, they make no assumptions about the shape of the distribution of regression errors.
+Unlike principal score weighting, \textsc{geepers} does not assume principal ignorability, and admits to sandwich-style standard error estimates, which we provide in the appendix.
 
 This paper focuses on a special case of principal stratification---one-way, binary non-compliance---that is, there are only two principal strata, and principal stratum membership is observable in one treatment arm, but not in the other.
 This scenario would occur if, say, subjects in the control arm of a study had no access to the treatment, and not all subjects assigned to the treatment arm actually received the full treatment.
@@ -81,10 +81,10 @@ While such a setup may represent the simplest and easiest principal stratificati
 Moreover, we believe that the methods developed here can extend to more complex scenarios, which we leave to future work.
 
 The following section gives a formal introduction to principal stratification and briefly describes two common estimation techniques, parametric mixture modeling and principal score weighting.
-Next, Section \ref{sec:geepers} develops GEEPERs estimation, and gives conditions for its consistency.
-Section \ref{sec:simulation} describes a simulation study examining the operating characteristics of GEEPERs estimates and comparing them to estimates from parametric mixture modeling and principal score weighting.
-Under ideal circumstances, estimates from parametric mixture models and weighting estimators are somewhat more efficient than GEEPERs, but when assumptions are violated GEEPERs easily out-performs the other two methods.
-Section \ref{sec:fh2t} illustrates GEEPERs in analyzing data from a recent large-scale field trial of educational software, and Section \ref{sec:discussion} concludes.
+Next, Section \ref{sec:geepers} develops \textsc{geepers} estimation, and gives conditions for its consistency.
+Section \ref{sec:simulation} describes a simulation study examining the operating characteristics of \textsc{geepers} estimates and comparing them to estimates from parametric mixture modeling and principal score weighting.
+Under ideal circumstances, estimates from parametric mixture models and weighting estimators are somewhat more efficient than \textsc{geepers}, but when assumptions are violated \textsc{geepers} easily out-performs the other two methods.
+Section \ref{sec:fh2t} illustrates \textsc{geepers} in analyzing data from a recent large-scale field trial of educational software, and Section \ref{sec:discussion} concludes.
 
 
 
@@ -200,13 +200,13 @@ Under principal ignorability, $\muc0$ and $\muc1$ can be estimated via weighting
   \hat{\muc0}_w=\frac{\sum_{i: Z_i=0} Y_i(1-\pp)}{\sum_{i:Z_i=0}1-\pp}\text{ and } \hat{\muc1}_w=\frac{\sum_{i: Z_i=0} Y_i(\pp)}{\sum_{i:Z_i=0}\pp}
 \end{equation}
 
-Principal score weighting does not require any distributional assumptions and (after estimating principal scores) is very easy to implement.
+Principal score weighting (\textsc{psw}) does not require any distributional assumptions and (after estimating principal scores) is very easy to implement.
 On the other hand, the principal ignorability assumption is strong and restrictive.
 
 \citet{feller2017principal} recommends the case-resampling bootstrap to estimate the sampling variances of $\hat{\mu}_{Cw}^0$, $\hat{\mu}_{Cw}^1$, and their associated principal effect estimators.
 
 
-\section{GEEPERs}\label{sec:geepers}
+\section{\textsc{geepers}}\label{sec:geepers}
 
 The approach we introduce here incorporates principal scores into an M-Estimator for the mixture model \eqref{eq:mixtureModel}.
 Like principal score weighting, our M-estimator does not require distributional assumptions, but instead requires a conditional independence assumption.
@@ -325,7 +325,7 @@ Simulation results in the following section address some cases in which interact
 
 In any event, Assumption \ref{ass:rci} allows principal effects to be estimated with an OLS model including $\bxy$:
 
-\begin{prop}{GEEPERs}\label{prop:reg2}
+\begin{prop}{\textsc{geepers}}\label{prop:reg2}
 
 Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, and \ref{ass:rci}, let principal scores be estimated as in \eqref{eq:prinScoreMod} using data from the treatment group and assume they are linearly independent of $\bxy$. Then say the researcher fits the following model with OLS:
 \begin{equation}\label{eq:reg2}
@@ -343,15 +343,15 @@ Then let
   Under suitible regularity conditions, they are jointly asymptotically normal, with a variance of the form \eqref{eq:sandwich}.
 \end{prop}
 In short, researchers can estimate principal effects under strong monotonicity by simply imputing missing $\st$ values with estimated principal scores, fitting an OLS regression, and estimating standard errors with a sandwich formula. 
-For the remainder of the paper, we will refer to principal effect estimators $\heff1_{RCI}$ and $\heff0_{RCI}$---our preferred estimators---as ``GEEPERs.'' 
+For the remainder of the paper, we will refer to principal effect estimators $\heff1_{RCI}$ and $\heff0_{RCI}$---our preferred estimators---as ``\textsc{geepers}.'' 
 
 \section{A Simulation Study}\label{sec:simulation}
 
-We conducted a simulation study to compare the performance of GEEPERs compared to a Bayesian mixture model and to a principal score weighting estimator, in both favorable and unfavorable circumstances.
+We conducted a simulation study to compare the performance of \textsc{geepers} compared to a Bayesian mixture model and to a principal score weighting estimator, in both favorable and unfavorable circumstances.
 The study was designed to answer three sets of overarching questions.
-First, how does the performance of the GEEPERs estimator vary under different conditions, including sample size, the extent to which $\bx$ predicts $\st$, whether and how the principal effects themselves vary, and when important interactions are omitted from the outcome model.
-Second, how does GEEPERs compare with mixture modeling? Is it competitive in circumstances favorable to both techniques? Does it avoid the pitfalls of mixture modeling when the parametric assumptions of the normal mixture model fail?
-Third, are there ways or circumstances when the principal score weighting estimator outperforms GEEPERs even though principal ignorability does not hold?
+First, how does the performance of the \textsc{geepers} estimator vary under different conditions, including sample size, the extent to which $\bx$ predicts $\st$, whether and how the principal effects themselves vary, and when important interactions are omitted from the outcome model.
+Second, how does \textsc{geepers} compare with mixture modeling? Is it competitive in circumstances favorable to both techniques? Does it avoid the pitfalls of mixture modeling when the parametric assumptions of the normal mixture model fail?
+Third, are there ways or circumstances when the principal score weighting estimator outperforms \textsc{geepers} even though principal ignorability does not hold?
 
 
 
@@ -404,7 +404,7 @@ Interactions between $Z$ and covariates& No, Yes\\
   \end{tabular}
   \end{table}
 
-\textbf{\emph{Sample Size per condition $\bm{n}$:}} The guarantees of M-estimation are all asymptotic, so we examined the behavior of our GEEPERs at a range of sample sizes to determine its finite-sample properties.
+\textbf{\emph{Sample Size per condition $\bm{n}$:}} The guarantees of M-estimation are all asymptotic, so we examined the behavior of our \textsc{geepers} at a range of sample sizes to determine its finite-sample properties.
 
 $\bm{\alpha}$\textbf{:} As mentioned above, $\alpha$ controls the variance of the principal scores, i.e. the extent to which $\st$ is predictable as a function of covariates. When $\alpha=0$, the covariates are unrelated to $\st$ and principal scores do not vary between participants, violating \eqref{ass:vps}. We expect that the more predictive the covariates, the better the performance of all three estimators.
 To aid in the interpretation of the $\alpha$ parameter, the online appendix plots $\alpha$ against the area under the receiver operating characteristic curve for each fitted model (AUC), a common measure of classification accuracy \citep{bradley1997use}---an AUC of 0.5 implies that the model is no better than random guessing, and AUC of 1 implies perfect prediction. For $0.5\le \alpha \le 1$, the average AUC varies from roughly 0.53 to 0.77; for $\alpha=0.5$, the average AUC was roughly 0.675.
@@ -421,14 +421,14 @@ group, which can be problematic for mixture modeling \citep{griffin2008applicati
 
 \textbf{\emph{Interactions between $\st$ or $Z$ and covariates:}} The last two factors---the presence of interactions between covariates and $\st$ and $Z$, respectively---test the performance of a model that does not include interactions when that modeling assumption is false.
 When neither interaction was present, $\gamma_2=\gamma_3=0$, then $\gamma_1=1/\sqrt{6}$.
-Then, since  $Var(\gamma_1(x_1+x2+x_3))=1/2$ and $Var(\epsilon_i)=1/2$, covariates explained half of the variance of $Y$ within treatment group and principal stratum, and observed covariates $x_1$ and $x_2$ explained 1/3 of that variance.
+Then, since  $Var(\gamma_1(x_1+x_2+x_3))=1/2$ and $Var(\epsilon_i)=1/2$, covariates explained half of the variance of $Y$ within treatment group and principal stratum, and observed covariates $x_1$ and $x_2$ explained 1/3 of that variance.
 When there was an interaction between covariates and $\sti$, then $\gamma_1=3/(4\sqrt{6})$ and $\gamma_2=1/(2\sqrt{6})$, so that the slopes for $x_1$ and $x_2$ varied by half their magnitude between principal strata, and on average they were equal to $1/\sqrt{6}$, as in the no-interaction case.
-Interactions between covariates and $Z$ were controlled by $\gamma_3$: when there were interactions, $\gamma_3=1/(2sqrt{6})$, otherwise $\gamma_3=0$.
+Interactions between covariates and $Z$ were controlled by $\gamma_3$: when there were interactions, $\gamma_3=1/(2\sqrt{6})$, otherwise $\gamma_3=0$.
 Either type of interaction violates Assumption \ref{ass:rci} since if $\gamma_2\ne 0$ or $\gamma_3 \ne 0$, there is no single vector $\bm{\gamma}$ that can fully capture the dependence of $\yc$ and $\yt$ on $S$---instead, the dependence varies with $\st$ and/or with $Z$. 
 
 \subsubsection{Analysis Models}\label{sec:simMods}
 
-Using each simulated dataset, we estimated $\eff0$ and $\eff1$ with three methods: a mixture model \eqref{eq:mixtureModelPS} including principal scores, GEEPERs, and third, the principal score weighting estimator \eqref{eq:psw}.
+Using each simulated dataset, we estimated $\eff0$ and $\eff1$ with three methods: a mixture model \eqref{eq:mixtureModelPS} including principal scores, \textsc{geepers}, and third, the principal score weighting estimator \eqref{eq:psw}.
 
 The methods all used the same ``observed'' dataset, consisting of outcomes $Y$, treatment assignments $Z$, two covariates $\bxs=\bxy=\bx=[x_1,x_2]$, and $S$ observed only when $Z=1$.
 The third covariate used in the data generating model, $x_3$, was ``unobserved''--since $x_3$ was correlated with both $\st$ and $Y$, Principal Ignorability (Assumption \ref{ass:PI}) was violated.
@@ -441,29 +441,29 @@ Residual variance were allowed to differ across treatment groups, but not across
 These models were fit simultaneously using Bayesian Markov Chain Monte Carlo with Stan \citep{rstan}, and principal effects $\eff0$ and $\eff1$ estimated as $\beta_0^T-\beta_0^C$ and $\beta_0^T+\beta_1^T-\beta_0^C-\beta_1^T$, respectively. We interpreted the posterior mean as a point estimate and the posterior standard deviation as a standard error.
 
 
-In contrast, for GEEPERs and principal score weighting the principal score model was fit by itself, to data from the treatment group, using standard maximum likelihood methods.
-For GEEPERs, we used the estimated principal scores in the control group, along with the observed $S$ in the treatment group, to construct $R$, and then fit the model \eqref{eq:reg2} with OLS. 
-To estimate standard errors, we used the \texttt{sandwich} package \citep{sandwich} to extract estimating equations from \eqref{eq:psModsim} and \eqref{eq:simReg} and computed the sandwich covariance matrix following the procedure detailed in the appendix.
+In contrast, for \textsc{geepers} and principal score weighting the principal score model was fit by itself, to data from the treatment group, using standard maximum likelihood methods.
+For \textsc{geepers}, we used the estimated principal scores in the control group, along with the observed $S$ in the treatment group, to construct $R$, and then fit the model \eqref{eq:reg2} with OLS. 
+To estimate standard errors, we computed the sandwich covariance matrix following the procedure detailed in the appendix.
 
-For principal score weighting we plugged estimated principal scores in to \eqref{eq:psw} to estimate $\muc0$ and $\muc1$, estimated $\mut0$ and $\mut1$ with the sample means of subjects with $Z=1$ and $S=0$ or $S=1$, respectively, and estimated $\heff0=\hat{\mut0}-\hat{\muc0}$ and $\heff1=\hat{\mut1}-\hat{\muc1}$.
+For principal score weighting we plugged estimated principal scores in to \eqref{eq:psw} to estimate $\muc0$ and $\muc1$, estimated $\mut0$ and $\mut1$ with the sample means of subjects with $Z=1$ and $S=0$ or $S=1$, respectively, and estimated $\heff0=\hat{\mu}_{Tw}^0-\hat{\mu}_{Cw}^0$ and $\heff1=\hat{\mu}_{Tw}^1-\hat{\mu}_{Cw}^1$.
 
 \subsection{Results}
 In this section we present the subset of simulation results that we think is the most telling and interesting; a fuller set of results is available in the online appendix.
 
 \subsubsection{Varying $n$ and $\alpha$}
-When $\alpha=0$, Assumption \ref{ass:vps} is violated, and M-estimates are highly erratic; however, as Table \ref{tab:coverage} shows, when other assumptions hold inference remains valid.
+When $\alpha=0$, Assumption \ref{ass:vps} was violated, and \textsc{geepers} estimates were highly erratic; however, as Table \ref{tab:coverage} shows, when other assumptions held inference remained valid.
 
-Figure \ref{fig:alphan} shows the empirical bias and standard error (SE) of the GEEPERs and mixture estimator of $\eff1$ as sample size and $\alpha$ vary.
-Across $n$ and $\alpha$, GEEPERs has lower bias and higher SE than the mixture estimator.
-GEEPERs is positively biased for low $n$ with bias converging to close to 0 (up to simulation error) for $n\ge 300$, and appears to be roughly unbiased (up to simulation error) for $\alpha \ge 0.2$, with $n$ fixed at 500.
-The SE of the GEEPERs decreases rapidly for $100\le n \le 500$ and $0.2\le \alpha \le 0.5$ and more gradually for higher values of $n$ and $\alpha$.
+Figure \ref{fig:alphan} shows the empirical bias and standard error (SE) of the \textsc{geepers} and mixture estimator of $\eff1$ as sample size and $\alpha$ varied.
+Across $n$ and $\alpha$, \textsc{geepers} had lower bias and higher SE than the mixture estimator.
+\textsc{geepers} was positively biased for low $n$ with bias converging to close to 0 (up to simulation error) for $n\ge 300$, and was roughly unbiased (up to simulation error) for $\alpha \ge 0.2$, with $n$ fixed at 500.
+The SE of the \textsc{geepers} decreased rapidly for $100\le n \le 500$ and $0.2\le \alpha \le 0.5$ and more gradually for higher values of $n$ and $\alpha$.
 
 For the remainder of the simulation, we focus on the moderate cases of $n=500$ and $\alpha=0.2$ or 0.5.
 
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=\textwidth]{../simFigs/biasSEbyB1N.jpg}
-  \caption{Empirical bias and standard error of GEEPERs and Mixture estimates of $\muc1$ as sample size per treatment group $n$ or $\alpha$ varies. There were 500 replications for each $n$ or $\alpha$. Other factors were held fixed at the noted values.}
+  \caption{Empirical bias and standard error of \textsc{geepers} and Mixture estimates of $\muc1$ as sample size per treatment group $n$ or $\alpha$ varied. There were 500 replications for each $n$ or $\alpha$. Other factors were held fixed at the noted values.}
   \label{fig:alphan}
 \end{figure}
 
@@ -484,31 +484,31 @@ For the remainder of the simulation, we focus on the moderate cases of $n=500$ a
   \label{fig:boxplots}
 \end{figure}
 
-Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatterplots, showing estimation error for GEEPERs, the mixture estimator, and the PSW estimator of $\eff1$ under various sets of conditions, and Table \ref{tab:coverage} shows empirical covarage of nominal 95\% confidence interval estimates under a somewhat wider set of circumstances when $\muc1=0.3$.
-The leftmost panel of Figure \ref{fig:boxplots} and the top line of Table \ref{tab:coverage} show results conditions favorable to both the mixture model and to GEEPERs---normal residuals and no interactions in the data generating model between covariates and either $S$ or $Z$.
-In this case, GEEPERs is roughly unbiased, but less precise than the other two methods---when $\alpha=0.2$ it is much noisier, and when $\alpha=0.5$ it is only slightly less precise.
-The mixture estimator's bias depends on $\muc1$---when $\muc1=0$, the bias is slight, and when $\muc1=0.3$ the bias is more substantial. This is somewhat surprising, because when $\muc1=0$, there is no separation between the principal strata in the control group, and previous literature \citep{griffin2008application} has identified this scenario as a particular challenge for mixture modeling.
-The PSW estimator is also biased---due, presumably, to the violation of Principal Ignorability, Assumption \ref{ass:PI}---inherent in the data generating model. On the other hand, the PSW estimator has easily the lowest sampling variance of the three estimators.
+Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatterplots, showing estimation error for \textsc{geepers}, the mixture estimator, and the \textsc{psw} estimator of $\eff1$ under various sets of conditions, and Table \ref{tab:coverage} shows empirical coverage of nominal 95\% confidence interval estimates under a somewhat wider set of circumstances when $\muc1=0.3$. More complete results, including root-mean-squared-error estimates, are in the online appendix. 
+The leftmost panel of Figure \ref{fig:boxplots} and the top line of Table \ref{tab:coverage} show results under conditions favorable to both the mixture model and to \textsc{geepers}---normal residuals and no interactions in the data generating model between covariates and either $S$ or $Z$.
+\textsc{geepers} was roughly unbiased, but less precise than the other two methods---when $\alpha=0.2$ it was much noisier, and when $\alpha=0.5$ it was only slightly less precise.
+The mixture estimator's bias depended on $\muc1$---when $\muc1=0$, the bias was slight, and when $\muc1=0.3$ the bias was more substantial. This is somewhat surprising, because when $\muc1=0$, there was no separation between the principal strata in the control group, and previous literature \citep{griffin2008application} has identified this scenario as a particular challenge for mixture modeling.
+The \textsc{psw} estimator was also biased---due, presumably, to the violation of Principal Ignorability, Assumption \ref{ass:PI}---inherent in the data generating model. On the other hand, the \textsc{psw} estimator had easily the lowest sampling variance of the three estimators.
 The middle panel of Figure \ref{fig:boxplots} and the fifth line of Table \ref{tab:coverage} show a similar set of results for when the residuals in \eqref{eq:y-sim} are uniformly distributed.
-In this case, GEEPERs and PSW estimator behave in a similar fashion to the normal case, but the mixture estimator shows a bimodal pattern--sometimes over-estimating $\eff1$ and sometimes underestimating, but rarely estimating $\eff1$ accurately.
-Credible intervals from the mixture model exhibit severe undercoverage, while GEEPERs confidence intervals achieve at least their nominal level.
+In this case, \textsc{geepers} and \textsc{psw} estimator, which do not assume normality, behaved in a similar fashion as in the normal case, but the mixture estimator showed a bimodal pattern--sometimes over-estimating $\eff1$ and sometimes underestimating, but rarely estimating $\eff1$ accurately.
+Credible intervals from the mixture model exhibited severe undercoverage, while \textsc{geepers} confidence intervals achieved at least their nominal level.
 
 %\sloppy
-The rightmost panel of Figure \ref{fig:boxplots} returns to the case of normal residuals---and only shows results when $\muc1=0.3$ and $\alpha=0.5$---but introduces interactions in the data generating model between covariates and either $\st$, $Z$, or both. That is, the coefficients on the covariates in the outcome model vary between principal strata and/or between treatment groups, violating Assumption \ref{ass:rci}..
-%Presence of interactions could undermine the GEEPERs by inducing a relationship between principal scores and potential outcomes, even after adjusting the outcomes for covariate effects.
-Fortunately, the presence of interactions in the data generating model in this scenario appear to make little difference when $\alpha=0.5$; however, Table \ref{tab:coverage} shows that when $\alpha=0$ or 0.2, and there are interactions between $\bx$ and $Z$ (i.e. $\gamma_3\ne 0$) GEEPERs 95\% confidence intervals tend to under-cover. Nevertheless, coverage of GEEPERs intervals is nearly always substantially higher than coverage of corresponding 95\% credible intervals from mixture models.%\footnote{}
+The rightmost panel of Figure \ref{fig:boxplots} returns to the case of normal residuals---and only shows results when $\muc1=0.3$ and $\alpha=0.5$---but introduces interactions in the data generating model between covariates and either $\st$, $Z$, or both, violating Assumption \ref{ass:rci}.
+%Presence of interactions could undermine the \textsc{geepers} by inducing a relationship between principal scores and potential outcomes, even after adjusting the outcomes for covariate effects.
+Fortunately, these interactions made little difference when $\alpha=0.5$; however, Table \ref{tab:coverage} shows that when $\alpha=0$ or 0.2, interactions between $\bx$ and $Z$ were present (i.e. $\gamma_3\ne 0$) \textsc{geepers} 95\% confidence intervals tended to under-cover. Nevertheless, coverage of \textsc{geepers} intervals was nearly always substantially higher than coverage of corresponding 95\% credible intervals from mixture models.%\footnote{}
 
 
 
 \begin{table}
 
-\caption{\label{tab:coverage}Empirical coverage of nominal 95\% confidence intervals for GEEPERs and Bayesian mixture modeling under varying conditions.}
+\caption{\label{tab:coverage}Empirical coverage of nominal 95\% confidence intervals for estimates of $\eff1$.}
 \centering
 \begin{tabular}{*{9}{c}}%*{6}{r}}
 \toprule
 \multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0$} & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
 \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9}
-\makecell[l]{Residual\\Dist.} & \makecell[c]{X:Z\\Int.?} & \makecell[r]{X:S\\Int.?} & \rotatebox[origin=c]{300}{GEEPERs} & \rotatebox[origin=c]{300}{Mixture}  & \rotatebox[origin=c]{300}{GEEPERs} & \rotatebox[origin=c]{300}{Mixture}& \rotatebox[origin=c]{300}{GEEPERs} & \rotatebox[origin=c]{300}{Mixture}\\
+\makecell[l]{Residual\\Dist.} & \makecell[c]{X:Z\\Int.?} & \makecell[r]{X:S\\Int.?} & \rotatebox[origin=c]{300}{\textsc{geepers}} & \rotatebox[origin=c]{300}{Mixture}  & \rotatebox[origin=c]{300}{\textsc{geepers}} & \rotatebox[origin=c]{300}{Mixture}& \rotatebox[origin=c]{300}{\textsc{geepers}} & \rotatebox[origin=c]{300}{Mixture}\\
 \midrule
  & No & No & 0.99 & 0.99  & 0.97 & 0.97 & 0.96 & 0.96\\
 
@@ -525,7 +525,7 @@ Fortunately, the presence of interactions in the data generating model in this s
 
 \multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & 0.83 & 0.15 & 0.88 & 0.21 & 0.94 & 0.53\\
 \bottomrule
-\multicolumn{9}{p{0.9\textwidth}}{\footnotesize Standard error $\approx 1$ percentage point, based on 500 replications and true coverage probabilities of 0.95.}
+\multicolumn{9}{p{0.9\textwidth}}{\footnotesize Based on 500 replications. $n=500$, $\beta_1=0.3$. Simulation standard error $\approx 1$ percentage point.}
 
 \end{tabular}
 \end{table}
@@ -533,37 +533,40 @@ Fortunately, the presence of interactions in the data generating model in this s
 
 \section{Application: Estimating Treatment Effects for Implementation Subgroups}\label{sec:fh2t}
 
-In a recent educational field experiment, middle school students completing their math schoolwork on a computer program were randomized between four conditions. In all four conditions, students worked on their assigned math program in class on 12 different occasions---a prior assessment, a mid-test, a post-test, and nine learning sessions---spaced throughout the school year.  
-The four conditions included two gamified programs---DragonBox and From Here to There (FH2T)---and two programs in which students used computers to work through a series of algebra problems taken from the district's textbook---``Assistments'' and an active control called ``Business as Usual'' (BAU).  % the active control condition in which students simply used the computer to work on a sequence of math problems. 
+In a recent educational field experiment, middle school students completing their math schoolwork on a computer program were randomized between four conditions. 
+These included two gamified programs---DragonBox and From Here to There (FH2T)---and two programs in which students used computers to work through a series of algebra problems taken from the district's textbook---``Assistments'' and an active control called ``Business as Usual'' (BAU).  % the active control condition in which students simply used the computer to work on a sequence of math problems. 
 %In the DragonBox game, students learned to solve algebraic equations by isolating a box containing a dragon; as students progressed in the game, pictures of monsters were replaced by mathematical symbols. 
 %Another condition, the From Here to There (FH2T) program, used visual cues such as color and spacing to teach algebraic concepts, and allowed students to solve equations by manipulating expressions via dragging and dropping.
-%In the ASSISTments condition, students used computers to work through a series of math problems taken from the district's textbook. 
-Students in the ASSISTments condition had access to a series hints for each problem, culminating in a ``bottom out'' hint that contained the answer and were given immediate feedback on their answers. % and had to enter the correct answer in order to proceed to the next problem. 
+%In ASSISTments, students used computers to work through a series of math problems taken from the district's textbook. 
+Students in ASSISTments had access to a series hints for each problem, culminating in a ``bottom out'' hint that contained the answer and were given immediate feedback on their answers. % and had to enter the correct answer in order to proceed to the next problem. 
 In the BAU condition students had no access to hints and received feedback only after completing the assignment. 
-In this illustration, we will compare the ASSISTments condition (which we arbitrarily label ``treatment'')---the only condition featuring bottom-out hints---with each of the three others separately. Our goal is to estimate different treatment effects for groups of students who would, if assigned to the ASSISTments condition, request few or many bottom out hints. 
+In all four conditions, students worked on their assigned math program in class on 12 different occasions spaced throughout the school year: a prior assessment, a mid-test, a post-test, and nine learning sessions.  
+In this illustration, we will compare ASSISTments---the only condition featuring bottom-out hints---with each of the three others separately. Our goal is to estimate different treatment effects for groups of students who would, if assigned to ASSISTments, request few or many bottom out hints. 
 
-The literature on hints in online learning is mixed \citep[see, e.g.,][]{aleven2016help,goldin2012learner,sales2021student} in particular when it comes to requesting a bottom-out hint (called ``bottoming out''). On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep[e.g.]{sweller1985use}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer, and use the software without ever working to solve any problems \citep[e.g.][]{guo2008trying}. However, in this experiment, the ability to bottom out was only one of several differences between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects of being assigned to the ASSISTments condition, relative to any of the other three, separately for subjects who would (if assigned to treatment) bottom out frequently, and for subjects who would not. 
+The literature on hints in online learning is mixed \citep[see, e.g.,][]{aleven2016help,goldin2012learner,sales2021student} in particular when it comes to requesting a bottom-out hint (called ``bottoming out''). On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep[e.g.]{sweller1985use}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer, and use the software without ever working to solve any problems \citep[e.g.][]{guo2008trying}. 
+
+In this experiment, the ability to bottom out was only one of several differences between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects of being assigned to ASSISTments, relative to any of the other three, separately for subjects who would (if assigned to ASSISTments) bottom out frequently, and for subjects who would not. 
 If the availability of bottom-out hints plays an important positive role in ASSISTments's efficacy, we might expect larger effects of condition on students who would bottom out frequently than for those who would not; if bottom-out hints are harmful, we might expect the opposite. 
 %If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who generally do not bottom out, but a positive effect for students who do. 
 (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
 
 \sloppy
-For the purpose of demonstrating GEEPERs, we gathered dichotomized data on %which students in the treatment condition requested at least one bottom-out hint.
-whether students in the treatment condition requested more than the median number of bottom-out hints (11).
-That is, $\st=1$ for students who, if assigned to the treatment condition, would request at more than 11 bottom-out hints (``bottom-outers''), and $\st=0$ for students who would request 11 or fewer (``non-bottom-outers''). %least one bottom-out hint, and $\st=0$ for students who would not.
+We gathered dichotomized data on %which students in the treatment condition requested at least one bottom-out hint.
+whether students in ASSISTments requested more than the median number of bottom-out hints (i.e. 11).
+That is, $\st=1$ for students who, if assigned to ASSISTments, would request at more than 11 bottom-out hints (``bottom-outers''), and $\st=0$ for students who would request 11 or fewer (``non-bottom-outers''). %least one bottom-out hint, and $\st=0$ for students who would not.
 The outcome of interest $Y$ in our example is students' total scores on a ten-item posttest completed within the online tutoring system; $Y$ is an integer ranging from 0 to 10.
-The goal of our analysis will be to determine the principal effects $\tau_1=\EE[\yt-\yc|\st=0]$ and $\tau_0=\EE[\yt-\yc|\st=0]$, the average effects of assignment to the treatment condition for bottom-outers and non-bottom-outers.
+The goal of our analysis will be to determine the principal effects $\tau_1=\EE[\yt-\yc|\st=0]$ and $\tau_0=\EE[\yt-\yc|\st=0]$, the average effects of assignment to ASSISTments (``$T$'' subscripts) versus the other conditions (``$C$'') for bottom-outers and non-bottom-outers.
 
 We also had access to data on a number of baseline covariates, including prior achievement, demographics, baseline measurements of student attitudes towards math and an indicator for whether students began the school year in remote or in-person instruction.
 Students with missing pretest scores were dropped from the analysis; missing data in other covariates was imputed with a Random Forest algorithm \citep{missForest}.
 
-The data analysis we present here is intended as a demonstration of GEEPERs, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition and post-selection inference. For a more complete discussion of the experimental design, the conditions being compared, and the impact analysis, please see \citet{impactPaper}.
+The data analysis we present here is intended as a demonstration of \textsc{geepers}, rather than for its substantive conclusions, and our description omits discussion of some important methodological considerations, including attrition and post-selection inference. For a more complete discussion of the experimental design, the conditions being compared, and the impact analysis, please see \citet{impactPaper}.
 
 Due to privacy regulations, the data are not publicly available; however, interested analysts may access anonymized data by emailing the study's principal investigator at [REDACTED] and signing a privacy agreement.
 Replication code for the analysis is available at \url{www.github.com/[Redacted]}.
 
-\subsection{Data Analysis}
-\subsubsection{Principal Score Model}\label{sec:psMod}
+%\subsection{Data Analysis}
+%\subsubsection{Principal Score Model}\label{sec:psMod}
 
 % \begin{figure}
 %   \centering
@@ -573,8 +576,8 @@ Replication code for the analysis is available at \url{www.github.com/[Redacted]
 % \end{figure}
 
 
-We estimated principal scores using logistic regression of observed $S$ on schol fixed effects and a set of baseline variables chosen with a combination of expert judgement and backwards selection based on the AIC, and evaluated model fit with binned residual plots \citep{gelman2006data}.
-The model was fit to data from students in the treatment group, for whom bottom-out status ($S$) was observed; hence, the same model fit was used for all three treatment contrasts.
+We estimated principal scores using logistic regression of observed $S$ on school fixed effects and a set of baseline variables chosen with a combination of expert judgement and backwards selection based on the AIC, and evaluated model fit with binned residual plots \citep{gelman2006data}.
+The model was fit to data from students in the ASSISTments group, for whom bottom-out status ($S$) was observed; hence, the same model fit was used for all three treatment contrasts.
 The model was fairly successful in distinguishing bottom-outers from non-bottom-outers---the AUC, evaluated using out-of-sample predictions in a 10-fold cross-validation, was roughly 0.795. That is, in roughly 80\% of bottom-outer/non-bottom-outer pairs of subjects, the bottom-outer will have a higher predicted probability from the model.
 
 
@@ -602,43 +605,43 @@ The model was fairly successful in distinguishing bottom-outers from non-bottom-
   \label{fig:compare}
 \end{figure}
 
-Figure \ref{fig:compare} shows principal effect estimates from GEEPERs compared to analogous estimates using Bayesian mixture modeling and PSW, alongside estimates of the overall average treatment effects, labeled ``ATE.''.
+Figure \ref{fig:compare} shows principal effect estimates from \textsc{geepers} compared to analogous estimates using Bayesian mixture modeling and \textsc{psw}, alongside estimates of the overall average treatment effects, labeled ``ATE.''.
 All three sets of estimates relied on the same principal score model described above, in Section \ref{sec:psMod}, though in the mixture model it was fit simultaneously with effect estimation using a Markov Chain Monte Carlo algorithm \citep{rstan}.
-Outcome regressions in GEEPERs and the mixture model included all of the covariates that were in the principal score model, in addition to students' pretest scores; also, the models substituted class fixed effects for school fixed effects. 
+Outcome regressions in \textsc{geepers} and the mixture model included all of the covariates that were in the principal score model, in addition to students' pretest scores; also, the models substituted class fixed effects for school fixed effects. 
 
 The Bayesian mixture model assumed that outcomes were normally distributed, conditional on covariates (the same as in Section \ref{sec:outMod}) and principal stratum, with a residual standard deviation that varied between principal strata. This modeling assumption is necessarily false, since post-test scores were integers between 0 and 10. All model parameters with support in $\mathbb{R}$ were given standard normal priors, while standard deviation parameters were given half-standard normal priors.
 
-The PSW estimators did not include any covariate outcome modeling. Standard errors for the PSW estimates were estimated using the bootstrap, with resampling done within schools.
+The \textsc{psw} estimators did not include any covariate outcome modeling. Standard errors for the \textsc{psw} estimates were estimated using the bootstrap, with resampling done within schools.
 
 For all three sets of estimators, approximate 95\% confidence intervals were estimated by adding and subtracting twice the standard error from the point estimate (or twice the posterior standard deviation from the posterior mean, in the Bayesian mixture model).
 
-The GEEPERs results suggest little difference, if any, between the effects in the two principal strata. Estimated effects compared to BAU or DragonBox were slightly lower for bottom-outers than for non-bottom-outers, and estimated effects compared to FH2T were higher for non-bottom-outers.
+The \textsc{geepers} results suggest little difference, if any, between the effects in the two principal strata. Estimated effects compared to BAU or DragonBox were slightly lower for bottom-outers than for non-bottom-outers, and estimated effects compared to FH2T were higher for non-bottom-outers.
 However, none of these differences is statistically significant, so opposite patterns, or no difference between principal effects at all, would also be consistent with the data.
 In fact, 95\% confidence intervals for all principal effects include both positive and negative principal effects.
 
-The other estimation strategies largely agreed with GEEPERs, and with each other. 
-This may suggest that the estimators' various assumptions---additivity of treatment assignment effect for GEEPERs and the mixture model, normal residuals for the mixture model, and principal ignorability for PSW---were all innocuous and may have held approximately. Alternatively, violations of the different assumptions may have led to similar errors.
+The other estimation strategies largely agreed with \textsc{geepers}, and with each other. 
+This may suggest that the estimators' various assumptions---additivity of treatment assignment effect for \textsc{geepers} and the mixture model, normal residuals for the mixture model, and principal ignorability for \textsc{psw}---were all innocuous and may have held approximately. Alternatively, violations of the different assumptions may have led to similar errors.
 
 
 \section{Discussion}\label{sec:discussion}
-GEEPERs is a straightforward approach to principal effect estimation under strong monotonicity, built on widely-used regression models, which is more robust---though less precise---than alternative approaches under a wide array of scenarios.
+\textsc{geepers} is a straightforward approach to principal effect estimation under strong monotonicity, built on widely-used regression models, which is more robust---though less precise---than alternative approaches under a wide array of scenarios.
 
-There is good reason to hope that extensions to GEEPERs may be straightforward.
-First, GEEPERs may be extended to situations in which there is two-way noncompliance, and only a weaker form of monotonicity (Assumption \ref{ass:sm}) holds.
+There is good reason to hope that extensions to \textsc{geepers} may be straightforward.
+First, \textsc{geepers} may be extended to situations in which there is two-way noncompliance, and only a weaker form of monotonicity (Assumption \ref{ass:sm}) holds.
 For instance, in truncation by death problems \citep[e.g.][]{zhangRubin,ding2011}, $S_i=1$ if participant $i$ survives (or, more generally, if the outcome $Y_i$ is measured) and 0 otherwise, and interest is is in the principal effect for the ``always survive'' principal stratum in which $\sti=S_{ci}=1$.
 If, say, $\sti\ge S_{Ci}$, then every subject in the control condition with $S_i=1$ is in the always survive stratum, while those subjects in the treatment condition with $S_i=1$ are a mixture of the always survive and $\sti=1;\;S_{Ci}=0$ stratum.
 The scenario of truncation by death with (weak) monotonicity is broadly similar to the strong monotonicity, one-way noncompliance situation that this paper discussed.
 On the other hand, when no monotonicity assumption holds, both $\st$ and $S_C$ will have to be imputed for every subject; further research is necessary to determine the appropriate way to do so.
 
 Another direction of extension involved the principal score model \eqref{eq:pscore}.
-The performance of GEEPERs in the simulation study of Section \ref{sec:simulation} depended heavily on the factor $\alpha$, which controlled the extent to which covariates could predict $S$.
-That suggests that when covariates are high-dimensional, GEEPERs' performance in applications could be optimized with a high-dimensional semi- or non-parametric model.
+The performance of \textsc{geepers} in the simulation study of Section \ref{sec:simulation} depended heavily on the factor $\alpha$, which controlled the extent to which covariates could predict $S$.
+That suggests that when covariates are high-dimensional, \textsc{geepers}' performance in applications could be optimized with a high-dimensional semi- or non-parametric model.
 If so, several further questions emerge.
 First, can the parameter $\alpha$ be extended to a more general parameter measuring the prediction accuracy of a non-parametric model.
 Second, if the principal score model cannot be formulated as the solution to a set of estimating equations, how should the standard error be computed?
 Lastly, can over-fit principal score models cause bias or other estimation problems, and if so, are there ways to protect against overfitting?
 
-GEEPERs is a flexible, easily-implementable method for principal effect estimation for one-way noncompliance, with predictive covariates; extensions to a broader set of circumstances could be a boon to causal modeling.
+\textsc{geepers} is a flexible, easily-implementable method for principal effect estimation for one-way noncompliance, with predictive covariates; extensions to a broader set of circumstances could be a boon to causal modeling.
 
 \bibliographystyle{plainnat}
 \bibliography{MOM}
@@ -815,7 +818,7 @@ Under standard OLS regularity conditions, the estimated coefficients of that mod
 
 \subsection{Sandwich Matrix Calculations}
 
-Here we will derive the sandwich variance-covariance matrix for the GEEPERs estimate without interactions between $\bx$ and either $Z$ or $\st$---i.e. with $\bm{\gamma_2}=\bm{\gamma_3}=\bm{\gamma_4}=0$ in the notation of \eqref{eq:interaction}---and estimating principal scores using a generalized linear model. 
+Here we will derive the sandwich variance-covariance matrix for the \textsc{geepers} estimate without interactions between $\bx$ and either $Z$ or $\st$---i.e. with $\bm{\gamma_2}=\bm{\gamma_3}=\bm{\gamma_4}=0$ in the notation of \eqref{eq:interaction}---and estimating principal scores using a generalized linear model. 
 
 We propose estimating principal effects in two stages.
 First, fit the model
@@ -966,6 +969,20 @@ If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},
 \input{writeUps/rmseTabAppendix}
 
 %\end{table}
+
+\section{More Results from Application}
+
+
+
+\begin{figure}[!h]
+  \centering
+  \includegraphics{../figure/psModCoef.jpg}
+  \caption{Principal Score Model Coefficients}
+  \label{fig:psMod}
+\end{figure}
+
+
+
 
 \bibliographystylesupp{plainnat}
 \bibliographysupp{MOM}
