@@ -6,6 +6,7 @@ library(kableExtra)
 library(xtable)
 source('code/regression.r')
 library(huxtable)
+library(texreg)
 select <- dplyr::select
 
 options(knitr.kable.NA = '')
@@ -98,9 +99,10 @@ load('results/geeResults.RData')
 
 
 sink('writeUps/outcomeRegAppendix.tex')
-outModTab <- huxreg(
+texreg(list(
+  psModel=estimates3$BAU$psMod,
   BAU=estimates3$BAU$outMod,
   FH2T=estimates3$FH2T$outMod,
-    DragonBox=estimates3$Dragon$outMod,
-    omit_coefs = paste0("ClaIDPre",1:218))%>%print_latex()
-sink()
+    DragonBox=estimates3$Dragon$outMod),
+    file='writeUps/outcomeRegAppendix.tex',
+    omit.coef = c('SchIDPre|ClaIDPre'))
