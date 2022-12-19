@@ -18,6 +18,8 @@ coefplot(estimates3$BAU$psMod, predictors=names(model.frame(estimates3$BAU$psMod
 ggsave('figure/psModCoef.jpg',width=5,height=3,units='in')
 
 
+
+
 ### plot estimates
 
 ateDF <- imap_dfr(ates,~data.frame(EFF=.25,Alternative=paste('vs.',ifelse(.y=='Dragon','DragonBox',.y)),estimates=.x$coefficients['Z'],

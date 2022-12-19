@@ -92,3 +92,15 @@ sink('writeUps/table1.tex')
 kbl(tab1,format='latex',booktabs=TRUE)%>% #c("p{1.5in}",rep("l",5)))%>%
   group_rows("Baseline",1,17,indent=FALSE)%>%group_rows("Post-Treatment",18,19,indent=FALSE)
 sink()
+
+
+load('results/geeResults.RData')
+
+
+sink('writeUps/outcomeRegAppendix.tex')
+outModTab <- huxreg(
+  BAU=estimates3$BAU$outMod,
+  FH2T=estimates3$FH2T$outMod,
+    DragonBox=estimates3$Dragon$outMod,
+    omit_coefs = paste0("ClaIDPre",1:218))%>%print_latex()
+sink()
