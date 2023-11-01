@@ -1,23 +1,11 @@
-library(tidyverse)
-library(arm)
-library(randomForest)
-library(tableone)
-library(kableExtra)
-library(xtable)
-source('code/regression.r')
-library(huxtable)
-library(texreg)
-select <- dplyr::select
-
 options(knitr.kable.NA = '')
 
-load('data/psdatBAU.RData')
-load('data/psdat.RData')
-load('data/imputation.RData')
+print(load('data/psdat.RData'))
+print(load('data/imputation.RData'))
 
 tab1dat <-
-  dat3%>%
-  filter(Z%in%c('ASSISTments','BAU'))%>%
+  psdat%>%
+  #filter(Z%in%c('ASSISTments','BAU',''))%>%
   select(
     pretest , Scale.Score5 , MALE , race ,
     virtual , EIP , IEP , ESOL , GIFTED , pre.avg_time_on_tasks ,
@@ -98,11 +86,13 @@ sink()
 load('results/geeResults.RData')
 
 
-sink('writeUps/outcomeRegAppendix.tex')
-texreg(list(
-  psModel=estimates3$BAU$psMod,
-  BAU=estimates3$BAU$outMod,
-  FH2T=estimates3$FH2T$outMod,
-    DragonBox=estimates3$Dragon$outMod),
-    file='writeUps/outcomeRegAppendix.tex',
-    omit.coef = c('SchIDPre|ClaIDPre'))
+#sink('writeUps/outcomeRegAppendix.tex')
+texreg(
+  list(
+    psModel=estimatesAll$BAU$psMod,
+    BAU=estimatesAll$BAU$outMod,
+    FH2T=estimatesAll$FH2T$outMod,
+    DragonBox=estimatesAll$Dragon$outMod),
+  file='writeUps/outcomeRegAppendix.tex',
+  longtable=TRUE,
+  omit.coef = c('SchIDPre|ClaIDPre'))

@@ -4,11 +4,16 @@ library(randomForest)
 library(estimatr)
 source('code/regression.r')
 select <- dplyr::select
+library(splines)
+
 
 load('data/psdat.RData')
 
 
-load('results/psModGlm7.RData')
+
+print(load('results/psModGlm7.RData'))
+print(load('results/biggerPSmods.RData'))
+
 
 psdat <- filter(psdat,SchIDPre!=7) ### only one student from school 7, in FH2T
 
@@ -17,7 +22,7 @@ psdat$Z <- ifelse(psdat$trt=='ASSISTments',1,0)
 alts <- unique(psdat$trt[psdat$Z==0])
 alts <- setNames(alts,alts)
 
-
+psdat$S[psdat$Z==0]<- NA
 
 
 getDat <- function(alt){
@@ -34,9 +39,20 @@ ates <- sapply(setNames(alts,alts),
                     estimatr::lm_robust(
                                 Y~Z+Scale.Score5+ESOL+IEP+pre.total_time_on_tasks+pre_MSE_total_score+
                             fullYear5+pre_PS_tasks_total_score+raceEth+Gender+GIFTED+
-                            pre.total_math_score+pre.total_math_scoreNA+ClaIDPre,
+                            pre.total_math_score+pre.total_math_scoreNA,
                             data=getDat(alt),fixed_effects=~ClaIDPre),
-                  simplify=FALSE)
+               simplify=FALSE)
+
+atesEst <- sapply(ates,function(x) estimatr:::summarize_tidy(x)['Z',1:2])
+
+atesAll <-  sapply(setNames(alts,alts),
+                  function(alt)
+                    estimatr::lm_robust(
+                                update(formula(psModAll),Y~Z+.-SchIDPre),
+                            data=getDat(alt),fixed_effects=~ClaIDPre),
+               simplify=FALSE)
+
+atesAllEst <- sapply(atesAll,function(x) estimatr:::summarize_tidy(x)['Z',1:2])
 
 estimates3 <- lapply(setNames(alts,alts),
                     function(alt)
@@ -63,11 +79,116 @@ estimates0 <- lapply(alts,
                           covFormU=formula(psMod7)[-2])
                     )
 
+estimates0all <- lapply(alts,
+                        function(alt)
+                      est(getDat(alt),psMod=psModAll)
+                    )
+
+estimates0rest <- lapply(alts,
+                        function(alt)
+                          est(getDat(alt),psMod=psModRest,
+                              covFormY=formula(psModAll)[-2])
+                    )
+
 save(ates,estimates0,estimates3,estimatesInt1,file='results/geeResults.RData')
 
 sapply(estimates0,effsFromFit,simplify=F)
 
 ### model checking
+plotDim <- function(n){
+  pp <- 0
+  i <- 1
+  while(pp<n){
+    i <- i+1
+    pp <- i*(i+1)
+  }
+  return(c(i,i+1))
+}
+
+outPlots <- function(outMod,alt){
+  mf <- model.frame(outMod)
+  rr <- resid(outMod)
+  preds <- model.frame(outMod)%>%
+    select(-Z,-Y)%>%select(where(is.numeric))
+
+  par(mfrow=plotDim(ncol(preds)+1))
+  on.exit(par(mfrow=c(1,1)))
+  binnedplot(fitted(outMod),rr,main=alt)
+
+  preds%>%
+  mutate(across(where(~NCOL(.)>1),~.[,1]))%>%
+  iwalk(~binnedplot(.x,rr,xlab=.y,main=alt))
+}
+
+par(ask=TRUE)
+walk(alts,~outPlots(estimates0[[.x]]$outMod,.x))
+
+estimates1 <- lapply(alts,
+                    function(alt)
+                      est(getDat(alt),
+                          covFormU=formula(psMod7)[-2],
+                          covFormY=update(formula(psMod7)[-2],
+                                          .~.-Scale.Score5+ns(Scale.Score5,3)
+                                          -pre_MSE_total_score+I(pre_MSE_total_score< -2)+ns(pre_MSE_total_score,3)
+                                          )
+                          )
+                    )
+walk(alts,~outPlots(estimates1[[.x]]$outMod,.x))
+
+
+walk(alts,~outPlots(estimates0all[[.x]]$outMod,.x))
+
+estimates1all <-
+  lapply(alts,
+         function(alt)
+           est(getDat(alt),psMod=psModAll,
+               covFormY=update(formula(psModAll)[-2],
+                               .~.
+                               -UnexcusedDays6+ns(UnexcusedDays6,3)
+                               -pre_MA_total_score+ns(pre_MA_total_score,3)
+                               -pre_MSE_total_score+I(pre_MSE_total_score< -2)+ns(pre_MSE_total_score,3)
+                               -pre.total_math_score+ns(pre.total_math_score,4))
+               )
+         )
+
+walk(alts,~outPlots(estimates1all[[.x]]$outMod,.x))
+
+estimates0all.2 <-
+  lapply(alts,
+         function(alt)
+           est(getDat(alt),#psMod=psModAll,
+               covFormU=formula(psModAll)[-2],
+               covFormY=update(formula(psModAll)[-2],
+                               .~.-pre_MSE_total_score+I(pre_MSE_total_score< -2)+ns(pre_MSE_total_score,3)
+                               -pre.total_math_score+as.factor(round(pre.total_math_score)))
+               )
+           )
+
+walk(alts,~outPlots(estimates0all.2[[.x]]$outMod,.x))
+
+walk(alts,~outPlots(estimates0rest[[.x]]$outMod,.x))
+
+estimates1rest <-
+  lapply(alts,
+         function(alt)
+           est(getDat(alt),psMod=psModRest,
+               covFormY=update(formula(psModAll)[-2],
+                               .~.
+                               -UnexcusedDays6+ns(UnexcusedDays6,3)
+                               -pre_MA_total_score+ns(pre_MA_total_score,3)
+                               -pre_MSE_total_score+I(pre_MSE_total_score< -2)+ns(pre_MSE_total_score,3)
+                               -pre.total_math_score+ns(pre.total_math_score,4)
+                               -Scale.Score5+ns(Scale.Score5,3)
+                               )
+               )
+         )
+
+walk(alts,~outPlots(estimates1rest[[.x]]$outMod,.x))
+
+sapply(estimates1,effsFromFit,simplify=F)
+sapply(estimates1all,effsFromFit,simplify=F)
+
+
 pdf('results/outcomeModels0.pdf')
 iwalk(estimates0,~plot(.x$outMod,which=1,main=.y))
 dev.off()
@@ -80,7 +201,6 @@ estimates1 <- lapply(setNames(alts,alts),
                           block='ClaIDPre')
                     )
 
-sapply(estimates1,effsFromFit,simplify=F)
 
 pdf('results/outcomeModels1.pdf')
 iwalk(estimates1,
@@ -346,3 +466,44 @@ estEffs(fakeDat3)
 ### randomly varying effects
 fakeDat4=addEff(fakeDat,rnorm(nrow(fakeDat4),0.2,0.1),0)
 estEffs(fakeDat4)
+
+
+
+########################################################################################
+### stan version
+library(rstan)
+options(mc.cores = 1)
+rstan_options(auto_write = TRUE)
+
+makeSdat <- function(alt,ests=estimates1all){
+  dat <- getDat(alt)
+
+  Xout <- model.matrix(ests[[alt]]$outMod)
+  Xout <- Xout[,-c(1,which(colnames(Xout)%in%c('Z','Sp','Z:Sp')))]
+  sdat <- list(
+    YctlY=dat$Y[dat$Z==0],
+    YtrtY=dat$Y[dat$Z==1],
+    XctlU=model.matrix(formula(ests[[alt]]$psMod)[-2],data=subset(dat,Z==0))[,-1],
+    XtrtU=model.matrix(ests[[alt]]$psMod)[,-1],
+    XctlY=Xout[dat$Z==0,],
+    XtrtY=Xout[dat$Z==1,],
+    bottomOuter=dat$S[dat$Z==1],
+    nc=sum(1-dat$Z),
+    nt=sum(dat$Z)
+  )
+  sdat$ncovU=ncol(sdat$XctlU)
+  sdat$ncovY=ncol(Xout)
+
+  sdat
+}
+
+save(list=ls(),file='stanStuff.RData')
+
+psStanBAU=stan('code/fh2t/psMod.stan',data=makeSdat('BAU'))
+save(psStanBAU,file='psStanBAU.RData')
+
+psStanFH2T=stan('code/fh2t/psMod.stan',data=makeSdat('FH2T'))
+save(psStanFH2T,file='psStanFH2T.RData')
+
+psStanDragon=stan('code/fh2t/psMod.stan',data=makeSdat('Dragon'))
+save(psStanDragon,file='psStanDragon.RData')

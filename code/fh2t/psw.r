@@ -1,22 +1,3 @@
-library(tidyverse)
-library(arm)
-library(randomForest)
-library(estimatr)
-source('code/regression.r')
-select <- dplyr::select
-
-load('data/psdat.RData')
-
-
-load('results/biggerPSmods.RData')
-
-psdat <- filter(psdat,SchIDPre!=7) ### only one student from school 7, in FH2T
-
-psdat$Z <- ifelse(psdat$trt=='ASSISTments',1,0)
-
-alts <- unique(psdat$trt[psdat$Z==0])
-alts <- setNames(alts,alts)
-
 bsSchool <- function(dat){
   datS <- split(dat,dat$SchIDPre)
   do.call("rbind",
@@ -68,6 +49,3 @@ psw <- function(alt,psMod,B=5000,verbose=TRUE){
   class(out) <- 'psw'
   out
 }
-
-pswResults <- lapply(setNames(alts,alts),psw,psMod=psModAll)
-save(pswResults,file='results/psw.RData')

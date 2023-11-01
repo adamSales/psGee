@@ -221,3 +221,73 @@ ps7 <- predict(psMod7,psdat,type='response')
 
 plot(ps5,ps7,col=ifelse(psdat$Z==1,'blue','red'))
 cor(ps5,ps7)
+
+
+### what if we just tried everything?
+psModAll <- update(psMod1,.~.-pre_PS_tasks_total_score+poly(pre_PS_tasks_total_score,2,raw=TRUE))
+
+anova(psMod7,psMod1,psModAll,test='LRT')
+
+plot(fitted(psMod7),fitted(psModAll))
+abline(0,1)
+
+binnedplot(fitted(psModAll),resid(psModAll,type='response'))
+
+model.frame(psMod1)%>%select(-S)%>%select(!where(~is.numeric(.)&n_distinct(.)>2))%>%
+  mutate(resid=resid(psModAll,type='response'))%>%
+  mutate(across(-resid,as.factor))%>%
+  pivot_longer(-resid,names_to='var',values_to='level')%>%
+  group_by(var,level)%>%
+  summarize(meanResid=mean(resid),sdResid=sd(resid),up=meanResid+2*sdResid,down=meanResid-2*sdResid)%>%
+  ggplot(aes(level,meanResid,ymax=up,ymin=down))+geom_point()+geom_errorbar(width=0)+
+  geom_hline(yintercept=0)+facet_wrap(~var,scales="free")
+
+model.frame(psMod1)%>%select(-S)%>%select(where(~is.numeric(.)&n_distinct(.)>2&n_distinct(.)<20))%>%
+  mutate(resid=resid(psModAll,type='response'),pred=predict(psModAll,type='response'))%>%
+  pivot_longer(-c(resid,pred),names_to='var',values_to='level')%>%
+  group_by(var,level)%>%
+  summarize(meanResid=mean(resid),n=n(),sdResid=ifelse(n>1,sd(resid),sqrt(pred*(1-pred))),up=2*sdResid,down=-2*sdResid)%>%
+  ungroup()%>%
+  ggplot(aes(level,meanResid,ymax=up,ymin=down,size=n))+geom_point()+#geom_errorbar(width=0)+
+  geom_line(aes(y=up),color='grey',size=1)+geom_line(aes(y=down),color='grey',size=1)+
+  geom_hline(yintercept=0)+facet_wrap(~var,scales="free")
+
+par(mfrow=c(3,5))
+model.frame(psMod1)%>%select(-S,-StuID)%>%select(where(~is.numeric(.)&n_distinct(.)>=20))%>%
+  iwalk(~binnedplot(.x,resid(psModAll,type='response'),sub=.y))
+par(mfrow=c(1,1))
+
+
+
+    psModRest <- update(psModAll,.~.-pre.total_math_score-Scale.Score5-Performance.Level5-pre.sub_P_score-pre.sub_F_score-pre.math_completed_num)
+
+anova(psModRest,psModAll,test='LRT')
+
+model.frame(psMod1)%>%select(-S)%>%select(!where(~is.numeric(.)&n_distinct(.)>2))%>%
+  mutate(resid=resid(psModRest,type='response'))%>%
+  mutate(across(-resid,as.factor))%>%
+  pivot_longer(-resid,names_to='var',values_to='level')%>%
+  group_by(var,level)%>%
+  summarize(meanResid=mean(resid),sdResid=sd(resid),up=meanResid+2*sdResid,down=meanResid-2*sdResid)%>%
+  ggplot(aes(level,meanResid,ymax=up,ymin=down))+geom_point()+geom_errorbar(width=0)+
+  geom_hline(yintercept=0)+facet_wrap(~var,scales="free")
+
+model.frame(psMod1)%>%select(-S,-Y)%>%select(where(~is.numeric(.)&n_distinct(.)>2&n_distinct(.)<20))%>%
+  mutate(resid=resid(psModRest,type='response'),pred=predict(psModRest,type='response'))%>%
+  pivot_longer(-c(resid,pred),names_to='var',values_to='level')%>%
+  group_by(var,level)%>%
+  summarize(meanResid=mean(resid),n=n(),sdResid=ifelse(n>1,sd(resid),sqrt(pred*(1-pred))),up=2*sdResid,down=-2*sdResid)%>%
+  ungroup()%>%
+  ggplot(aes(level,meanResid,ymax=up,ymin=down,size=n))+geom_point()+#geom_errorbar(width=0)+
+  geom_line(aes(y=up),color='grey',size=1)+geom_line(aes(y=down),color='grey',size=1)+
+  geom_hline(yintercept=0)+facet_wrap(~var,scales="free")
+
+par(mfrow=c(3,5))
+model.frame(psMod1)%>%select(-S,-StuID)%>%select(where(~is.numeric(.)&n_distinct(.)>=20))%>%
+  iwalk(~binnedplot(.x,resid(psModRest,type='response'),sub=.y))
+par(mfrow=c(1,1))
+
+anova(psModRest,update(psModRest,.~.+I(pre.sub_F_score^2)),test="LRT")
+
+
+save(psModAll,psModRest,file='results/biggerPSmods.RData')

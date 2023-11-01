@@ -1,8 +1,3 @@
-library(tidyverse)
-library(arm)
-library(missForest)
-select <- dplyr::select
-
 Scale <- function(x) (x-mean(x,na.rm=TRUE))/sd(x,na.rm=TRUE)
 
 dat=read_csv('data/DATA20220202_3591.csv',na=c('','NA','#NULL!'))
@@ -12,41 +7,19 @@ kirk <- read_csv('data/data_uptated_8_18.csv')
 dat$nbo <- kirk$num_problem_parts_used_bottom_out_hint[match(dat$StuID,kirk$StuID)]
 dat <- filter(dat,!is.na(post.total_math_score))
 
-## dat <- kirk%>%
-##   select(StuID,starts_with("num_")&contains("_parts_"))%>%
-##   right_join(dat)%>%
-##   rename(nbo=num_problem_parts_used_bottom_out_hint)%>%
-##   mutate(pbo1=nbo/num_problem_parts_started,
-##          pbo2=nbo/num_problem_parts_attempted,
-##          pbo3=nbo/num_graded_problem_parts_started,
-##          pbo4=nbo/num_graded_problem_parts_attempted)%>%
-##   mutate(across(starts_with("pbo"),~ifelse(is.finite(.),.,0)))%>%
-##   filter(!is.na(post.total_math_score))
-
-
-## dat%>%filter(rdm_condition=='ASSISTments')%>%
-##   select(starts_with("pbo"))%>%
-##   pivot_longer(everything(),names_to="pbo",values_to="prop")%>%
-##   ggplot(aes(log(prop+.01)))+geom_histogram()+facet_wrap(~pbo,ncol=1)
-
-## dat%>%filter(rdm_condition=='ASSISTments')%>%
-##   select(starts_with("pbo"))%>%
-##   map(quantile)
-
-## dat%>%filter(rdm_condition=='ASSISTments')%>%
-##   select(starts_with("pbo"))%>%
-##   map(~c(mean(.),mean(.<0.1)))
-
-
-cat(sum(is.na(dat$nbo)&dat$rdm_condition=='ASSISTments'),' students with NA for # bottom out hints; setting to 0\n')
+### set bottom out hints=NA to 0
+cat(sum(is.na(dat$nbo)&dat$rdm_condition=='ASSISTments'),
+    ' students with NA for # bottom out hints; setting to 0\n')
 dat$nbo[is.na(dat$nbo)&dat$rdm_condition=='ASSISTments'] <- 0
 
-plot(table(dat$nbo[dat$rdm_condition=='ASSISTments']),xlim=c(0,30))
+
+## make binary w/ a median split
 med <- median(dat$nbo[dat$rdm_condition=='ASSISTments'],na.rm=TRUE)
 
 dat$S <- #dat$pbo4>0.1#
   dat$nbo>med
 
+## get covariates, treatment, outcome data
 psdat <- dat%>%
   select(StuID:Performance.Level5,EIP:PercentInAttendance6,starts_with("pre"),Y=post.total_math_score,S)%>%
   mutate(
@@ -58,6 +31,7 @@ psdat <- dat%>%
     Gender=as.factor(Gender))%>%
   rename(trt=rdm_condition)
 
+### impute missing covariates w/ missForest
 impDat <- psdat%>%
   select(virtual, Gender,raceEth,Performance.Level5,EIP,Scale.Score5:PercentInAttendance6,starts_with("pre",ignore.case=FALSE))%>%
   select(where(~mean(is.na(.))<0.2))%>%
@@ -65,6 +39,7 @@ impDat <- psdat%>%
   map_dfc(~if(is.character(.)|n_distinct(.,na.rm=TRUE)<4) as.factor(.) else .)%>%
   as.data.frame()
 
+### find highly-correlated covariates
 Rho=cor(impDat[,sapply(impDat,class)=='numeric'],method='spearman',use='pairwise')
 Rho[upper.tri(Rho,diag=TRUE)] <- NA
 bigCor=which(!is.na(Rho)&abs(Rho)>0.8,arr.ind=TRUE)
@@ -103,6 +78,7 @@ impDat%>%select(where(is.numeric))%>%
   iwalk(~hist(.x,main=.y))
 par(mfrow=c(1,1))
 
+### make some transformations
 impDat <- impDat%>%
   mutate(
     across(contains("Days",ignore=FALSE),~log(.+1)),
@@ -112,6 +88,7 @@ impDat <- impDat%>%
     pre_PS_total_RT_sec=log(pre_PS_total_RT_sec))%>%
   select(-starts_with("MEMBER"))
 
+### does this help?
 table(sapply(impDat,class))
 par(mfrow=c(4,5))
 impDat%>%select(where(is.numeric))%>%
@@ -120,17 +97,20 @@ par(mfrow=c(1,1))
 
 impDat$noUnexcused5 <- as.factor(impDat$UnexcusedDays5==0)
 
+### impute missing values (takes a while)
+set.seed(613)
 imp <- missForest(impDat,variablewise = TRUE)
-
-save(imp,file='data/imputations.RData')
 
 mse=which(names(imp$OOBerror)=='MSE')
 names(imp$OOBerror) <- names(impDat)
 
 r2imp=1-imp$OOBerror[mse]/sapply(impDat[,mse],var,na.rm=TRUE)
 
+save(imp,mse,r2imp,file='data/imputations.RData')
+
 #names(imp$ximp) <- paste0(names(imp$ximp),'Imp')
 
+### create NA flags
 naFlags <- map_dfc(impDat,is.na)%>%select(where(~sum(.)>1))%>%as.data.frame()
 V <- matrix(nrow=ncol(naFlags)-1,ncol=ncol(naFlags)-1,dimnames=list(names(naFlags)[-1],names(naFlags)[-ncol(naFlags)]))
 for(i in 2:(ncol(naFlags))) for(j in 1:(i-1)) V[i-1,j] <- cramerV(naFlags[,i],naFlags[,j])
@@ -138,6 +118,7 @@ for(i in 2:(ncol(naFlags))) for(j in 1:(i-1)) V[i-1,j] <- cramerV(naFlags[,i],na
 naFlags <- naFlags[,!names(naFlags)%in%rownames(which(V>0.8,arr.ind=TRUE))]
 names(naFlags) <- paste0(names(naFlags),'NA')
 
+### put it all together
 psdat <- cbind(psdat[,c('StuID','SchIDPre','TeaIDPre_within_school','ClaIDPre','trt','S','Y')],
                imp$ximp,
                naFlags)
