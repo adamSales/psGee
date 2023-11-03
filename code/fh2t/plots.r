@@ -1,5 +1,3 @@
-library(tidyverse)
-library(coefplot)
 
 load('results/geeResults.RData')
 load('results/psw.RData')

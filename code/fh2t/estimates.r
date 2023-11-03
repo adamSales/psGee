@@ -164,5 +164,5 @@ if(file.exists('results/stanEsts.rds')){
       s['bottomOuterATE','sd']
   }
 
-  saveRDS(stanResults,file='stanEsts.rds')
+  saveRDS(stanResults,file='results/stanEsts.rds')
 }
