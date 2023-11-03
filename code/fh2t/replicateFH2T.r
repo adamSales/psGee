@@ -1,12 +1,15 @@
 library(tidyverse)
 library(arm)
 library(randomForest)
+library(missForest)
 library(estimatr)
-select <- dplyr::select
 library(splines)
 library(rstan)
 library(kableExtra)
 library(texreg)
+library(tableone)
+library(xtable)
+select <- dplyr::select
 
 
 source('code/regression.r')
@@ -67,3 +70,5 @@ source('code/fh2t/plots.r')
 ############################################################
 ### make tables (for appendix)
 ############################################################
+
+source('code/fh2t/tables.r')

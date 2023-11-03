@@ -137,13 +137,74 @@ xtable(tab1oth,
 load('results/geeResults.RData')
 
 
-#sink('writeUps/outcomeRegAppendix.tex')
-texreg(
+                                        #sink('writeUps/outcomeRegAppendix.tex')
+
+
+mods <-
   list(
     psModel=estimates1all$BAU$psMod,
     BAU=estimates1all$BAU$outMod,
     FH2T=estimates1all$FH2T$outMod,
-    DragonBox=estimates1all$Dragon$outMod),
-  file='writeUps/outcomeRegAppendix.tex',
-  longtable=TRUE,
-  omit.coef = c('SchIDPre|ClaIDPre'))
+    DragonBox=estimates1all$Dragon$outMod)
+
+cnames <- mods%>%
+  lapply(coef)%>%
+  lapply(names)%>%
+  do.call('c',.)%>%
+  unique()
+
+cnames <- cnames[-grep("ID",cnames)]
+cnames <- c('(Intercept)','Z','Sp','Z:Sp')%>%c(.,setdiff(cnames,.))
+
+
+ccm <- rep(NA,length(cnames))
+ccm[endsWith(cnames,'TRUE')] <-
+  substr(cnames[endsWith(cnames,'TRUE')],1,nchar(cnames[endsWith(cnames,'TRUE')])-4)
+ccm[endsWith(cnames,'1')] <-
+  substr(cnames[endsWith(cnames,'1')],1,nchar(cnames[endsWith(cnames,'1')])-1)
+names(ccm) <- cnames
+ccm <- as.list(ccm)
+
+regTab <-
+  texreg(mods,
+         longtable=TRUE,
+         custom.coef.map = ccm,
+         custom.gof.rows=
+           list(
+             "School Effs"=lapply(mods,\(x) any(grepl("SchIDPre",names(coef(x))))),
+             "Class Effs"=lapply(mods,\(x) any(grepl("ClaIDPre",names(coef(x)))))
+           ),
+         caption="Coefficient estimates from main PS and outcome models; school and classroom fixed effects are omitted",
+         label="tab:regTab"
+)
+#  omit.coef = c('SchIDPre|ClaIDPre'))
+
+covnames <-    c( `Has EIP`="EIP",
+    `Has IEP`="IEP",
+    Modality="virtual",
+    `Gifted`="GIFTED",
+    Pretest="pre.total_math_score",
+    `Grade 5 Stand. Test`="Scale.Score5",
+    `Grade 5 Perf. Lev.`="Performance.Level5",
+    `Race/Ethnicity`="raceEth",
+    `log(Pretest ToT)`="pre.total_time_on_tasks",
+    `Math Anxiety`="pre_MA_total_score",
+    `Pretest-Procedural`="pre.sub_P_score",
+    `Pretest-Flexibility`="pre.sub_F_score",
+    `Pretest-# Completed`="pre.math_completed_num",
+    `Math Self-Eff`="pre_MSE_total_score",
+    `Perceptual Sens.`="pre_PS_tasks_total_score",
+    `Perc. Sens. Pt 2E`="pre_PS_part2E_score",
+    `Perc. Sens. Pt 2NE`="pre_PS_part2NE_score",
+    `Perc. Sens. #Comp.`="pre_PS_completed_num",
+    `log(PS Resp. Time)`="pre_PS_total_RT_sec",
+    `log(Days Abs. 5th+1)`="AbsentDays5",
+    `log(Days Unexc. 5th+1)`="UnexcusedDays5",
+    `log(Days Abs. 6th+1)`="AbsentDays6",
+    `log(Days Unexc. 6th+1)`="UnexcusedDays6")
+
+
+for(i in 1:length(covnames))
+  regTab <- gsub(gsub('_','\\\\_',covnames[i]),names(covnames)[i],regTab,fixed=TRUE)
+
+cat(regTab,file='results/regTab.tex')
