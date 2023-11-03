@@ -106,7 +106,7 @@ names(imp$OOBerror) <- names(impDat)
 
 r2imp=1-imp$OOBerror[mse]/sapply(impDat[,mse],var,na.rm=TRUE)
 
-save(imp,mse,r2imp,file='data/imputations.RData')
+save(imp,mse,r2imp,impDat,file='data/imputations.RData')
 
 #names(imp$ximp) <- paste0(names(imp$ximp),'Imp')
 

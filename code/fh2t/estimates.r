@@ -66,6 +66,7 @@ estimates1all <-
            est(getDat(alt),psMod=psModAll,
                covFormY=update(formula(psModAll)[-2],
                                .~.
+                               -SchIDPre+ClaIDPre
                                -UnexcusedDays6+ns(UnexcusedDays6,3)
                                -pre_MA_total_score+ns(pre_MA_total_score,3)
                                -pre_MSE_total_score+I(pre_MSE_total_score< -2)+ns(pre_MSE_total_score,3)
@@ -81,6 +82,7 @@ estimates1rest <-
            est(getDat(alt),psMod=psModRest,
                covFormY=update(formula(psModAll)[-2],
                                .~.
+                               -SchIDPre+ClaIDPre
                                -UnexcusedDays6+ns(UnexcusedDays6,3)
                                -pre_MA_total_score+ns(pre_MA_total_score,3)
                                -pre_MSE_total_score+I(pre_MSE_total_score< -2)+ns(pre_MSE_total_score,3)
@@ -89,6 +91,8 @@ estimates1rest <-
                                )
                )
          )
+
+save(atesAll,estimates3,estimates1all,estimates1rest,file='results/geeResults.RData')
 
 #######################################################################
 ### estimate principal effects with PSW
