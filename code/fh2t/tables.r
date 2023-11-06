@@ -140,14 +140,14 @@ load('results/geeResults.RData')
                                         #sink('writeUps/outcomeRegAppendix.tex')
 
 
-mods <-
+outmods <-
   list(
-    psModel=estimates1all$BAU$psMod,
+    #psModel=estimates1all$BAU$psMod,
     BAU=estimates1all$BAU$outMod,
     FH2T=estimates1all$FH2T$outMod,
     DragonBox=estimates1all$Dragon$outMod)
 
-cnames <- mods%>%
+cnames <- outmods%>%
   lapply(coef)%>%
   lapply(names)%>%
   do.call('c',.)%>%
@@ -166,15 +166,15 @@ names(ccm) <- cnames
 ccm <- as.list(ccm)
 
 regTab <-
-  texreg(mods,
+  texreg(outmods,
          longtable=TRUE,
          custom.coef.map = ccm,
-         custom.gof.rows=
-           list(
-             "School Effs"=lapply(mods,\(x) any(grepl("SchIDPre",names(coef(x))))),
-             "Class Effs"=lapply(mods,\(x) any(grepl("ClaIDPre",names(coef(x)))))
-           ),
-         caption="Coefficient estimates from main PS and outcome models; school and classroom fixed effects are omitted",
+         #custom.gof.rows=
+          # list(
+           #  "School Effs"=lapply(outmods,\(x) any(grepl("SchIDPre",names(coef(x))))),
+           #  "Class Effs"=lapply(outmods,\(x) any(grepl("ClaIDPre",names(coef(x)))))
+           #),
+         caption="Coefficient estimates outcome models using \"All Covariates\" principal score model; classroom fixed effects are omitted",
          label="tab:regTab"
 )
 #  omit.coef = c('SchIDPre|ClaIDPre'))
@@ -208,3 +208,63 @@ for(i in 1:length(covnames))
   regTab <- gsub(gsub('_','\\\\_',covnames[i]),names(covnames)[i],regTab,fixed=TRUE)
 
 cat(regTab,file='results/regTab.tex')
+
+
+
+cv <- function(mod,folds=10,seed=613){
+  mf=mod$data[names(mod$y),]
+  set.seed(seed)
+  folds <- seq(nrow(mf))%>%sample()%>%cut(10,labels=FALSE)
+  cvPred <- numeric(nrow(mf))
+  for(ff in 1:10)
+    cvPred[folds==ff] <- predict(update(mod,formula=formula(mod),data=mf[folds!=ff,]),mf[folds==ff,])
+  AUC <-auc(cvPred,1-mod$y)
+  print(AUC)
+  invisible(list(cvPred=cvPred,folds=folds,auc=AUC))
+}
+
+
+psmods <-
+  list(
+    #psModel=estimates1all$BAU$psMod,
+    `All Covariates`=estimates1all$BAU$psMod,
+    `AIC Optimal`=estimates3$FH2T$psMod,
+    `No Pretest`=estimates1rest$Dragon$psMod)
+
+cnames <- psmods%>%
+  lapply(coef)%>%
+  lapply(names)%>%
+  do.call('c',.)%>%
+  unique()
+
+cnames <- cnames[-grep("ID",cnames)]
+cnames <- c('(Intercept)','Z','Sp','Z:Sp')%>%c(.,setdiff(cnames,.))
+
+
+ccm <- rep(NA,length(cnames))
+ccm[endsWith(cnames,'TRUE')] <-
+  substr(cnames[endsWith(cnames,'TRUE')],1,nchar(cnames[endsWith(cnames,'TRUE')])-4)
+ccm[endsWith(cnames,'1')] <-
+  substr(cnames[endsWith(cnames,'1')],1,nchar(cnames[endsWith(cnames,'1')])-1)
+names(ccm) <- cnames
+ccm <- as.list(ccm)
+
+psTab <-
+  texreg(psmods,
+         longtable=TRUE,
+         custom.coef.map = ccm,
+         custom.gof.rows=
+           list(
+            `AUC (10-fold CV)`=vapply(lapply(psmods,cv),\(x) x$auc,1.0)
+           ),
+         caption="Coefficient estimates from three principal score models; school fixed effects are omitted",
+         label="tab:psTab"
+)
+#  omit.coef = c('SchIDPre|ClaIDPre'))
+
+
+
+for(i in 1:length(covnames))
+  psTab <- gsub(gsub('_','\\\\_',covnames[i]),names(covnames)[i],psTab,fixed=TRUE)
+
+cat(psTab,file='results/psTab.tex')

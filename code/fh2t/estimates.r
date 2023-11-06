@@ -35,6 +35,8 @@ psModRest <- update(
   .~.-pre.total_math_score-Scale.Score5-Performance.Level5-pre.sub_P_score-pre.sub_F_score-pre.math_completed_num)
 
 
+
+
 #######################################################################
 ### estimate ATEs and principal effects with GEEPERs
 ### for record of model selection, testing, see analysisGEE.r
@@ -93,6 +95,9 @@ estimates1rest <-
          )
 
 save(atesAll,estimates3,estimates1all,estimates1rest,file='results/geeResults.RData')
+
+
+
 
 #######################################################################
 ### estimate principal effects with PSW
