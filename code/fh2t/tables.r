@@ -117,7 +117,7 @@ tab1a=rbind(
   cbind(Variable=rownames(.),.)
 
 colnames(tab1a)[c(ncol(tab1a)-1,ncol(tab1a))]=c('Miss. %','Imp. Err. (PFC)')
-colnames(tab1a)[1:2]=''
+colnames(tab1a)[1:2]=' '
 xtable(tab1a,
        caption="Counts and percentages for categorical study variables, by randomized condition. Imputation error is the proportion falsly classified, as estimated using by missForest using out-of-bag observations. All variables were measured at baseline, with the exception of \"Bottom-Outer,\" the principal stratification variable.",
        label="table:tab1fac")%>%
@@ -174,7 +174,7 @@ regTab <-
            #  "School Effs"=lapply(outmods,\(x) any(grepl("SchIDPre",names(coef(x))))),
            #  "Class Effs"=lapply(outmods,\(x) any(grepl("ClaIDPre",names(coef(x)))))
            #),
-         caption="Coefficient estimates outcome models using \"All Covariates\" principal score model; classroom fixed effects are omitted",
+         caption="Coefficient estimates outcome models using \"All Covariates\" principal score model; classroom fixed effects are omitted. Standard errors are nominal, and do not account for uncertainty in principal score estimation.",
          label="tab:regTab"
 )
 #  omit.coef = c('SchIDPre|ClaIDPre'))

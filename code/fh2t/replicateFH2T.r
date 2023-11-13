@@ -17,6 +17,7 @@ library(xtable)
 library(purrr)
 library(tibble)
 library(coefplot)
+library(splines)
 select <- dplyr::select
 
 
