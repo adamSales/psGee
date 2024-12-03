@@ -1,0 +1,52 @@
+
+open with a description of the applied problem, i.e. bottoming out. at some point, say in future work we'll use a more nuanced approach (not dichotimizing, maybe separating gamers w/ ppl actually using hints as worked examples) but for now use this as an illustration of a more common problem.
+
+mention a few more examples from ed research, not nec. ed tech
+
+
+Rev 1: 
+
+The method presented in the paper is based on Jiang and Ding (2021), with a new
+estimating equation introduced. However, the paper lacks a thorough examination of
+the method.
+– The moment conditions implied by the covariate ignorability suggest several possible estimating equations, beyond those presented in Lemma 1. It is possible that
+alternative equations could be more efficient than the ones proposed.
+
+TO DO: ignore. JREE reviewers won't care
+
+– It may be more appropriate to formulate the OLS estimator as a two-stage least
+squares estimator, given that R is also estimated.
+
+TO DO: maybe mention this as an alternative? We account for this w/ sandwich estimation
+
+• The application provided in the paper is solely intended to illustrate the proposed
+method, which does not align with the journal’s guidance. The journal expects data
+analyses to go beyond numerical calculations and focus on comparative analyses and
+substantive findings
+– It appears that the estimation is based on residualized covariate ignorability. The
+authors should discuss the plausibility of this assumption in the application.
+– The authors used backward selection and AIC to choose the covariate in the principal score model. However, the choice of x
+S
+should be based on the plausibility
+of covariate ignorability, rather than the prediction accuracy of the principal score
+model.
+– The outcome model employs fixed effects. It is important to discuss how this
+interacts with the plausibility of the assumptions and the sensitivity to model
+misspecification.
+
+TO DO: write more about residual covariate ignorability in application
+
+Rev 2/ AE:
+
+“This paper proposed a new estimator for the principal effects based on the method of moments
+without making assumptions on the shape of the errors in the outcome regression model.
+Changing a fully parametric outcome model to MOM is a nice thing, but we have seen all the
+assumptions described in the paper before (for example, Ding and Lu, 2017 and Jiang and
+Ding, 2021) and the setup of one-sided noncompliance is quite restricted.”
+
+TO DO: better emphasize differences w/Jiang & Ding: (1) easier to implement (2) uses principal scores explicitly
+
+other TO DOs:
+
+- change "ignorability" to something else
+- import text from CAREER proposal?
