@@ -750,7 +750,7 @@ Perhaps the simplest explanation for observed differences in point estimates is 
 
 \begin{figure}
   \centering
-  \includegraphics{prinEffs.pdf}
+  \includegraphics{figure/prinEffs.pdf}
   \caption{Principal effect estimates with 95\% confidence intervals using three different principal score models, alongside ATE estimates and 95\% confidence intervals, for contrasts between the ASSISTments condition and each of the three other conditions in the study.}
   \label{fig:effects}
 \end{figure}
@@ -771,7 +771,7 @@ Perhaps the simplest explanation for observed differences in point estimates is 
 
 \begin{figure}
   \centering
-  \includegraphics{compareMethods.pdf}
+  \includegraphics{figure/compareMethods.pdf}
   \caption{Principal effect estimates with 95\% confidence or credible intervals using three different principal stratification methods, alongside ATE estimates and 95\% confidence intervals, for contrasts between the ASSISTments condition and each of the three other conditions in the study. The \textsc{geepers} estimates used the ``All Covariates'' principal score model.}
   \label{fig:compare}
 \end{figure}
@@ -1146,7 +1146,7 @@ If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},
 \subsection{Plot of  AUC versus $\alpha$}
 
 \begin{center}
-    \includegraphics[width=5.5in]{simFigs/alphaAUC.pdf}
+    \includegraphics[width=5.5in]{../simFigs/alphaAUC.pdf}
 \end{center}
 %\begin{table}
 %\caption{Coverage of nominal 95\% confidence intervals}
@@ -1154,12 +1154,12 @@ If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},
 
 \subsection{Full Empirical 95\% Interval Coverage Results}
 The following table gives the empirical coverage of nominal 95\% intervals for \textsc{geepers} and mixture model principal effect estimates under varying data generating models.\\
-\input{writeUps/coverageTabAppendix.tex}
+\input{coverageTabAppendix.tex}
 
 \clearpage
 \subsection{Full RMSE Results}
 The following table gives the root mean squared error (RMSE) for \textsc{geepers}, mixture model, and principal score weighting principal effect estimates under varying data generating models.\\
-\input{writeUps/rmseTabAppendix}
+\input{rmseTabAppendix}
 
 %\end{table}
 \clearpage
@@ -1191,28 +1191,28 @@ Trt. Completed: Yes & - & 185 (44.8\%) & - & 157 (50\%)\\
 \end{tabular}
 \end{table}
 
-\section{Additional Results from the Application}
-\singlespacing
-The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
+% \section{Additional Results from the Application}
+% \singlespacing
+% The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
 
 
-\subsection{Summary Statistics}
-The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
-\small
-\input{tab1fac}
-\clearpage
+% \subsection{Summary Statistics}
+% The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
+% \small
+% \input{tab1fac}
+% \clearpage
 
-\small
-\input{writeUps/tab1num}
+% \small
+% \input{tab1num}
 
-\subsection{Regression Results}
-Regression estimates from three principal score logit models and three outcome regressions, based on the "All Covariates" principal score model, for \textsc{geepers} estimates. Standard errors shown are nominal regression errors, not sandwich corrected. Fixed-effect estimates for school (PS-models) or classroom (outcome models) are omitted.
+% \subsection{Regression Results}
+% Regression estimates from three principal score logit models and three outcome regressions, based on the "All Covariates" principal score model, for \textsc{geepers} estimates. Standard errors shown are nominal regression errors, not sandwich corrected. Fixed-effect estimates for school (PS-models) or classroom (outcome models) are omitted.
 
-\small
-%\input{writeUps/outcomeRegAppendix}
-\input{writeUps/psTab}
+% \small
+% %\input{writeUps/outcomeRegAppendix}
+% \input{psTab}
 
-\input{writeUps/regTab}
+% \input{regTab}
 
 % \bibliographystylesupp{plainnat}
 % \bibliographysupp{MOM}
