@@ -1,5 +1,7 @@
 
+
 \documentclass[]{article}
+
 
 \RequirePackage{amsthm,amsmath,amsfonts,amssymb}
 %\RequirePackage[authoryear]{natbib}
@@ -70,26 +72,24 @@
 % \maketitle
 
 
+\maketitle
+
+
 \begin{abstract}
 Principal stratification is a framework for making sense of causal effects conditioned on variables that themselves may have been affected by treatment. For instance, one component of an educational computer application is the availability of “bottom-out” hints that provide the answer. In evaluating a recent experimental evaluation against alternative programs without bottom-out hints, researchers may be interested in estimating separate average treatment effects for students who, if given the opportunity, would request bottom-out hints frequently, and for students who would not. Most principal stratification estimators rely on strong structural or modeling assumptions, and many require advanced statistical training to fit and check. In this paper, we introduce a new M-estimation principal effect estimator for one-way noncompliance based on a binary indicator. Estimates may be computed using conventional regressions (though the standard errors require a specialized sandwich formula) and do not rely on distributional assumptions. We present a simulation study that shows that the novel method is more robust than popular alternatives and illustrate the method in an analysis of data on bottom-out hint requests.
 \end{abstract}
 % \begin{keywords}
 % Causal Inference; Principal Stratification; Educational Technology
 % \end{keywords}
-%\end{frontmatter}
+
 
 \clearpage
 
 \section{Introduction}
 
-%Randomized experiments easily admit subgroup analysis---estimation of treatment effects for a subset of the study population---when those subgroups are defined at baseline, and not themselves a function of treatment assignment.
-%A simple, popular approach to estimating subgroup effects is to use ordinary least squares (OLS) regression, regressing the outcome on a treatment indicator interacted with an indicator for subgroup membership.
-%However, when subgroup membership is a function of a post-treatment variable, then it may itself be affected by the treatment.
-%Contrasts between treatment and control conditions within those subgroups may not have a causal interpretation at all---and when they do, the same techniques that work for subgroups defined at baseline %(such as OLS with interactions)
-%will often produce inconsistent estimates.
 
-%%% open with hook for ed researchers
 
+<<<<<<< HEAD
 When students get stuck on math problems during homework or classwork, it may be helpful to offer them hints or other ``just-in-time'' support \cite[e.g][]{jit}, possibly helping them overcome specific misconceptions or other sources of confusion and allowing them to move on in the assignment.
 The availability of problem-specific support for struggling students is one potential advantage of educational technology over traditional pencil-and-paper practice.
 On the other hand, the ready availability of hints may discourage students from working through difficult problems on their own, and so may inhibit learning.
@@ -138,11 +138,6 @@ Our development of \textsc{geepers} builds on \citet{richardson2023estimating} b
 Moreover, \textsc{geepers}, which, in practice, is a combination of logigistic regression and OLS, is more accessible to applied researchers while yielding very similar results.
  
 This work advances the literature in three ways: first, it makes an explicit connection between principal score methods, M-estimation, and semi-parametric estimation of principal effects using auxiliary data. Second, it provides a general estimator that relies on two of the most familiar tools in the applied education researcher's toolbox: linear and logistic regression. The \textsc{geepers} method can, therefore, make principal stratification methods accessible for a much broader range of applied education researchers. Lastly, this work includes an extensive simulation study that compares \textsc{geepers} to parametric mixture modeling and principal score weighting under a range of favorable and challenging scenarios. The simulation demonstrates the strengths and weaknesses of each method and the tradeoffs between them.
-
-This paper focuses on a special case of principal stratification---one-way, binary non-compliance---that is, there are only two principal strata and principal stratum membership is observable in one treatment arm, but not in the other.
-This scenario would occur if, say, subjects in the control arm of a study had no access to the treatment, and not all subjects assigned to the treatment arm received the full treatment.
-While such a setup may represent the simplest and easiest principal stratification problem, we believe it is a common scenario.
-For example, \textsc{geepers} could be used to estimate effects from an RCT for participants categorized as low- or high-implementers. It could also be used to assess more granular questions about effect heterogeneity, such as whether an intervention's impact is contingent upon specific behaviors displayed by either practitioners or students.
 
 The following section gives a formal introduction to principal stratification and briefly describes two common estimation techniques, parametric mixture modeling and principal score weighting.
 Next, Section \ref{sec:geepers} develops \textsc{geepers} estimation and gives conditions for its consistency.
@@ -352,6 +347,7 @@ Let
 \end{cases}
 \end{equation}
 In general, $(1-Z_i)\ppi=(1-Z_i)\ri$ and $Z_i\sti=Z_i\ri$, allowing $\ri$ to take the place of $\ppi$ and $S_i$ throughout $\tilde{\Psi}_i$.
+Denote estimating equations based on $\ri$ as $\sum_i \psi_i=\bm{0}$.
 
 \begin{prop}\label{prop:reg1}
   Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, \ref{ass:ci}, and suitible regularity conditions, if %principal scores are known exactly,
@@ -375,15 +371,8 @@ Proposition \ref{prop:reg1} builds on Theorem 2 of \citet{jiangDing2021} which e
 % If principal scores were known exactly, the M-estimation structure of $\heff0$ and $\heff1$ implies that their sampling variance could be estimated by the standard sandwich estimator for OLS \citep{stefanskiBoos}.
 % This will rarely be the case.
 %However,
-If the principal scores are modeled as \eqref{eq:prinScoreMod}, and parameters $\bm{\alpha}$ are estimated by M-estimation, with estimating equations $\sum_{i: Z_i=1}\Omega_i=\bm{0}$, then the estimating equations for the principal score model and principal effect estimation can be stacked \citep[c.f.][]{boosStefanskiBook}, as
-\begin{equation}\label{eq:stacked}
-  \sum_{i=1}^n \begin{pmatrix}
-    Z_i\Omega_i(\bxsi,S_i;\bm{\alpha})\\
-    \Psi_i\left(Y_i,Z_i,\ri(\bm{\alpha}); \bm{\beta}\right)\end{pmatrix}=\begin{pmatrix} \bm{0}\\\bm{0}\end{pmatrix}
-\end{equation}
-where $\ri\left(\bm{\alpha}\right)=S_iZ_i+\ppip{\bm{\alpha}}(1-Z_i)$ emphasizes $\ppi$'s dependence on $\bm{\alpha}$.
-In practice, the principal score model \eqref{eq:prinScoreMod} could be fit first, yielding estimates $\bm{\hat{\alpha}}$, and model \eqref{eq:regression0} could be fit next, using $\ri=\ri\left(\bm{\hat{\alpha}}\right)$.
-Together, the vector of estimates $[\bm{\hat{\alpha}},\bm{\hat{\beta}}]$ represents a zero of the stacked estimating equations \eqref{eq:stacked}.
+If the principal scores are modeled as \eqref{eq:prinScoreMod}, and parameters $\bm{\alpha}$ are estimated by M-estimation, with estimating equations $\sum_i Z_i\Omega_i=\bm{0}$, then the estimating equations for the principal score model and principal effect estimation can be stacked as in \eqref{eq:stacked}.
+Sandwich standard error estimates of the form \eqref{sandwich} based on $\left[Z_i\omega_i,\psi_i\right]$ will incorporate uncertainty from both principal score modeling and principal effect estimation conditional on principal scores.  
 
 \subsection{Relaxing Covariate Independence with Outcome Modeling}\label{sec:regression}
 In most applications, identifying a set of covariates $\bxs$ satisfying CI will be difficult or impossible.
@@ -407,7 +396,6 @@ Proposition \ref{prop:interactions} in the appendix relaxes these requirements, 
 Simulation results in the following section address some cases in which interactions are present in the data-generating model but not in the data analysis.
 
 In any event, Assumption \ref{ass:rci} allows principal effects to be estimated with an OLS model including $\bxy$:
-
 \begin{prop}{\textsc{geepers}}\label{prop:reg2}
 
 Under Assumptions \ref{ass:sm}, \ref{ass:rand}, \ref{ass:vps}, and \ref{ass:rci}, let principal scores be estimated as in \eqref{eq:prinScoreMod} using data from the treatment group and assume they are linearly independent of $\bxy$. Then say the researcher fits the following model with OLS:
@@ -691,7 +679,7 @@ For a description of the dataset and an explanation of how to access it, see \ci
 Replication code for the analysis is available at %[Redacted].
 \url{https://github.com/adamSales/psGee}.
 
-\subsection{Data Analysis}
+\subsubsection{Data Analysis}
 We estimated principal scores using logistic regression of observed $S$ on school fixed effects and a set of baseline variables $\bxs$.
 Three criteria governed our choice of covariates and regression specifications for estimating principal scores and effects.
 First, Proposition \ref{prop:reg2} requires consistent estimation of principal scores and (via Assumption \ref{ass:rci}) correct specification of the outcome model, that is, the model for $\EE[Y|\bxy,Z,\st]$.
@@ -699,10 +687,12 @@ Hence, it is essential to choose covariates and transformations $\bxs$ and $\bxy
 
 Second, Assumption \ref{ass:vps} requires principal scores to vary with at least some element $\bxs$. Moreover, the results of the simulation study suggest that when $\st$ can be predicted more precisely as a function of $\bxs$, \textsc{geeper}s principal effect estimators are more precise and more robust to model misspecification.
 Those considerations militate in favor of choosing covariates $\bxs$ to optimize out-of-sample principal score prediction accuracy.
+
 There is good reason to believe that analogous arguments apply to selection of outcome covariates $\bxy$.
 
 The first two criteria motivated our choice of two strategies for choosing $\bxs$ and $\bxy$.
 In our main model, we included every available covariate in the dataset and chose transformations of those covariates based on the results of residual and binned residual plots \citep{arm}.
+
 Including all possible covariates maximizes the model's opportunities to detect covariate relationships that would predict $Y$ or $\st$.
 However, this strategy can also lead to overfitting, which would decrease out-of-sample predictive accuracy.
 In an alternative analysis, we chose a subset of covariates to include in $\bxs$ and $\bxy$ with a backward stepwise selection algorithm minimizing the AIC \citep{aic} of the principal score model and then modified the resulting models based on residual plots.
@@ -711,13 +701,14 @@ The model selection process is recorded in the GitHub repository cited above.
 Lastly, Assumption \ref{ass:ci} implies that there is no interaction between $\bxs$ and $\st$ in the outcome model. Further, for the sake of statistical efficiency, we did not consider outcome models with interactions between covariates and $Z$.
 \emph{A priori}, the student attribute that poses the greatest threat to these modeling choices is prior achievement, that is, scores on the pretest and the fifth-grade state test.
 This is both because they measure a similar construct to the posttest, and because \cite{impactPaper} found a pretest-treatment interaction in a different treatment contrast.
+
 Following that reasoning, we conducted a third parallel analysis excluding prior achievement covariates in $\bxs$ but including all covariates in $\bxy$.
 
 All three principal score models were fit to data from students in the ASSISTments group, for whom bottom-out status ($S$) was observed; hence, the same model fit was used for all three treatment contrasts.
 
 Outcome models for all analyses adjusted for all of the variables that were in the corresponding principal score models, in addition to measurements of students' prior knowledge; also, the models substituted class fixed effects for school fixed effects.\footnote{Why use a coarser set of fixed effects for the principal score model than the outcome regression? First, the principal score model was fit to a smaller sample (only students in the ``Instant'' condition), so some classrooms only included one student, which can lead to poor fit. Second, the asymptotics of logistic regression are more restricted than OLS, so logistic regression tends to perform poorly when the number of parameters increases with the sample size \citep{agresti}.}
 As with principal score models, we checked model fit with residual plots and modified model specifications accordingly.
-%\subsubsection{Principal Score Model}\label{sec:psMod}
+
 
 % \begin{figure}
 %   \centering
@@ -726,7 +717,7 @@ As with principal score models, we checked model fit with residual plots and mod
 %   \label{fig:psMod}
 % \end{figure}
 
-\subsection{Results}
+\subsubsection{Results}
 
 The three principal score models were fairly successful in distinguishing bottom-outers from non-bottom-outers---the AUC, evaluated using out-of-sample predictions in a 10-fold cross-validation, was roughly 0.795 for the AIC-optimal model, and about 0.745 for the two others. That is, in roughly 75--80\% of bottom-outer/non-bottom-outer pairs of subjects, the bottom-outer will have a higher predicted probability from the model.
 Coefficient estimates are displayed in table \ref{tab:psTab} in the appendix.
@@ -757,17 +748,6 @@ Perhaps the simplest explanation for observed differences in point estimates is 
 
 \subsubsection{Comparing Principal Stratification Methods}
 
-% \subsubsection{Outcome Regression and Principal Effects}\label{sec:outMod}
-
-
-% Figure \ref{fig:effects} plots the estimated principal effects for bottom-outers and non-bottom-outers, using two different models---alongside estimates of the overall average treatment effect, labeled ``ATE.''
-% The two sets of estimated differed in that the first assumed that coefficients on covariates were equal across principal strata, whereas the second set of results allowed the coefficients on pretest and 5th-grade standardized test scores---the most important predictors of outcomes and principal strata membership, respectively---to vary between strata.
-
-% The results suggest little difference, if any, between the effects in the two principal strata.
-% Estimated effects compared to BAU or DragonBox were slightly lower for bottom-outers than for non-bottom-outers, and estimated effects compared to FH2T were higher for non-bottom-outers.
-% However, none of these differences is statistically significant, so opposite patterns, or no difference between principal effects at all, would also be consistent with the data.
-% In fact, 95\% confidence intervals for all principal effects include both positive and negative principal effects.
-% There is no discernible difference between estimated principal effects when coefficients on pretest and grade-5 standardized tests were or were not allowed to vary between strata, though standard errors from the models including an interaction were somewhat higher.
 
 \begin{figure}
   \centering
@@ -777,6 +757,7 @@ Perhaps the simplest explanation for observed differences in point estimates is 
 \end{figure}
 
 Figure \ref{fig:compare} shows principal effect estimates from \textsc{geepers} (using the All Covariates principal score model) compared to analogous estimates using Bayesian mixture modeling and \textsc{psw}, alongside estimates of the overall average treatment effects, labeled ``ATE.''
+
 The \textsc{psw} model used the same principal score model as \textsc{geepers}, while the Bayesian model used the same principal score and outcome model specifications.
 
 The Bayesian mixture model assumed that outcomes were normally distributed, conditional on covariates and principal stratum, with a residual standard deviation that varied between principal strata. This modeling assumption is necessarily false since post-test scores were integers between 0 and 10. All model parameters with support in $\mathbb{R}$ were given standard normal priors, while standard deviation parameters were given half-standard normal priors.
@@ -787,7 +768,6 @@ The \textsc{psw} estimators did not include any covariate outcome modeling. Stan
 For all three sets of estimators, approximate 95\% confidence intervals were estimated by adding and subtracting twice the standard error from the point estimate (or twice the posterior standard deviation from the posterior mean, in the Bayesian mixture model).
 
 The other estimation strategies largely agreed with \textsc{geepers} and with each other in the contrast between ASSISTments and BAU, and, to a lesser extent, in teh contrast between ASSISTments and DragonBox. The biggest difference between the methods was in the contrast with FH2T, in which the Bayesian mixture model resulted in a larger difference between the two principal effects, as well as the largest standard errors, while the two \textsc{psw} principal effect estimates were quite similar.  However, these differences are difficult to interpret due to the large uncertainty around all of the point estimates.
-
 
 \section{Discussion}\label{sec:discussion}
 \textsc{geepers} is a straightforward approach to principal effect estimation under strong monotonicity, built on widely-used regression models, which is more robust---though sometimes less precise---than alternative approaches under a wide array of scenarios.
@@ -1025,6 +1005,7 @@ Let $\bm{\beta}=[\beta_0,\beta_1,\beta_2,\beta_3,\bm{\gamma}']'$.
 Following \eqref{eq:stacked}, let $\blam(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\alpha},\bm{\beta})=\begin{pmatrix} Z_i\Omega(\bxsi,S_i;\bm{\alpha})\\ \Psi(\bxy_i,\bxsi,Y_i,Z_i,\ri(\bm{\alpha});\bm{\beta})\end{pmatrix}$, the stacked estimating equations of \eqref{eq:psMod} and \eqref{eq:regression}.
 Going forward, for the sake of brevity, we will write $\blam_i(\bm{\alpha},\bm{\beta})=\blam(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\hat{\alpha}},\bm{\hat{\beta}})$, where dependence on the data for $i$ is captured in the subscript $i$, with similar meanings for $\Psi_i(\bm{\alpha},\bm{\beta})$ and $\omega_i(\bm{\alpha})$.
 %Then let $\blamh_i=\blam_i(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\hat{\alpha}},\bm{\hat{\beta}})$ be the estimating equations evaluated at the estimated parameters, and let
+
 %\begin{equation*}
 %\dblam_i=\frac{\partial}{\partial [\alpha,\beta]'} \blam_i\Bigr|_{\substack{\bm{\alpha}=\bm{\hat{\alpha}}\\\bm{\beta}=\bm{\hat{\beta}}}}
 %\end{equation*}
@@ -1061,7 +1042,8 @@ can decompose the matrices into diagonal elements
      \end{split}
  \end{equation*}
  which capture the dependence of model \eqref{eq:regression} on the parameters $\bm{\alpha}$ from \eqref{eq:psMod} and the covariance between the estimating equations of the two models.
-The sub-matrix $A_{12}=\sum_i \partial \Omega_i/\partial \bm{\beta}=0$, since \eqref{eq:psMod} does not depend on $\bm{\beta}$.
+
+ The sub-matrix $A_{12}=\sum_i \partial \Omega_i/\partial \bm{\beta}=0$, since \eqref{eq:psMod} does not depend on $\bm{\beta}$.
 
 The diagonal matrices $A_{1,1}$ and $A_{2,2}$ and $B_{1,1}$ and $B_{2,2}$ are all the typical ``bread'' and ``meat'' matrices from M-estimation of generalized linear models and OLS.
 %In practice, we use the estimates from the \texttt{sandwich} package in \texttt{R}, adjusted in two ways: first, the function \texttt{bread} actually gives $A^{-1}$, not $A$; second, we must pay careful attention to sample sizes, since the sample size for \eqref{eq:psMod} includes only treated observations (with observed $S$) and \eqref{eq:regression} contains all observations.
@@ -1146,7 +1128,9 @@ If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},
 \subsection{Plot of  AUC versus $\alpha$}
 
 \begin{center}
+
     \includegraphics[width=5.5in]{../simFigs/alphaAUC.pdf}
+
 \end{center}
 %\begin{table}
 %\caption{Coverage of nominal 95\% confidence intervals}
@@ -1154,15 +1138,19 @@ If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},
 
 \subsection{Full Empirical 95\% Interval Coverage Results}
 The following table gives the empirical coverage of nominal 95\% intervals for \textsc{geepers} and mixture model principal effect estimates under varying data generating models.\\
+
 \input{coverageTabAppendix.tex}
+
 
 \clearpage
 \subsection{Full RMSE Results}
 The following table gives the root mean squared error (RMSE) for \textsc{geepers}, mixture model, and principal score weighting principal effect estimates under varying data generating models.\\
+
 \input{rmseTabAppendix}
 
 %\end{table}
 \clearpage
+
 
 \section{Additional Results from the OPT Study}
 \singlespacing
