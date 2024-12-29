@@ -127,22 +127,22 @@ EFps <- function(psMod,data){
 sandwichMats <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(coef(outMod))))){
     #data <- model.frame(outMod)
     ### estimating equations
-    efPS <- EFps(psMod,data)
-    efOut <- estfun(outMod)
+    efPS <- EFps(psMod,data) ## psi1
+    efOut <- estfun(outMod) ## psi2
 
     out <- list(
-        a11inv = bread(psMod),#/sum(data$Z),
-        a22inv = bread(outMod),#/nrow(data),
-        a21 = A21(psMod,outMod,data),#/nrow(data),
-        b11=(if(is.null(clust)) meat(psMod) else meatCL(psMod,cluster=clust[data$Z==1])),#*nrow(model.frame(psMod)),
-        b22 = (if(is.null(clust)) meat(outMod) else meatCL(outMod,cluster=clust))#*nrow(data)#,adjust=TRUE)
+        a11inv = bread(psMod)/sum(data$Z),
+        a22inv = bread(outMod)/nrow(data),
+        a21 = A21(psMod,outMod,data)/nrow(data),
+        b11=(if(is.null(clust)) meat(psMod) else meatCL(psMod,cluster=clust[data$Z==1]))*nrow(model.frame(psMod)),
+        b22 = (if(is.null(clust)) meat(outMod) else meatCL(outMod,cluster=clust))*nrow(data)#,adjust=TRUE)
     )
     out <- within(out,b12 <-
         if(int){
             matrix(0,nrow(b11),ncol(b22))
         } else if(is.null(clust)) crossprod(efPS,efOut)/nrow(data)
         else crossprod(apply(efPS,2L,rowsum,clust),
-                       apply(efOut,2L,rowsum,clust))#/sum(data$Z==0)
+                       apply(efOut,2L,rowsum,clust))/sum(data$Z==0)
         )
     out
 }
@@ -175,7 +175,7 @@ vcvPS <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(coef(out
 
     n <- nrow(model.frame(outMod))
 
-    vcvFull <- solve(A)%*%B%*%t(solve(A))/nrow(data)
+    vcvFull <- solve(A)%*%B%*%t(solve(A))#/nrow(data)
     main <- a22inv%*%b22%*%t(a22inv)
     vcv <- vcvFull[-(1:nrow(b11)),-(1:nrow(b11))]
     dimnames(vcv) <- dimnames(main)
@@ -255,7 +255,7 @@ A21 <- function(psMod,outMod,data){
   risp <- data$Z==0|is.na(data$S)#,1,0)
   Z <- data$Z[risp]
   Y0 <- data$Y[risp]
-  aW <- predict(psMod,data,type='link')[risp]
+  aW <- predict(psMod,data,type='link')[risp]  ### X'theta
   p <- family(psMod)$linkinv(aW)
   q <- family(psMod)$mu.eta(aW)      ## dp/d(aW) so that dp/dalpha=qW'
 
@@ -284,4 +284,54 @@ A21 <- function(psMod,outMod,data){
   DD <- W0*q
 
   AA%*%DD/nrow(X0)
+}
+
+
+################ PSW functions
+#### PSW
+psw1 <- function(dat,psMod){
+
+  dat0=subset(dat,Z==0)
+  dat1=subset(dat,Z==1)
+  dat0$ps=predict(psMod,dat0,type='response')
+
+
+  muc0=with(dat0,sum(Y*(1-ps))/sum(1-ps))
+  muc1=with(dat0,sum(Y*ps)/sum(ps))
+
+  mut0=with(dat1,mean(Y[S==0]))
+  mut1=with(dat1,mean(Y[S==1]))
+
+  c(eff0=mut0-muc0,
+    eff1=mut1-muc1,
+    diff=mut1-muc1-mut0+muc0
+    )
+}
+
+print.psw <- function(x, ...) print(x$coef,...)
+
+bsInd=function(data)
+  data[sample(1:nrow(data),nrow(data),replace=TRUE),]
+
+psw <- function(dat,psMod,B=5000,verbose=TRUE,bsFun=bsInd){
+  #dat <- getDat(alt)
+
+  est=psw1(dat,psMod)
+
+  if(verbose) step <- if(B>10) round(B/10) else 1
+  bs <- matrix(nrow=B,ncol=3)
+  for(i in 1:B){
+    if(verbose) if(i%%step==0) cat(round(i/B*100),' ')
+    datStar <- bsFun(dat)
+    psModStar <- glm(formula(psMod),family=family(psMod),
+                     data=subset(datStar,Z==1))
+    bs[i,] <- psw1(datStar,psModStar)
+  }
+  if(verbose) cat('\n')
+  out <-
+    list(
+      coef=cbind(est=est,se=apply(bs,2,sd)),
+      bs=bs)
+  class(out) <- 'psw'
+  out
 }
