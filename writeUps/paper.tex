@@ -1,7 +1,7 @@
 
 
 \documentclass[]{article}
-
+\usepackage[letterpaper]{geometry}
 
 \RequirePackage{amsthm,amsmath,amsfonts,amssymb}
 %\RequirePackage[authoryear]{natbib}
@@ -15,7 +15,7 @@
 
 \usepackage[longnamesfirst,sort]{natbib}% Citation support using natbib.sty
 \bibpunct[, ]{(}{)}{;}{a}{,}{,}% Citation support using natbib.sty
-\newcommand\bibfont{\fontsize{10}{12}\selectfont}% To set the list of references in 10 point font using natbib.sty
+\renewcommand\bibfont{\fontsize{10}{12}\selectfont}% To set the list of references in 10 point font using natbib.sty
 
 
 % \theoremstyle{plain}% Theorem-like structures provided by asthma.sty
@@ -87,9 +87,6 @@ Principal stratification is a framework for making sense of causal effects condi
 
 \section{Introduction}
 
-
-
-<<<<<<< HEAD
 When students get stuck on math problems during homework or classwork, it may be helpful to offer them hints or other ``just-in-time'' support \cite[e.g][]{jit}, possibly helping them overcome specific misconceptions or other sources of confusion and allowing them to move on in the assignment.
 The availability of problem-specific support for struggling students is one potential advantage of educational technology over traditional pencil-and-paper practice.
 On the other hand, the ready availability of hints may discourage students from working through difficult problems on their own, and so may inhibit learning.
@@ -116,7 +113,7 @@ In a follow-up analysis, \citet{imbens1997bayesian} relaxed the exclusion restri
 \citet{frangakis} introduced the terminology of principal stratification and extended the framework well beyond noncompliance, inspiring a broad literature introducing (and debating) novel applications and estimators.
 For instance, \citet{fellerEtAl2016} estimated differential effects of random assignment to the Head Start early childhood care program for children who, if assigned to control, would receive home-based care, and for those who would attend a different early childhood care program.
 Other methodologists have developed estimators for the evaluation of surrogate outcomes \citep{li2010bayesian}, the investigation of causal mechanisms \citep{lidsayPage}, sample attrition \citep{zhangRubin, ding2011}, and other problems.
-Since interest is often in comparing effects between principal strata---a goal that runs counter to the exclusion restriction---the earliest principal stratification estimators built on \citet{imbens1997}'s parametric mixture models \citep[e.g.][]{Barnard01062003,mealli2004analyzing}, and that approach remains popular \citep{lidsayPage,fellerEtaAl2016}.
+Since interest is often in comparing effects between principal strata---a goal that runs counter to the exclusion restriction---the earliest principal stratification estimators built on \citet{imbens1997bayesian}'s parametric mixture models \citep[e.g.][]{Barnard01062003,mealli2004analyzing}, and that approach remains popular \citep{lidsayPage,fellerEtAl2016}.
 However, these models are often hard to specify and hard or impossible to test.
 Even when they are well-specified they can yield estimates that are severely biased and misleading \citep{griffin2008application,feller2016principal}.
 The most common type of parametric model, the normal mixture model, is especially dubious for studying bottom-outers in \citet{impactPaper}'s RCT, whose outcome, the total score on a 10-item posttest, is not normally distributed.
@@ -124,7 +121,7 @@ The most common type of parametric model, the normal mixture model, is especiall
 These concerns have prompted the development of alternative approaches, including bounding \citep{bounding} and randomization inference \citep{nolen2011randomization}.
 Of particular importance is the ``principal score,'' \citep{jo,dingLu,feller2017principal}, or the probability that a subject belongs to a particular principal stratum, as a function of pre-treatment covariates.
 Under a strong, untestable assumption called ``principal ignorability,''  principal scores can be transformed into weights to compute form an unbiased estimate of principal effects.
-Principal ignorability is a direct analogue of the strong ignorability assumption in causal observational studies \citep[e.g.][]{rosenbaum1986central}---that all covariates that predict both principal stratum membership and outcomes have been accounted for---in other words, the precise type of assumption that randomized trials are designed to avoid.
+Principal ignorability is a direct analogue of the strong ignorability assumption in causal observational studies \citep[e.g.][]{rosenbaum1983central}---that all covariates that predict both principal stratum membership and outcomes have been accounted for---in other words, the precise type of assumption that randomized trials are designed to avoid.
 A separate set of results in \citet{jo2002}, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
 
 This paper expands on those latter results by presenting a new principal effect estimator, that boils down to a simple, three-step procedure: first, estimate principal scores, for instance, with logistic regression; then, impute unknown principal subgroup membership indicators with principal scores; and finally estimate principal effects using ordinary least squares (OLS) regression with interactions. %, just as in the pre-treatment subgroup case.
@@ -455,7 +452,7 @@ Y_i=\beta_1\sti+\beta_3Z_i\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i}
 with $\beta_3=0.3-\beta_1$, $\EE[\epsilon_i]=0$, and $Var(\epsilon_i)=1/2$.
 The distribution of $\epsilon_i$, $\beta_1$, and values of coefficients $\gamma_1$, $\gamma_2$, and $\gamma_3$ were manipulated factors in the study.
 As described below, in most simulated scenarios, $\gamma_1=1/\sqrt{6}$ and $\gamma_2=\gamma_3=0$. In these cases there is no average treatment effect in the $\st=0$ stratum, and, since  $Var(\gamma_1(x_1+x_2+x_3))=1/2$ and $Var(\epsilon_i)=1/2$, covariates explained half of the variance of $Y$ within treatment group and principal stratum, and observed covariates $x_1$ and $x_2$ explained 1/3 of that variance.
-These values are in line with estimates from outcome models in Section \ref{sec:fh26} and are typical in education contexts \cite{hedgesHedberg}.
+These values are in line with estimates from outcome models in Section \ref{sec:fh2t} and are typical in education contexts \cite{hedgesHedberg}.
 
 Treatment assignment $Z$ was simulated as independent of all the other variables with half of subjects assigned to treatment $Z=1$ and the rest to control $Z=0$.
 
@@ -1179,28 +1176,28 @@ Trt. Completed: Yes & - & 185 (44.8\%) & - & 157 (50\%)\\
 \end{tabular}
 \end{table}
 
-% \section{Additional Results from the Application}
-% \singlespacing
-% The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
+\section{Additional Results from the Application}
+\singlespacing
+The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
 
 
-% \subsection{Summary Statistics}
-% The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
-% \small
-% \input{tab1fac}
-% \clearpage
+\subsection{Summary Statistics}
+The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
+\small
+\input{tab1fac}
+\clearpage
 
-% \small
-% \input{tab1num}
+\small
+\input{tab1num}
 
-% \subsection{Regression Results}
-% Regression estimates from three principal score logit models and three outcome regressions, based on the "All Covariates" principal score model, for \textsc{geepers} estimates. Standard errors shown are nominal regression errors, not sandwich corrected. Fixed-effect estimates for school (PS-models) or classroom (outcome models) are omitted.
+\subsection{Regression Results}
+Regression estimates from three principal score logit models and three outcome regressions, based on the "All Covariates" principal score model, for \textsc{geepers} estimates. Standard errors shown are nominal regression errors, not sandwich corrected. Fixed-effect estimates for school (PS-models) or classroom (outcome models) are omitted.
 
-% \small
-% %\input{writeUps/outcomeRegAppendix}
-% \input{psTab}
+\small
+%\input{writeUps/outcomeRegAppendix}
+\input{psTab}
 
-% \input{regTab}
+\input{regTab}
 
 % \bibliographystylesupp{plainnat}
 % \bibliographysupp{MOM}
