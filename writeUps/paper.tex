@@ -634,6 +634,14 @@ We let $S=1$ when compliance was ``yes''---i.e. when subjects in the treatment g
 For all three estimation methods, we estimated principal scores with logistic regression of $\st$ on the two covariates.
 For \textsc{geepers} and \textsc{psw}, we used standard maximum likelihood methods and data from the treatment group, achieving an AUC of 0.68; for the mixture model we incorporated the logistic regression as a sub-model within a larger Bayesian model fit in Stan.
 
+\begin{figure}
+  \centering
+  \includegraphics{figure/opts.pdf}
+  \caption{Estimated principal effects and 95\% confidence or credible intervals for the Obstetrics and Periodontal Therapy Study, using four estimation methods. Results for BSIV were taken from \citet{richardson2023estimating}}
+  \label{fig:opt}
+\end{figure}
+
+
 The results are displayed in Figure \ref{fig:opt} and Table \ref{tab:optEffs}: both \textsc{geepers} and the Bayesian mixture model gave similar results to those reported in \citet{richardson2023estimating} from BSIV.
 For the principal stratum of subjects who would not fully complete the treatment, those three methods estimated that assignment to the treatment condition reduced percentage of dental sites with bleeding by 31--34 percentage points; for subjects who would complete the treatment, the three estimated a reduction of 14-16 percentage points.
 These methods' conclusion is somewhat surprising: that the effect was larger for subjects who would not complete the treatment than for those who would (the two strata had similar bleeding percentages at baseline, and a logit transformation of the outcome leave the results qualitatively unchanged). 
@@ -1176,7 +1184,7 @@ Trt. Completed: Yes & - & 185 (44.8\%) & - & 157 (50\%)\\
 \end{tabular}
 \end{table}
 
-\section{Additional Results from the Application}
+\section{Additional Results from the Applications}
 \singlespacing
 The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
 
