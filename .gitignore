@@ -135,3 +135,63 @@ papersToCite/*
 simData/*
 
 .\#*
+
+
+
+NCME.pptx
+	Poster/
+	arxiv/
+	code/.DS_Store
+	code/Kirk's Work/
+	code/OPTS/.DS_Store
+	code/OPTS/OPT_Data Dictionary_2.pdf
+	code/OPTS/OPT_Study_PersonLevel_Data.RData
+	code/OPTS/opts2.r
+	code/OPTS/psStan.RData
+	code/OPTS/psStanSimp.RData
+	code/OPTS/web_material_kwad141/
+	code/fh2t/.DS_Store
+	code/fh2t/bo.r
+	code/fh2t/modelCheck.r
+	code/fh2t/psModJustOutcomeTrt.rds
+	code/fh2t/psModJustOutcomeTrt.stan
+	code/fh2t/psModJustTrt.stan
+	code/fh2t/psModRandClass.rds
+	code/obsolete/.DS_Store
+	code/obsolete/assistments/
+	code/obsolete/cappelen/
+	code/obsolete/ct/
+	code/obsolete/gerberGreen/
+	code/obsolete/regression2.r
+	code/psMod.stan
+	code/simulation/exploreSim.r
+	code/simulation/old/
+	code/simulation/readSimOld.r
+	code/simulation/simFuncsSS.r
+	results/
+	simFigs/biasFigs.pdf
+	simFigs/boxplotsNew.pdf
+	simFigs/challengeAssumptionsBoxplots.pdf
+	simFigs/coverage.pdf
+	simFigs/intSimSandZint.pdf
+	simFigs/rates.pdf
+	talks/
+	writeUps/.DS_Store
+	writeUps/MOMold.bib
+	writeUps/Mest.pdf
+	writeUps/OPT_Data Dictionary_2.pdf
+	writeUps/OPT_Dataset Introduction_2.pdf
+	writeUps/_config.yml
+	writeUps/cutSimulationResults.tex
+	writeUps/cutText.tex
+	writeUps/flps.tex
+	writeUps/kwad141.pdf
+	writeUps/ncme.pdf
+	writeUps/paper.bbl
+	writeUps/paper.fff
+	writeUps/paper.lof
+	writeUps/paper.pdf
+	writeUps/paper.ttt
+	writeUps/poster.tex
+	writeUps/regression.pdf
+	writeUps/statsoc.pdf
