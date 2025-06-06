@@ -168,8 +168,8 @@ bp <- function(pd,subset,facet,title=deparse(substitute(subset)),ylim,Labeller="
   ##                             mapping=aes(estimator,y,label=lab),size=labSize,label.padding=unit(0.1, "lines"))
 
   if(!is.null(ylim))
-    p=p+stat_summary(aes(estimator,errP),geom='label', fun.data=function(xx) data.frame(y=if(sum(xx<ylim[1])>0) ylim[1] else ylim[1]-100,label=paste('+',sum(xx <ylim[1]))),inherit.aes=FALSE)+
-      stat_summary(aes(estimator,errP),geom='label', fun.data=function(xx) data.frame(y=if(sum(xx>ylim[2])>0) ylim[2] else ylim[2]+100,label=paste('+',sum(xx >ylim[2]))),inherit.aes=FALSE)
+    p=p+stat_summary(aes(estimator,errP),geom='label', fun.data=function(xx) data.frame(y=if(sum(xx<ylim[1])>0) ylim[1] else ylim[1]-100,label=paste('+',sum(xx <ylim[1]))),inherit.aes=FALSE,size=labSize)+
+      stat_summary(aes(estimator,errP),geom='label', fun.data=function(xx) data.frame(y=if(sum(xx>ylim[2])>0) ylim[2] else ylim[2]+100,label=paste('+',sum(xx >ylim[2]))),inherit.aes=FALSE,size=labSize)
   p
 }
 

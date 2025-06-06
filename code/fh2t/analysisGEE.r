@@ -86,8 +86,8 @@ estimates0all <- lapply(alts,
 
 estimates0rest <- lapply(alts,
                         function(alt)
-                          est(getDat(alt),psMod=psModRest,
-                              covFormY=formula(psModAll)[-2])
+                          est(getDat(alt),psMod=psModRest)#,
+#                              covFormY=formula(psModAll)[-2])
                     )
 
 save(ates,estimates0,estimates3,estimatesInt1,file='results/geeResults.RData')

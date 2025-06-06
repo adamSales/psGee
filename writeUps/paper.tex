@@ -3,7 +3,7 @@
 \documentclass[]{article}
 \usepackage[letterpaper]{geometry}
 
-\RequirePackage{amsthm,amsmath,amsfonts,amssymb}
+\RequirePackage{amsmath,amsfonts,amssymb}
 %\RequirePackage[authoryear]{natbib}
 \usepackage{longtable}
 \usepackage[notablist,tablesfirst]{endfloat}% To `separate' figures and tables from text if required
@@ -46,8 +46,11 @@
 %\usepackage{multibib}
 \usepackage{rotating}
 
+\usepackage[dvipsnames]{xcolor}
+
 %\startlocaldefs
 
+\newcommand{\rd}[1]{\textcolor{BrickRed}{#1}}
 
 \input{notation.tex}
 
@@ -98,8 +101,9 @@ That RCT contrasted four different applications for computer-based math practice
 If that condition benefited students who frequently requested bottom-out hints (``bottom-outers'') more than those who didn't, that may suggest that the availability of bottom-out hints played a role in the condition's effectiveness.
 If students who avoided bottom-out hints benefited more, it may be because the availability of bottom-out impeded the conditions effectiveness.
 (There are certainly other factors at play as well, so this analysis would not be conclusive.)
+Indeed, if the use of bottom-out hints is considered part of the treatment, then those students who rarely used them are partial compliers---could the treatment still benefit them?
 
-Estimating an effect for bottom-outers is a tricky proposition.
+Estimating an effect for bottom-outers, or other partial compliers, is a tricky proposition.
 Causal inference in statistics typically depends on comparisons of outcomes between similar groups of subjects. However, there is no readily identifiable comparison group for bottom-outers, who are only represented in one of the four treatment conditions, and who presumably struggled more frequently, on average, than their non-bottom-outer peers.
 We will formulate a solution using Principal stratification \citep{frangakis}, a  framework for defining subgroup effects for subgroups that may themselves be affected by treatment assignment. It relies on the notion of \emph{potential} subgroups called principal strata, grouping subjects based on the values a post-treatment variable would potentially take if the subject were assigned to one treatment condition or another.
 For example, the appropriate comparison group for bottom-outers is the set of students, assigned to the other treatment arms, who \emph{would have} requested bottom-out hints if only given that option.
@@ -277,7 +281,7 @@ Under suitable regularity conditions, an M-estimator $\bm{\hat{\theta}}$ is asym
 Because of its form, \eqref{eq:sandwich} is sometimes called a ``sandwich'' formula, where $A$ is the ``bread'' and $B$ is the ``meat'' \citep[e.g.][]{sandwich}. 
 To define the matrices $A$ and $B$, let the vector $\bm{\psi}_i=\left\{\psi_j(\bm{\mathcal{O}}_i,\bm{\hat{\theta}})\right\}_{j=1}^J$. Then,
 \begin{equation*}
-  A^{-1}=\sum_i\frac{\partial}{\partial \bm{theta}'} \bm{\psi}_i'
+  A^{-1}=\sum_i\frac{\partial}{\partial \bm{\theta}'} \bm{\psi}_i'
 \end{equation*}
 and
 \begin{equation*}%\label{eq:Bmat}
@@ -553,25 +557,26 @@ For the remainder of the simulation, we focus on the moderate cases of $n=500$ a
 
 \begin{figure}[!ht]
   \centering
-  \includegraphics[width=5.5in,clip]{../simFigs/boxplots.pdf}
+  \includegraphics[width=5.5in,clip]{../simFigs/boxplotsNew.pdf}
   \caption{Violin and scatter plots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} under varying conditions. For all plots, $n=500$; there were 500 replications for each set of conditions. Annotations indicate the number of extreme outliers excluded from the plotting area.}
   \label{fig:boxplots}
 \end{figure}
 
-Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatter plots, showing estimation error for \textsc{geepers}, the mixture estimator, and the \textsc{psw} estimator of $\eff1$ under various sets of conditions, and Table \ref{tab:coverage} shows empirical coverage of nominal 95\% confidence interval estimates under a somewhat wider set of circumstances when $\muc1=0.3$. More complete results, including root-mean-squared-error estimates, are in the online appendix.
-The leftmost panel of Figure \ref{fig:boxplots} and the top line of Table \ref{tab:coverage} show results under conditions favorable to both the mixture model and to \textsc{geepers}---normal residuals and no interactions in the data generating model between covariates and either $S$ or $Z$.
-\textsc{geepers} was roughly unbiased, but less precise than the other two methods---when $\alpha=0.2$ it was much noisier, and when $\alpha=0.5$ it was only slightly less precise.
-The mixture estimator's bias depended on $\muc1$---when $\muc1=0$, the bias was slight, and when $\muc1=0.3$ the bias was more substantial. This is somewhat surprising, because when $\muc1=0$, there was no separation between the principal strata in the control group, and previous literature \citep{griffin2008application} has identified this scenario as a particular challenge for mixture modeling.
-The \textsc{psw} estimator was also biased, due, presumably, to the violation of Principal Ignorability, Assumption \ref{ass:PI}, inherent in the data generating model. On the other hand, the \textsc{psw} estimator had easily the lowest sampling variance of the three estimators.
+Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatter plots, showing estimation error for \textsc{geepers}, the parametric mixture model, and the \textsc{psw} estimator of $\eff1$ for, and Table \ref{tab:coverage} shows empirical coverage of nominal 95\% confidence interval estimates for \textsc{geepers} and a parametric mixture models; when at least one of an estimator's assumptions is violated, the result is colored red.
 
-The middle panel of Figure \ref{fig:boxplots} and the fifth line of Table \ref{tab:coverage} show results for when the residuals in \eqref{eq:y-sim} are uniformly distributed.
-In this case, \textsc{geepers} and \textsc{psw} estimator, which do not assume normality, behaved in a similar fashion as in the normal case, but the mixture estimator showed a bimodal pattern--sometimes over-estimating $\eff1$ and sometimes underestimating, but rarely estimating $\eff1$ accurately.
-Credible intervals from the mixture model exhibited severe undercoverage, while \textsc{geepers} confidence intervals achieved at least their nominal level.
+The first row of Table \ref{tab:coverage} and the first column of Figure \ref{fig:boxplots} show similar results as Figure \ref{fig:alphan}---when all assumptions of both methods are met, \textsc{geepers} is slightly less biased than the parametric mixture model; when $\alpha=0.2$, \textsc{geepers} is much more variable and $\alpha=0.5$ the difference in variance is slight.
+\textsc{psw} has by far the lowest variance and the hightest bias; the latter is due to the violation of principal ignorability. 
 
-%\sloppy
-The rightmost panel of Figure \ref{fig:boxplots} returns to the case of normal residuals---and only shows results when $\muc1=0.3$ and $\alpha=0.5$---but introduces interactions in the data generating model between covariates and either $\st$, $Z$, or both, violating Assumption \ref{ass:rci}.
-%Presence of interactions could undermine the \textsc{geepers} by inducing a relationship between principal scores and potential outcomes, even after adjusting the outcomes for covariate effects.
-Fortunately, these interactions made little difference when $\alpha=0.5$. However, Table \ref{tab:coverage} shows that when $\alpha=0$ or 0.2, and interactions between $\bx$ and $Z$ were present (i.e. $\gamma_3\ne 0$), \textsc{geepers} 95\% confidence intervals tended to under-cover. Nevertheless, coverage of \textsc{geepers} intervals was nearly always substantially higher than coverage of corresponding 95\% credible intervals from mixture models.%\footnote{}
+The remainder of the results reflect violations modeling assumptions for either \geepers or the parametric mixture model or both: interactions in the data generating model between covariates $X$ and treatment assignment $Z$ and/or principal stratum $S$, either of which would violate assumption \ref{ass:rci} and the linear additive model of the \textsc{pmm}, and/or residuals drawn from a uniform distribution, which violates the normality assumption of \textsc{pmm}.
+For \geepers, when $\alpha=0.2$ the presence of interactions in the data generating model increases sampling variance, but only interactions between $X$ and $Z$ reduce confidence interval coverage. When $\alpha=0.5$, the presence of interactions has little to no effect on the performance of the \geepers estimator, and all 95\% confidence intervals approximately acheive their nominal levels. \geepers makes no assumptions about the shape of the residual distribution and behaves similarly under either normal or uniform residuals.
+
+Like \geepers, \pmm is insensitive to interactions between $X$ and $S$. However, interactions between $X$ and $Z$ in the data generating model skew the \pmm sampling distribution and reduce the coverage of its 95\% confidence intervals, even when $\alpha=0.5$.
+When the residual distribution was uniformly distributed, the \pmm sampling distribution appeared bimodal, and its credible intervals exhibited severe undercoverage.
+
+In sum, \psw is the least variable of all three estimator, and does not depend on outcome modeling, but is vulnerable to bias from an unmeasured covariate that predicts both $S$ and $Y$.
+When all assumptions of both methods are met, \geepers is less efficient, but also less biased, than \pmm, but differences in efficiency decrease with $n$ and $\alpha$.
+Neither \psw nor \pmm are vulnerable to interactions beetween $X$ and $S$.
+\pmm is highly vulnerable to violations of normality and to interactions between $X$ and $Z$, while \psw is robust to non-normality and robust to $X$-$Z$ interactions when $\alpha-0.5$.
 
 
 
@@ -579,31 +584,33 @@ Fortunately, these interactions made little difference when $\alpha=0.5$. Howeve
 
 \caption{\label{tab:coverage}Empirical coverage of nominal 95\% confidence intervals for estimates of $\tau^1$.}
 \centering
-\begin{tabular}{ccccccccc}%*{6}{r}}
+\begin{tabular}[t]{lllllll}
 \toprule
-\multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0$} & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
-\cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9}
-\makecell[l]{Residual\\Dist.} & \makecell[c]{X:Z\\Int.?} & \makecell[r]{X:S\\Int.?} & \rotatebox[origin=c]{300}{\textsc{geepers}} & \rotatebox[origin=c]{300}{Mixture}  & \rotatebox[origin=c]{300}{\textsc{geepers}} & \rotatebox[origin=c]{300}{Mixture}& \rotatebox[origin=c]{300}{\textsc{geepers}} & \rotatebox[origin=c]{300}{Mixture}\\
+\multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
+\cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7}
+\makecell[l]{Residual\\Dist.} & \makecell[l]{X:Z\\Int.?} & \makecell[l]{X:S\\Int.?} & \geepers & \pmm & \geepers & \pmm\\
 \midrule
- & No & No & 0.99 & 0.99  & 0.97 & 0.97 & 0.96 & 0.96\\
+ & No & No & 0.97 & 0.97 & 0.96 & 0.96\\
 
- & Yes & No & 0.88 & 0.74  & 0.88 & 0.74 & 0.94 & 0.89\\
+ & Yes & No & \rd{0.88} & \rd{0.74} & \rd{0.94} & \rd{0.89}\\
 
- & No & Yes & 1.00 & 1.00  & 0.98 & 0.97 & 0.97 & 0.96\\
-\multirow{-4}{*}{\raggedright\arraybackslash Normal} & Yes & Yes & 0.90 & 0.77  & 0.90 & 0.77 & 0.94 & 0.88\\
-\cmidrule{1-9}
- & No & No & 0.99 & 0.29  & 0.97 & 0.40 & 0.95 & 0.61\\
+ & No & Yes & \rd{0.98} & \rd{0.97} & \rd{0.97} & \rd{0.96}\\
 
- & Yes & No & 0.83 & 0.11  & 0.87 & 0.20 & 0.93 & 0.48\\
+\multirow{-4}{*}{\raggedright\arraybackslash Normal} & Yes & Yes & \rd{0.9} & \rd{0.77} & \rd{0.94} & \rd{0.88}\\
+\cmidrule{1-7}
+ & No & No & 0.97 & \rd{0.4} & 0.95 & \rd{0.61}\\
 
- & No & Yes & 1.00 & 0.47  & 0.98 & 0.53 & 0.96 & 0.57\\
+ & Yes & No & \rd{0.87} & \rd{0.2} & \rd{0.93} & \rd{0.48}\\
 
-\multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & 0.83 & 0.15 & 0.88 & 0.21 & 0.94 & 0.53\\
+ & No & Yes & \rd{0.98} & \rd{0.53} & \rd{0.96} & \rd{0.57}\\
+
+\multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & \rd{0.88} & \rd{0.21} & \rd{0.94} & \rd{0.53}\\
 \bottomrule
-\multicolumn{9}{p{3.5in}}{\footnotesize Based on 500 replications. $n=500$, $\beta_1=0.3$. Simulation standard error $\approx 1$ percentage point.}
+\multicolumn{7}{p{3.5in}}{\footnotesize Based on 500 replications. $n=500$, $\beta_1=0.3$. Simulation standard error $\approx 1$ percentage point. Estimates colored \rd{red} indicate cases where the assumptions of the model are not met.}
 
 \end{tabular}
 \end{table}
+
 
 
 \section{Applications}
@@ -636,7 +643,7 @@ For \textsc{geepers} and \textsc{psw}, we used standard maximum likelihood metho
 
 \begin{figure}
   \centering
-  \includegraphics{figure/opts.pdf}
+  \includegraphics{../figure/opts.pdf}
   \caption{Estimated principal effects and 95\% confidence or credible intervals for the Obstetrics and Periodontal Therapy Study, using four estimation methods. Results for BSIV were taken from \citet{richardson2023estimating}}
   \label{fig:opt}
 \end{figure}
@@ -661,11 +668,41 @@ In the BAU condition students had no access to hints and received feedback only 
 
 In all four conditions, students worked in class on their assigned math program on 12 different occasions spaced throughout the school year: a prior assessment, a mid-test, a post-test, and nine learning sessions.
 In this illustration, we will compare ASSISTments---the only condition featuring bottom-out hints---with each of the three others separately. Our goal is to estimate different treatment effects for groups of students who would, if assigned to ASSISTments, request few or many bottom-out hints.
+For the sake of the illustration, we assert that in order to receive the full dose of the ASSISTments condition, a student would have to request bottom-out hints
 
-The ability to bottom out was only one of several differences between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects of being assigned to ASSISTments, relative to any of the other three, separately for subjects who would (if assigned to ASSISTments) bottom out frequently, and for subjects who would not.
+The ability to bottom out was only one of several differences between the treatment conditions. One way to disentangle the role of bottoming out in any treatment effect would be to estimate average treatment effects of being assigned to ASSISTments, relative to each of the other three, separately for subjects who would (if assigned to ASSISTments) bottom out frequently, and for subjects who would not.
 If the availability of bottom-out hints plays an important positive role in ASSISTments' efficacy, we might expect larger effects of condition on students who would bottom out frequently than for those who would not; if bottom-out hints are harmful, we might expect the opposite.
 If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who generally do not bottom out, but a positive effect for students who do.
 (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
+
+\subsubsection{Principal Stratification and Alternatives}
+The goal of principal strafication in this context is to determine if assignment to the ASSISTments condition affected students who tend to request frequent bottom-out hints differently than students who tended to request fewer bottom-out hints.
+Is this the right question to ask?
+
+In a similar context, \citet{sales2021student} suggests two alternative appproaches: the average effect of requesting bottom-out hints on posttest scores for students in the ASSISTments condition, and estimating natural direct and indirect effects of assignment to the ASSISTments condition, treating bottom-out hint requests as a mediator.
+The former approach is an observational study: although students were randomized to the ASSISTments condition, bottom-out hint requests were not randomized. Therefore, estimating the effect of bottom-out hints requires careful control of confounding.
+Unfortunately, confounding is a major concern in this case, since, presumably, students only requested bottom-out hints if they were struggling with the material, and students who struggled with practice problems are likely to score lower on the posttest, on average, than those who needed less help during practice.
+The best available measure of students' baseline ability, their score on the 10-item pretest, is likely insufficient.
+That said, a plausible estimate of the average effect of bottom-out hint requests would be a valuable contribution to the literature, and a suitably innovative observational design \citep[e.g.][]{beck} may bear fruit.
+
+Another arguable disadvantage of the observational study approach is that it ignores the larger context of the experiment, asking whether bottom-out hints affect posttest scores, rather than asking what role they play in ASSISTments' overall effectiveness.
+A second approach, mediation analysis, contextualizes the bottom-out effect within the larger experiment.
+It, too, relies on the same non-confounding assumption as an observational study, and also suffers from an additional challenge: mediation analysis relies on a ``common support'' condition that ``the mediator state must not be a deterministic function of the treatment'' \citep[p. 225]{celli2022causal}.
+However, bottom-out hints are unavailable in the other three arms of the study, violating this condition (\citealt{sales2021student} offers a solution, which we find unconvincing).
+
+A principal stratification approach treats bottom-out hint requests as a type of compliance.
+In other words, if we consider full implementation of the ASSISTments condition to include frequent bottom-out hint requests, students assigned to ASSISTments but requests few bottom-out hints is only partially complying with their treatment assignment.
+Then the question is if students who do not fully comply with their treatment assignment still experiance an effect.
+Conversely, might students who only partially comply experience a larger positive effect?
+That would be the case if either bottom-out hints were harmful, or if the treatment was better targeted toward the type of student who tends to need them less.
+
+Principal score weighting depends on the assumption of principal ignorability, which is equivalent to the no-confounding assumption of the observational study and mediation analysis.
+The mixture model and \textsc{geepers} estimators do not rely on that assumption, instead relying on parametric models and residualized covariate independence, respectively.
+Finally, the instrumental variables estimator of \citet{air} relies on the ``exclusion restriction'' that, for students who request few bottom-out hints, there is no effect of randomization to the ASSISTments condition.
+Since bottom-out hints are only one of several features of ASSISTments, this assumption is untenable. 
+
+
+\subsubsection{Data on Bottom-Out Hints and Covariates}
 
 \sloppy
 We gathered dichotomized data on %which students in the treatment condition requested at least one bottom-out hint.
@@ -706,8 +743,7 @@ The model selection process is recorded in the GitHub repository cited above.
 Lastly, Assumption \ref{ass:ci} implies that there is no interaction between $\bxs$ and $\st$ in the outcome model. Further, for the sake of statistical efficiency, we did not consider outcome models with interactions between covariates and $Z$.
 \emph{A priori}, the student attribute that poses the greatest threat to these modeling choices is prior achievement, that is, scores on the pretest and the fifth-grade state test.
 This is both because they measure a similar construct to the posttest, and because \cite{impactPaper} found a pretest-treatment interaction in a different treatment contrast.
-
-Following that reasoning, we conducted a third parallel analysis excluding prior achievement covariates in $\bxs$ but including all covariates in $\bxy$.
+Following that reasoning, we conducted a third parallel analysis excluding prior achievement covariates.% in $\bxs$ but including all covariates in $\bxy$.
 
 All three principal score models were fit to data from students in the ASSISTments group, for whom bottom-out status ($S$) was observed; hence, the same model fit was used for all three treatment contrasts.
 
@@ -729,7 +765,7 @@ Coefficient estimates are displayed in table \ref{tab:psTab} in the appendix.
 
 Figure \ref{fig:effects} shows principal effect point estimates and 95\% confidence intervals from analyses based on the three principal score models.
 The three covariate selection strategies led to similar point and interval estimates.
-That said, in nearly all cases the AIC-optimal model led to the smallest standard errors.
+That said, in most cases the AIC-optimal model led to the smallest standard errors.
 Confidence intervals for all nine principal effect estimates were about twice as wide as for corresponding ATE estimates.
 In no case was there evidence at $\alpha=0.05$---or any other conventional level---for non-zero principal effects or differences between principal effects.
 Table \ref{tab:regTab}, in the appendix, displays the full set of regression coefficients for the outcome models based on the "All Covariates" principal score model, along with nominal standard error estimates.
@@ -1209,6 +1245,156 @@ Regression estimates from three principal score logit models and three outcome r
 
 % \bibliographystylesupp{plainnat}
 % \bibliographysupp{MOM}
+
+\clearpage
+
+\section{Responses to Reviewers}
+We are grateful for the reviewers' and the editor's careful reading
+and comments. We believe that the the substantial changes we made
+chages to the manuscript in response to those comments greatly
+improved the paper. Most significantly, we clarified our presentation
+and added a second application.
+We provide point-by-point responses below.
+
+\subsection{Reviewer 1}
+\begin{enumerate}
+
+  \item \begin{quote}The rationale for using Principal Stratification to estimate treatment
+effects for bottom-outers is insufficient. Additionally, it is
+advisable to compare the Principal Stratification method to other
+causal inference methods, such as instrumental variable and propensity score analysis, to provide a comprehensive understanding of the chosen
+approach.
+\end{quote}
+\item \begin{quote}
+    While the authors effectively describe the novelty of their study, the literature review lacks the historical
+development of Principal Stratification. Including more in-depth reviews and relevant citations would enhance the
+background information and context of the study.
+\end{quote}
+\item
+\begin{quote}
+  The simulation details about how variable Z is simulated and the number of replications for each condition
+are not clearly explained. Providing more information on these aspects would contribute to the transparency and replicability
+of the study.
+\end{quote}
+\item \begin{quote}
+    The rationale for selecting specific values for manipulated factors, such as choosing a sample size range of
+100 to 1000 and using N(0,1/2) instead of N(0,1), is not adequately justified. Including evidence and citations to support
+these choices would strengthen the methodological foundation of the
+study.
+\end{quote}
+\item \begin{quote}
+    A section detailing the evaluation metrics and criteria used to assess simulation results should precede the
+presentation of results. This would provide readers with a clear understanding of the benchmarks against which the findings
+are measured.
+\end{quote}
+\item
+ \begin{quote} It is highly recommended that the authors employ a series of ANOVAs to analyze the impact of various
+factors on the accuracy of effect estimation to guide results interpretation. Additionally, a concise paragraph summarizing key
+findings before the application example would enhance the clarity and
+interpretation of the results.
+\end{quote}
+\item
+  \begin{quote}
+    APA Citations and References: The paper does not adhere to the APA 7th style. Authors are advised to consult the APA
+    Formatting and Style Guide %(https://owl.purdue.edu/owl/research_and_citation/apa_style/apa_formatting_and_style_guide/index.html)
+    for proper citation and reference formatting throughout the manuscript. Consistency in style is crucial
+for scholarly publications.
+\end{quote}
+
+\end{enumerate}
+
+\subsection{Reviewer 2}
+\begin{quote}
+Great work. Well written. Please find some of my comments below. I
+hope they are useful.
+\end{quote}
+
+\begin{itemize}
+\item
+  \begin{quote} Please provide more background on M-estimators especially to the extent it evolves to become relevant to the
+    GEEPERs.
+    \end{quote}
+\item
+  \begin{quote}
+I am wondering if doubly robust PSW estimator would reduce the remaining bias difference between GEEPERs and
+PSW, and Mixture and PSW.
+    \end{quote}
+
+\item
+  \begin{quote}
+    GEEPERs seems great, but also, surprised by how efficient Mixture can be. Are there any mechanisms that link M-
+    estimators to Mixture modeling? Just wondering.
+        \end{quote}
+
+\item
+  \begin{quote}
+    Would it be possible to offer some evaluation metric for GEEPERs,
+    which would indicate, under some conditions researchers could
+    possibly opt or seek other estimators
+  \end{quote}
+
+\item
+  \begin{quote}
+    Quickly checked Frangakis and Rubin (2002). Do you think the effect of bottom-outers (or similar experimental
+designs) could be partitioned into associative and dissociative
+effects with GEEPERs?
+    \end{quote}
+
+\item
+  \begin{quote}
+    It would be great if you could share the code for estimation and simulation in the next round of review (if there is). Also
+make sure you have comments in the code so someone reading the article
+can match the narrative with the code.
+    \end{quote}
+
+
+\end{itemize}
+
+\subsection{Reviewer: 3}
+Comments to the Author
+This paper develops a new estimator for principal stratification based on M-estimation and stacked equations. The proposed
+method is designed to be more robust and simpler to use than standard methods. The method is, however, tailored to a very
+specific set up: one-way noncompliance. In general, principal stratification is a much more general framework that can be
+used for a wide variety of settings where there is conditioning on some post-treatment quantity.
+The method is outlined, and then evaluated through a series of simulations, and then an application is provided. My primary
+criticism is that the new method doesn't appear to outperform extant methods to a compelling degree. I take up this point in
+more detail first for the simulations and second for the empirical
+application.
+
+
+\subsubsection{Simulations}
+\begin{quote}
+  In my view, the simulations should show the following:
+  \begin{itemize}
+    \item When the assumptions of extant methods are met, GEEPERS should do no worse.
+    \item When the assumptions of extend methods are not met, GEEPERS
+      should do better.
+  \end{itemize}
+Given this criteria, it seems to me that the simulation should focus on the last three factors in the design. That is, I would
+hold the sample size and alpha fixed. Currently too many factors are varied at the same time to give a clear picture. I would
+alter Table 1, to indicate which factors yield assumption violations and then violate these assumptions in isolation instead of
+relaxing them simultaneously. As it currently stands, it is quite hard to understand the relative performance of GEEPERs
+compared to extant methods. Careful relaxation of each assumption allows the reader to see how much bias results from a
+single factor.
+\end{quote}
+
+
+\subsubsection{Application.}
+I thought there are a number of less than desirable parts to the application. First, the focus on bottoming out is less than
+ideal. This strikes me as a fairly rare phenomenon. I didn't find the concept very intuitive and had to read just the descriptive
+section several times to understand why one might be interested in a principal stratification analysis here. This makes the
+methods seem not particularly general. Why not focus on an application with straightforward oneway noncompliance? This
+is an area where principal stratification is often applied, and the concepts are well understood.
+In addition, it isn't ideal that the ATE in each condition is not estimated very precisely, that is the CI appears to cover zero in
+all cases. Next, all the principal stratification estimates are all pretty close to the same value as the ATE. That serves as
+another reason this application isn't compelling. It is hard to care about an application where principal stratification doesn't
+provide much in the way of insights relative to the ATE. Next, the performance of GEEPERs seems to be quite similar to
+extant methods in each scenario. Overall, to my thinking, there is little to recommend the current application. Again, there is
+little here that demonstrates the value of GEEPERs.
+To my mind, these problems could both be fixed. That is, the simulations could be redesigned to provide more compelling
+evidence. Next, the authors may be able to identify are better application. Therefore, the manuscript should be revised and
+resubmitted.
+
 
 
 \end{document}

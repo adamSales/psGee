@@ -99,8 +99,8 @@ tab1 <- bind_rows(
   coverageN%>%filter(eff==1)%>%select(-eff)%>%
   pivot_wider(names_from=n,names_prefix="n=",values_from=coverage)%>%mutate(measure="95% CI Coverage"))%>%
   select(measure,everything())
-  
-  
+
+
   #%>%
   kbl()%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
@@ -221,11 +221,49 @@ pd <- results %>%
     dist=paste(c(mix='Mixture',unif='Unform',norm='Normal')[errDist],'Errors'),
     estimator=c(bayes='Mixture',mest='GEEPERs',psw='PSW')[estimator],
     interactionZ=ifelse(intZ,"Z\ninteraction","No Z\ninteraction"),
-    interactionS=ifelse(intS,"S\ninteraction","No S\ninteraction")
+    interactionS=ifelse(intS,"S\ninteraction","No S\ninteraction"),
+    intAll=ifelse(intZ,ifelse(intS,"X:S & X:Z","X:Z"),ifelse(intS,"X:S","No inter.")),
+    intAll=factor(intAll,levels=c("No inter.","X:Z", "X:S","X:S & X:Z"))
   ) %>%
   filter(estimator=='PSW'|rhat<1.1)
 
 ### figure for paper
+
+norm<-bp(pd,
+   subset=b1 > 0& errDist=='norm'& eff==1&mu01==0.3&n==500&PE=='Stratum 1',
+   title="Normal Residuals",ylim=c(-1.5,1.5),#c(-1.5,1.5),
+   facet=B1~intAll,#interactionZ+interactionS,
+   Labeller=labeller(B1="none",#label_parsed,
+                     intAll=label_value),labSize=2.5
+   )+
+    labs(y=bquote("Estimation Error for "~tau^1),#subtitle="No Interactions",
+         x=NULL)+
+  #theme_bw()+
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+          strip.text.y=element_blank(),strip.background.y=element_blank(),
+                                        #plot.subtitle = element_text(size=10),
+        legend.position="none")+
+  scale_fill_manual(values=c('#1b9e77','#d95f02','#7570b3'))+
+  scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
+
+unif<-bp(pd,
+   subset=b1 > 0& errDist=='unif'& eff==1&mu01==0.3&n==500&PE=='Stratum 1',
+   title="Uniform Residuals",ylim=c(-1.5,1.5),#c(-1.5,1.5),
+   facet=B1~intAll,#interactionZ+interactionS,
+   Labeller=labeller(B1=label_parsed,intAll=label_value),labSize=2.
+   )+
+    labs(y=NULL,#bquote("Estimation Error for "~tau^1),#subtitle="No Interactions",
+         x=NULL)+
+  #theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+                                        #plot.subtitle = element_text(size=10),
+        legend.position="none")+
+  scale_fill_manual(values=c('#1b9e77','#d95f02','#7570b3'))+
+  scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
+
+pdf("simFigs/boxplotsNew.pdf",width=6.5,height=4)
+grid.arrange(norm,unif,nrow=1)
+dev.off()
 
 norm<-bp(pd,
    subset=b1 > 0& errDist=='norm'& !intS& !intZ&eff!='Diff'&n==500&PE=='Stratum 1',
@@ -503,7 +541,7 @@ rmse%>%filter(errDist!='mix',n==500,eff!="Diff",b1==.2)%>%
          `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
          `X:S\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=ifelse(estimator=='Mixture','Mix.',estimator),
-         
+
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
          rmse)%>%
@@ -539,26 +577,37 @@ coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3)%>%
   geom_point()+geom_line()+geom_hline(yintercept=0.95)+
   facet_grid(interactionS~errDist+interactionZ)
 
-sink('writeUps/coverageTab.tex')
+redCov <- function(coverage) paste0("\\rd{",round(coverage,2),"}")
+condRed <- function(coverage,intZ,intS,estimator,errDist)
+    ifelse(intZ|intS,redCov(coverage),
+    ifelse(errDist=="unif"&estimator=="Mixture",redCov(coverage),round(coverage,2)))
+
+#sink('writeUps/coverageTab.tex')
 cbind(
-  coverage%>%
-  filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==0)%>%
-  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+  ## coverage%>%
+##   filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==0)%>%
+## pivot_wider(names_from=estimator,values_from=coverage)
+## ,
+    coverage%>%
+      mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist))%>%
+      filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.2,estimator!="PSW")%>%
+      transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
          `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
          `X:S\nInt.?`=ifelse(intS,'Yes','No'),
-         estimator=ifelse(estimator=='Mixture','Mix.',estimator),coverage)%>%
-pivot_wider(names_from=estimator,values_from=coverage)
-,
-coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.2)%>%
-  pivot_wider(names_from=estimator,values_from=coverage)%>%
-select(`GEEPERs`,`Mix.`=Mixture),
-coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.5)%>%
-  pivot_wider(names_from=estimator,values_from=coverage)%>%
-select(`GEEPERs`,`Mix.`=Mixture))%>%
-  kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
-  add_header_above(c(" " = 3, "$\\\\alpha=0$" = 2, "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
+         estimator=c(Mixture="\\pmm",GEEPERs="\\geepers")[estimator],
+         coverage)%>%
+      pivot_wider(names_from=estimator,values_from=coverage),
+    coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.5)%>%
+      mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist))%>%
+      pivot_wider(names_from=estimator,values_from=coverage)%>%
+    select(`GEEPERs`,Mixture)%>%
+    rename("\\pmm"="Mixture","\\geepers"="GEEPERs")
+  )%>%
+    kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
+    add_header_above(c(" " = 3, #"$\\\\alpha=0$" = 2,
+                       "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
-sink()
+                                        #sink()
 
 
 sink('writeUps/coverageTabAppendix.tex')

@@ -142,7 +142,7 @@ sdat <- list(
     sdat$ncovY=ncol(Xout)
 
 
-  psStan <- stan(file = 'code/fh2t/psModSimp.stan')#,data=sdat)
+  psStan <- stan(file = 'code/fh2t/psModSimp.stan',data=sdat)
 save(psStan,file='code/OPTS/psStanSimp.RData')
 load('code/OPTS/psStanSimp.RData')
 
