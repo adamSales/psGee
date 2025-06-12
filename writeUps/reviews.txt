@@ -1,0 +1,61 @@
+Reviewer(s)' Comments to Author:
+
+Reviewer: 1
+
+Comments to the Author
+Comments to the Author
+
+The article effectively presents a simulation study comparing three methods and provides a clear application example of applying GEEPERs. However, there are notable areas for improvement, including a lack of literature review on previous simulation studies about Principal Stratification and some unclear presentations of results. Specific comments are outlined below.
+
+1.      Page 3, Line 10: The rationale for using Principal Stratification to estimate treatment effects for bottom-outers is insufficient. Additionally, it is advisable to compare the Principal Stratification method to other causal inference methods, such as instrumental variable and propensity score analysis, to provide a comprehensive understanding of the chosen approach.
+
+2.      Page 5, Line 5: While the authors effectively describe the novelty of their study, the literature review lacks the historical development of Principal Stratification. Including more in-depth reviews and relevant citations would enhance the background information and context of the study.
+
+3.      Page 15: The simulation details about how variable Z is simulated and the number of replications for each condition are not clearly explained. Providing more information on these aspects would contribute to the transparency and replicability of the study.
+
+4.      Page 17: The rationale for selecting specific values for manipulated factors, such as choosing a sample size range of 100 to 1000 and using N(0,1/2) instead of N(0,1), is not adequately justified. Including evidence and citations to support these choices would strengthen the methodological foundation of the study.
+
+5.      Page 18: A section detailing the evaluation metrics and criteria used to assess simulation results should precede the presentation of results. This would provide readers with a clear understanding of the benchmarks against which the findings are measured.
+
+6.      Pages 18-20: It is highly recommended that the authors employ a series of ANOVAs to analyze the impact of various factors on the accuracy of effect estimation to guide results interpretation. Additionally, a concise paragraph summarizing key findings before the application example would enhance the clarity and interpretation of the results.
+
+7.      APA Citations and References: The paper does not adhere to the APA 7th style. Authors are advised to consult the APA Formatting and Style Guide (https://owl.purdue.edu/owl/research_and_citation/apa_style/apa_formatting_and_style_guide/index.html) for proper citation and reference formatting throughout the manuscript. Consistency in style is crucial for scholarly publications.
+
+
+Reviewer: 2
+
+Comments to the Author
+Great work. Well written. Please find some of my comments below. I hope they are useful.
+1.      Please provide more background on M-estimators especially to the extent it evolves to become relevant to the GEEPERs. 
+2.      I am wondering if doubly robust PSW estimator would reduce the remaining bias difference between GEEPERs and PSW, and Mixture and PSW.
+3.      GEEPERs seems great, but also, surprised by how efficient Mixture can be. Are there any mechanisms that link M-estimators to Mixture modeling? Just wondering.
+4.      Would it be possible to offer some evaluation metric for GEEPERs, which would indicate, under some conditions researchers could possibly opt or seek other estimators?
+5.      Quickly checked Frangakis and Rubin (2002). Do you think the effect of bottom-outers (or similar experimental designs) could be partitioned into associative and dissociative effects with GEEPERs?
+6.      It would be great if you could share the code for estimation and simulation in the next round of review (if there is). Also make sure you have comments in the code so someone reading the article can match the narrative with the code.
+
+
+
+Reviewer: 3
+
+Comments to the Author
+
+This paper develops a new estimator for principal stratification based on M-estimation and stacked equations. The proposed method is designed to be more robust and simpler to use than standard methods. The method is, however, tailored to a very specific set up: one-way noncompliance. In general, principal stratification is a much more general framework that can be used for a wide variety of settings where there is conditioning on some post-treatment quantity.
+
+The method is outlined, and then evaluated through a series of simulations, and then an application is provided. My primary criticism is that the new method doesn't appear to outperform extant methods to a compelling degree.  I take up this point in more detail first for the simulations and second for the empirical application.
+
+Simulations.
+
+In my view, the simulations should show the following:
+
+--When the assumptions of extant methods are met, GEEPERS should do no worse.
+--When the assumptions of extend methods are not met, GEEPERS should do better.
+
+Given this criteria, it seems to me that the simulation should focus on the last three factors in the design.  That is, I would hold the sample size and alpha fixed.  Currently too many factors are varied at the same time to give a clear picture.  I would alter Table 1, to indicate which factors yield assumption violations and then violate these assumptions in isolation instead of relaxing them simultaneously.  As it currently stands, it is quite hard to understand the relative performance of GEEPERs compared to extant methods. Careful relaxation of each assumption allows the reader to see how much bias results from a single factor. 
+
+Application.
+
+I thought there are a number of less than desirable parts to the application. First, the focus on bottoming out is less than ideal. This strikes me as a fairly rare phenomenon. I didn't find the concept very intuitive and had to read just the descriptive section several times to understand why one might be interested in a principal stratification analysis here.  This makes the methods seem not particularly general.  Why not focus on an application with straightforward oneway noncompliance? This is an area where principal stratification is often applied, and the concepts are well understood.
+
+In addition, it isn't ideal that the ATE in each condition is not estimated very precisely, that is the CI appears to cover zero in all cases. Next, all the principal stratification estimates are all pretty close to the same value as the ATE. That serves as another reason this application isn't compelling. It is hard to care about an application where principal stratification doesn't provide much in the way of insights relative to the ATE. Next, the performance of GEEPERs seems to be quite similar to extant methods in each scenario. Overall, to my thinking, there is little to recommend the current application. Again, there is little here that demonstrates the value of GEEPERs.
+
+To my mind, these problems could both be fixed.  That is, the simulations could be redesigned to provide more compelling evidence. Next, the authors may be able to identify are better application.  Therefore, the manuscript should be revised and resubmitted.
