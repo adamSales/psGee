@@ -60,3 +60,5 @@ fullsim(500,ns=c(200,300,400,600,700,800),errDist='norm',b1s=.5,intS=FALSE,intZ=
 
 
 fullsim(500,ns=500,errDist='norm',b1s=c(.3,.4,seq(.6,1,.1)),intS=FALSE,intZ=FALSE,mu01=.3,mu10=0,ext='b1s')
+
+fullsim(500,ns=500,errDist=c("norm","unif"),b1s=c(0.3,0.4),intZ=TRUE,mu10=0,mu01=0.3,ext="alpha34")

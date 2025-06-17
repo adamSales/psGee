@@ -72,7 +72,7 @@ datNames <- function(data,trt='Z',out='Y',use='S',block=NULL){
 }
 
 ### computes/returns regression models
-pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,intS=NULL,psMod=NULL){
+pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,intSx=NULL,psMod=NULL){
 
   data$S[data$Z==0] <- NA
 
@@ -94,8 +94,8 @@ pointEst <- function(data,covFormU=~x1+x2,covFormY=covFormU,intS=NULL,psMod=NULL
   outForm <- update(covFormY,Y~Z*Sp+.)
 #  outForm <- update(covFormY,Y~Z*Sp+.)
 
-  if(!is.null(intS))
-    outForm <- update(outForm,as.formula(paste0('.~.+Sp:(',paste(intS,collapse='+'),')')))
+  if(!is.null(intSx))
+    outForm <- update(outForm,as.formula(paste0('.~.+Sp:(',paste(intSx,collapse='+'),')')))
 
 
   if('block'%in%names(data)) if(!is.null(data$block))
@@ -195,14 +195,14 @@ vcvPS <- function(psMod,outMod,data,clust=NULL,int=any(grepl(":x",names(coef(out
 
 
 ### wrapper function for estimating regressions+vcov
-est <- function(data,covFormU=~x1+x2,covFormY=NULL,psMod=NULL,clust=NULL,intS=NULL,
+est <- function(data,covFormU=~x1+x2,covFormY=NULL,psMod=NULL,clust=NULL,intSx=NULL,
                 trt='Z',out='Y',use='S',block=NULL){
 
   #if(!missing(psMod))
 
   data <- datNames(data,trt=trt,out=out,use=use,block=block)
 
-  Attach(pointEst(data=data,covFormU=covFormU,covFormY=covFormY,intS=intS,psMod=psMod))
+  Attach(pointEst(data=data,covFormU=covFormU,covFormY=covFormY,intSx=intSx,psMod=psMod))
 
   vcv <- vcvPS(psMod,outMod,data=data,clust=clust)
 
@@ -235,10 +235,10 @@ effsFromFit <- function(ests){
 }
 
 ### estimates effects of interest, starting from data
-effs <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,
+effs <- function(data,covFormU=~x1+x2,covFormY=covFormU,intSx=NULL,
                  trt='Z',out='Y',use='S',block=NULL){
     ests <- est(data=data,covFormU=covFormU,covFormY=covFormY,
-                int=int,trt=trt,out=out,use=use,block=block)
+                intSx=intSx,trt=trt,out=out,use=use,block=block)
 
     effsFromFit(ests)
 }
@@ -247,9 +247,9 @@ effs <- function(data,covFormU=~x1+x2,covFormY=covFormU,int=FALSE,
 ### INTERACTION W SP ONLY WORKS IF NO MISSING S IN TRT GROUP
 A21 <- function(psMod,outMod,data){
 
-  intS <- any(grepl('Sp:',names(coef(outMod))))
+  intSx <- any(grepl('Sp:',names(coef(outMod))))
 
-  if(intS&any(is.na(data$S[data$Z==1])))
+  if(intSx&any(is.na(data$S[data$Z==1])))
     warning("INTERACTION W SP ONLY WORKS IF NO MISSING S IN TRT GROUP")
 
   risp <- data$Z==0|is.na(data$S)#,1,0)
@@ -263,13 +263,14 @@ A21 <- function(psMod,outMod,data){
 
   X0 <- model.matrix(outMod)[risp,
                                -c(which(names(coef(outMod))%in%c('Z','Sp')),
-                                  grep('Z\\:|Sp\\:|\\:Z|\\:Sp',names(coef(outMod))))][,-1]
+                                  grep('Z\\:|Sp\\:|\\:Z|\\:Sp',names(coef(outMod))),
+                                  which(names(coef(outMod))=="(Intercept)"))]
 
-  if(intS) V0 <- cbind(model.matrix(outMod)[risp,grep('Sp\\:',names(coef(outMod)))])
+  if(intSx) V0 <- cbind(model.matrix(outMod)[risp,grep('Sp\\:',names(coef(outMod)))])
 
   Q <- rbind(coef(outMod)[c('(Intercept)','Z',colnames(X0))])%*%t(cbind(1,Z,X0))
   U <- rbind(coef(outMod)[c('Sp','Z:Sp')])%*%t(cbind(1,Z))
-  if(intS) U <- U+(rbind(coef(outMod)[colnames(V0)])%*%t(V0))
+  if(intSx) U <- U+(rbind(coef(outMod)[colnames(V0)])%*%t(V0))
 
   AA <- rbind(
     -U,
@@ -279,7 +280,7 @@ A21 <- function(psMod,outMod,data){
     -sweep(t(X0),2,U,"*")
   )
 
-  if(intS) AA <- rbind(AA,(Y0-Q-2*p*U)[rep(1,ncol(V0)),]*t(V0))
+  if(intSx) AA <- rbind(AA,(Y0-Q-2*p*U)[rep(1,ncol(V0)),]*t(V0))
 
   DD <- W0*q
 
