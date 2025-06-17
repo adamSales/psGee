@@ -1,0 +1,181 @@
+\documentclass[]{article}
+
+\usepackage[letterpaper]{geometry}
+
+\usepackage{xr}
+\externaldocument{paper}
+
+\RequirePackage{amsmath,amsfonts,amssymb}
+%\RequirePackage[authoryear]{natbib}
+\usepackage{longtable}
+%\usepackage[notablist,tablesfirst]{endfloat}% To `separate' figures and tables from text if required
+
+\usepackage{epstopdf}% To incorporate .eps illustrations using PDFLaTeX, etc.
+\usepackage[caption=false]{subfig}% Support for small, `sub' figures and tables
+\usepackage[doublespacing]{setspace}% To produce a `double spaced' document if required
+%\setlength\parindent{24pt}% To increase paragraph indentation when line spacing is doubled
+
+\usepackage[longnamesfirst,sort]{natbib}% Citation support using natbib.sty
+\bibpunct[, ]{(}{)}{;}{a}{,}{,}% Citation support using natbib.sty
+\renewcommand\bibfont{\fontsize{10}{12}\selectfont}% To set the list of references in 10 point font using natbib.sty
+
+
+% \theoremstyle{plain}% Theorem-like structures provided by asthma.sty
+% \newtheorem{theorem}{Theorem}[section]
+% \newtheorem{lemma}[theorem]{Lemma}
+% \newtheorem{corollary}[theorem]{Corollary}
+% \newtheorem{prop}[theorem]{Proposition}
+
+% \theoremstyle{definition}
+% \newtheorem{definition}[theorem]{Definition}
+% \newtheorem{example}[theorem]{Example}
+
+% \theoremstyle{remark}
+% \newtheorem{remark}{Remark}
+% \newtheorem{notation}{Notation}
+
+\usepackage{amsthm}
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+\usepackage{bm}
+\usepackage[hidelinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{mathtools}
+%\usepackage{fullpage}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{numdef}
+%\usepackage{multibib}
+\usepackage{rotating}
+
+\usepackage[dvipsnames]{xcolor}
+
+%\startlocaldefs
+
+\newcommand{\rd}[1]{\textcolor{BrickRed}{#1}}
+
+\input{notation.tex}
+
+%\endlocaldefs
+%\newcites{supp}{Supplementary References}
+
+%\begin{frontmatter}
+
+
+\newenvironment{itquote}
+  {\begin{quote} \itshape}
+  {\end{quote}\ignorespacesafterend}
+
+
+\title{Responses to Review Comments}
+%\runtitle{\textsc{geepers}}
+%\maketitle
+\date{}
+
+\begin{document}
+
+\maketitle
+We are grateful for the reviewers' and the editor's careful reading
+and comments. We believe that the the substantial changes we made
+chages to the manuscript in response to those comments greatly
+improved the paper. Most significantly, we clarified our presentation
+and added a second application.
+We provide point-by-point responses below.
+
+\section*{Reviewer 1}
+
+The article effectively presents a simulation study comparing three methods and provides a clear application example of applying GEEPERs. However, there are notable areas for improvement, including a lack of literature review on previous simulation studies about Principal Stratification and some unclear presentations of results. Specific comments are outlined below.
+
+\begin{enumerate}
+ 
+\item    \begin{itquote}  Page 3, Line 10: The rationale for using Principal Stratification to estimate treatment effects for bottom-outers is insufficient. Additionally, it is advisable to compare the Principal Stratification method to other causal inference methods, such as instrumental variable and propensity score analysis, to provide a comprehensive understanding of the chosen approach.
+\end{itquote}
+
+
+
+\item \begin{itquote}
+    
+     Page 5, Line 5: While the authors effectively describe the novelty of their study, the literature review lacks the historical development of Principal Stratification. Including more in-depth reviews and relevant citations would enhance the background information and context of the study.
+\end{itquote}
+
+Thanks for this suggestion. We have added material to the introduction, starting from the paragraph beginning ``The conceptual basis'' on page \pageref{background} and through the following page, describing some of the history and background of principal stratification. 
+
+\item \begin{itquote}
+     Page 15: The simulation details about how variable Z is simulated and the number of replications for each condition are not clearly explained. Providing more information on these aspects would contribute to the transparency and replicability of the study.
+\end{itquote}
+We agree that the previous draft was unclear in the description of the outcome-generating model (now equation \ref{eq:y-sim}). We have added material to section \ref{sec:dataGeneration} and Table \ref{tab:factor} that includes the necessary details. Should anything still be unclear, replication code is available in the anonymized GitHub repository at \url{https://anonymous.4open.science/r/psGee-B498/}.
+
+
+\item \begin{itquote}     Page 17: The rationale for selecting specific values for manipulated factors, such as choosing a sample size range of 100 to 1000 and using N(0,1/2) instead of N(0,1), is not adequately justified. Including evidence and citations to support these choices would strengthen the methodological foundation of the study.
+
+\end{itquote}
+We added rationale, including citations, to the paragraph beginning ``Potential and observed outcomes...'' on page \pageref{potential} and to section \ref{sec:manipulatedFactors}.
+
+\item \begin{itquote}     Page 18: A section detailing the evaluation metrics and criteria used to assess simulation results should precede the presentation of results. This would provide readers with a clear understanding of the benchmarks against which the findings are measured.
+
+\end{itquote}
+We now begin Section \ref{sec:simResults} with definitions of the evaluation metrics, which we hope make the results clearer.
+
+\item \begin{itquote}     Pages 18-20: It is highly recommended that the authors employ a series of ANOVAs to analyze the impact of various factors on the accuracy of effect estimation to guide results interpretation. Additionally, a concise paragraph summarizing key findings before the application example would enhance the clarity and interpretation of the results.
+\end{itquote}
+Based on your comment, we strongly considered including \textsc{anova} results to gauge the factors' relative importance. However, we decided that such an analysis would not be appropriate in this context. First, the factors were not fully crossed, significantly complicating the analysis. Second, the results would be heavily driven by the factors' variances---specifically, the set of values we chose for $n$, $\alpha$, $\bm\beta$, and $\bm\gamma$; although our choices were well-motivated, they were also, necessarily, somewhat arbitrary. 
+Lastly, as Figure \ref{fig:alphan} shows, the effects of $n$ and $\alpha$ on bias and standard error are non-linear, further complicating the \textsc{anova} modeling. For those reasons, we decided our current approach was clearer and simpler.
+
+Your suggestion of a paragraph summarizing the results was quite helpful. We included such a paragraph, on page \pageref{simsum} beginning ``In sum.''
+
+\item \begin{itquote}      APA Citations and References: The paper does not adhere to the APA 7th style. Authors are advised to consult the APA Formatting and Style Guide for proper citation and reference formatting throughout the manuscript. Consistency in style is crucial for scholarly publications.
+\end{itquote}
+Thank you. We have fixed the formatting.
+\end{enumerate}
+
+\section*{Reviewer 2}
+Comments to the Author
+Great work. Well written. Please find some of my comments below. I hope they are useful.
+
+\begin{enumerate}
+
+\item \begin{itquote}   Please provide more background on M-estimators especially to the extent it evolves to become relevant to the GEEPERs. 
+\end{itquote}
+Thanks for this suggestion---in response, we added Section \ref{sec:mest}
+\item \begin{itquote}      I am wondering if doubly robust PSW estimator would reduce the remaining bias difference between GEEPERs and PSW, and Mixture and PSW.
+\end{itquote}
+This is an interesting suggestion---you're right that the \psw estimator did not include an outcome model, unlike \geepers and \nmm. However, we doubt that an outcome model would substantially reduce the bias of \psw in the simulation. The advantage of doubly-robust estimation is that an outcome model can correct for model misspecification in the propensity (or principal) score model. However, the principal score model in our simulation study was well-specified---the bias of the \psw estimator was due to an unobserved confounder, $x_3$. Unfortunately, like \psw, doubly-robust estimators rely on ignorability, i.e., that all relevant confounders have been measured and included. 
+\item \begin{itquote}      GEEPERs seems great, but also, surprised by how efficient Mixture can be. Are there any mechanisms that link M-estimators to Mixture modeling? Just wondering.
+\end{itquote}
+We were also surprised by how well the \nmm performed in the simulation, especially given prior literature detailing its vulnerability \citep[][; cited in the paper]{griffin2008application,feller2016principal}. Its similarity to \geepers in some scenarios is less surprising, since they are both essentially mixture model estimators.
+
+\item \begin{itquote}    Would it be possible to offer some evaluation metric for GEEPERs, which would indicate, under some conditions researchers could possibly opt or seek other estimators?
+\end{itquote}
+This is a great suggestion. 
+\item \begin{itquote}     Quickly checked Frangakis and Rubin (2002). Do you think the effect of bottom-outers (or similar experimental designs) could be partitioned into associative and dissociative effects with GEEPERs?
+\end{itquote}
+\item \begin{itquote}    It would be great if you could share the code for estimation and simulation in the next round of review (if there is). Also make sure you have comments in the code so someone reading the article can match the narrative with the code.
+\end{itquote}
+\end{enumerate}
+
+\section{Reviewer 3}
+
+Comments to the Author
+
+This paper develops a new estimator for principal stratification based on M-estimation and stacked equations. The proposed method is designed to be more robust and simpler to use than standard methods. The method is, however, tailored to a very specific set up: one-way noncompliance. In general, principal stratification is a much more general framework that can be used for a wide variety of settings where there is conditioning on some post-treatment quantity.
+
+The method is outlined, and then evaluated through a series of simulations, and then an application is provided. My primary criticism is that the new method doesn't appear to outperform extant methods to a compelling degree.  I take up this point in more detail first for the simulations and second for the empirical application.
+
+Simulations.
+
+In my view, the simulations should show the following:
+
+--When the assumptions of extant methods are met, GEEPERS should do no worse.
+--When the assumptions of extend methods are not met, GEEPERS should do better.
+
+Given this criteria, it seems to me that the simulation should focus on the last three factors in the design.  That is, I would hold the sample size and alpha fixed.  Currently too many factors are varied at the same time to give a clear picture.  I would alter Table 1, to indicate which factors yield assumption violations and then violate these assumptions in isolation instead of relaxing them simultaneously.  As it currently stands, it is quite hard to understand the relative performance of GEEPERs compared to extant methods. Careful relaxation of each assumption allows the reader to see how much bias results from a single factor. 
+
+Application.
+
+I thought there are a number of less than desirable parts to the application. First, the focus on bottoming out is less than ideal. This strikes me as a fairly rare phenomenon. I didn't find the concept very intuitive and had to read just the descriptive section several times to understand why one might be interested in a principal stratification analysis here.  This makes the methods seem not particularly general.  Why not focus on an application with straightforward oneway noncompliance? This is an area where principal stratification is often applied, and the concepts are well understood.
+
+In addition, it isn't ideal that the ATE in each condition is not estimated very precisely, that is the CI appears to cover zero in all cases. Next, all the principal stratification estimates are all pretty close to the same value as the ATE. That serves as another reason this application isn't compelling. It is hard to care about an application where principal stratification doesn't provide much in the way of insights relative to the ATE. Next, the performance of GEEPERs seems to be quite similar to extant methods in each scenario. Overall, to my thinking, there is little to recommend the current application. Again, there is little here that demonstrates the value of GEEPERs.
+
+To my mind, these problems could both be fixed.  That is, the simulations could be redesigned to provide more compelling evidence. Next, the authors may be able to identify are better application.  Therefore, the manuscript should be revised and resubmitted.
+
+\end{document}
