@@ -533,33 +533,65 @@ rmse%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1>0)%>%
   geom_point()+geom_line()+#geom_hline(yintercept=0.95)+
   facet_grid(interactionS~errDist+interactionZ)
 
-sink('writeUps/rmseTabAppendix.tex')
+sink('writeUps/rmseTabAppendix500.tex')
 cbind(
-
 rmse%>%filter(errDist!='mix',n==500,eff!="Diff",b1==.2)%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
          `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
          `X:S\nInt.?`=ifelse(intS,'Yes','No'),
-         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
-
+         estimator=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
          rmse)%>%
 pivot_wider(names_from=estimator,values_from=rmse),
-rmse%>%filter(errDist!='mix',mu01==0.3,eff!="Diff",b1==.5)%>%
+rmse%>%filter(errDist!='mix',n==500,mu01==0.3,eff!="Diff",b1==.5)%>%
   transmute(`Res.\nDist.`=c(norm='Norm.',unif='Unif.')[errDist],
          `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
          `X:S\nInt.?`=ifelse(intS,'Yes','No'),
-         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
+         estimator=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
          n,
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
-         rmse)%>%
+         rmse,
+         xx=rep(1:(n()/3),each=3))%>%
+select(xx,estimator,rmse)%>%
 pivot_wider(names_from=estimator,values_from=rmse)%>%
-select(GEEPERs,Mix.,PSW))%>%
-  kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
-  add_header_above(c(" " = 5,  "$\\\\alpha=0.2$" = 3, "$\\\\alpha=0.5$" = 3),escape=FALSE)%>%
+select(-xx))%>%#GEEPERs,Mix.,PSW))%>%
+    kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
+    add_header_above(c(" " = 5,  "$\\\\alpha=0.2$" = 3, "$\\\\alpha=0.5$" = 3),escape=FALSE)%>%
+     add_header_above(c(" " = 5,  "$n=500$"=6),escape=FALSE)%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
+sink()
+
+
+sink('writeUps/rmseTabAppendix1000.tex')
+cbind(
+rmse%>%filter(errDist!='mix',n==1000,eff!="Diff",b1==.2)%>%
+  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
+         `$\\beta_1$`=mu01,
+         `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
+         rmse)%>%
+pivot_wider(names_from=estimator,values_from=rmse),
+rmse%>%filter(errDist!='mix',n==1000,mu01==0.3,eff!="Diff",b1==.5)%>%
+  transmute(`Res.\nDist.`=c(norm='Norm.',unif='Unif.')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
+         n,
+         `$\\beta_1$`=mu01,
+         `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
+         rmse,
+         xx=rep(1:(n()/3),each=3))%>%
+select(xx,estimator,rmse)%>%
+pivot_wider(names_from=estimator,values_from=rmse)%>%
+select(-xx))%>%#GEEPERs,Mix.,PSW))%>%
+    kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
+  add_header_above(c(" " = 5,  "$\\\\alpha=0.2$" = 3, "$\\\\alpha=0.5$" = 3),escape=FALSE)%>%
+add_header_above(c(" " = 5,  "$n=1000$"=6),escape=FALSE)%>%
+    collapse_rows(columns=1,latex_hline="major",valign="middle")
 sink()
 
 
@@ -609,43 +641,100 @@ cbind(
   collapse_rows(columns=1,latex_hline="major",valign="middle")
                                         #sink()
 
+########################
+## coverage tab for appendix: n=500
+########################
 
-sink('writeUps/coverageTabAppendix.tex')
+sink('writeUps/coverageTabAppendix500.tex')
 cbind(
-  coverage%>%filter(errDist!='mix',eff!="Diff",b1==0,estimator!='PSW',n==500)%>%
+    coverage%>%filter(errDist!='mix',eff!="Diff",b1==0,estimator!='PSW',n==500
+                      )%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
          `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
          `X:S\nInt.?`=ifelse(intS,'Yes','No'),
-         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
+         estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
-         coverage)%>%
+         coverage=sprintf("%.2f", coverage),#round(coverage,2),
+         coverage=ifelse(intZ|intS|(errDist=="unif"&estimator=="\\pmm"),paste0("\\rd{",coverage,"}"),coverage))%>%
 pivot_wider(names_from=estimator,values_from=coverage),
 coverage%>%filter(errDist!='mix',eff!="Diff",b1==.2,estimator!='PSW',n==500)%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
          `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
          `X:S\nInt.?`=ifelse(intS,'Yes','No'),
-         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
+         estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
-         coverage)%>%
+         coverage=sprintf("%.2f", coverage),#round(coverage,2),
+         coverage=ifelse(intZ|intS|(errDist=="unif"&estimator=="\\pmm"),paste0("\\rd{",coverage,"}"),coverage))%>%
 pivot_wider(names_from=estimator,values_from=coverage)%>%
-select(`GEEPERs`,`Mix.`),
+select(`\\geepers`,`\\pmm`),
 coverage%>%filter(errDist!='mix',n==500,eff!="Diff",b1==.5,estimator!='PSW')%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
          `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
          `X:S\nInt.?`=ifelse(intS,'Yes','No'),
-         estimator=ifelse(estimator=='Mixture','Mix.',estimator),
+         estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          n,
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
-         coverage)%>%
+         coverage=sprintf("%.2f", coverage),#round(coverage,2),
+         coverage=ifelse(intZ|intS|(errDist=="unif"&estimator=="\\pmm"),paste0("\\rd{",coverage,"}"),coverage))%>%
 pivot_wider(names_from=estimator,values_from=coverage)%>%
-         select(`GEEPERs`,`Mix.`))%>%
-  kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
-  add_header_above(c(" " = 5, "$\\\\alpha=0$" = 2, "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
+         select(`\\geepers`,`\\pmm`))%>%
+kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
+    add_header_above(c(" " = 5, "$\\\\alpha=0$" = 2, "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
+    add_header_above(c(" " = 5, "$n=500$"=6),escape=FALSE)%>%
   collapse_rows(columns=1,latex_hline="major",valign="middle")
 sink()
+
+########################
+## coverage tab for appendix: n=1000
+########################
+sink('writeUps/coverageTabAppendix1000.tex')
+cbind(
+    coverage%>%filter(errDist!='mix',eff!="Diff",b1==0,estimator!='PSW',n==1000
+                      )%>%
+  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
+         `$\\beta_1$`=mu01,
+         `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
+         coverage=sprintf("%.2f", coverage),#round(coverage,2),
+         coverage=ifelse(intZ|intS|(errDist=="unif"&estimator=="\\pmm"),paste0("\\rd{",coverage,"}"),coverage))%>%
+pivot_wider(names_from=estimator,values_from=coverage),
+coverage%>%filter(errDist!='mix',eff!="Diff",b1==.2,estimator!='PSW',n==1000)%>%
+  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
+         `$\\beta_1$`=mu01,
+         `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
+         coverage=sprintf("%.2f", coverage),#round(coverage,2),
+         coverage=ifelse(intZ|intS|(errDist=="unif"&estimator=="\\pmm"),paste0("\\rd{",coverage,"}"),coverage))%>%
+pivot_wider(names_from=estimator,values_from=coverage)%>%
+select(`\\geepers`,`\\pmm`),
+coverage%>%filter(errDist!='mix',n==1000,eff!="Diff",b1==.5,estimator!='PSW')%>%
+  transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
+         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
+         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
+         n,
+         `$\\beta_1$`=mu01,
+         `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
+         coverage=sprintf("%.2f", coverage),#round(coverage,2),
+         coverage=ifelse(intZ|intS|(errDist=="unif"&estimator=="\\pmm"),paste0("\\rd{",coverage,"}"),coverage))%>%
+pivot_wider(names_from=estimator,values_from=coverage)%>%
+         select(`\\geepers`,`\\pmm`))%>%
+kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
+    add_header_above(c(" " = 5, "$\\\\alpha=0$" = 2, "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
+    add_header_above(c(" " = 5, "$n=1000$"=6),escape=FALSE)%>%
+  collapse_rows(columns=1,latex_hline="major",valign="middle")
+sink()
+
+
+
+
 
 pdf('simFigs/coverage.pdf',height=9,width=6.5)
 

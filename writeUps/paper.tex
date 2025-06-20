@@ -3,7 +3,7 @@
 \documentclass[]{article}
 \usepackage[letterpaper]{geometry}
 
-\RequirePackage{amsmath,amsfonts,amssymb}
+\RequirePackage{amsmath,amsfonts,amssymb,amsthm}
 %\RequirePackage[authoryear]{natbib}
 \usepackage{longtable}
 %\usepackage[notablist,tablesfirst]{endfloat}% To `separate' figures and tables from text if required
@@ -599,7 +599,9 @@ When the residual distribution was uniformly distributed, the \pmm sampling dist
 When all assumptions of both methods are met, \geepers is less efficient, but also less biased, than \pmm, but differences in efficiency decrease with $n$ and $\alpha$.
 Neither \psw nor \pmm is vulnerable to interactions between $X$ and $S$.
 \pmm is highly vulnerable to violations of normality and to interactions between $X$ and $Z$, while \psw is robust to non-normality and robust to $X$-$Z$ interactions when $\alpha = 0.5$.
+These results suggest that researchers who are willing to assume principal ignorability should use \psw, and those who are confident in their parametric model for potential outcomes should use a parametric mixture model. Researchers who are hesitant to accept principal ignorability or a parametric outcome model should consider \geepers. 
 
+The simulation study suggests that none of the three methods evaluated, \geepers, \pmm, or \psw, dominates the others, and offers some guidance on when each estimator may be preferable. \psw is the most precise and requires no assumptions about the distribution of outcomes, but can be quite sensitive to violations of principal ignorability. When the determinants of $\st$ are well-understood and measured, \psw seems to be the best option. When principal ignorability does not hold, potential outcomes are conditionally normal, and there are no $X:Z$ interactions within principal strata, the \pmm estimator outperforms \geepers, though the difference decreases with $n$ or $\alpha$. 
 
 
 %=======
@@ -867,8 +869,6 @@ If so, several further questions emerge.
 First, can the parameter $\alpha$ be extended to a more general parameter measuring the prediction accuracy of a non-parametric model?
 Second, if the principal score model cannot be formulated as the solution to a set of estimating equations, how should the standard error be computed?
 Lastly, can over-fit principal score models cause bias or other estimation problems, and if so, are there ways to protect against overfitting?
-
-The simulation study suggests that none of the three methods evaluated, \geepers, \nmm, or \psw, dominates the others, and offers some guidance on when each estimator may be preferable. \psw is the most precise and requires no assumptions about the distribution of outcomes, but can be quite sensitive to violations of principal ignorability. When the determinants of $\st$ are well-understood and measured, \psw seems to be the best option. When principal ignorability does not hold, potential outcomes are conditionally normal, and there are no $X:Z$ interactions within principal strata, the \nmm estimator outperforms \geepers, though the difference decreases with $n$ or $\alpha$. 
 
 Sampling error prevents firm conclusions regarding principal effects for students who would, if given the opportunity, request frequent bottom-out hints.
 However, the results are consistent with the hypothesis that ASSISTments is less effective for frequent bottom-out requesters when compared to a similar program without hints or immediate feedback. We hypothesize that many students who request bottom-out hints frequently are gaming the system, abetted by the availability of bottom-out hints.
@@ -1221,16 +1221,35 @@ If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},
 \clearpage
 
 \subsection{Full Empirical 95\% Interval Coverage Results}
-The following table gives the empirical coverage of nominal 95\% intervals for \textsc{geepers} and mixture model principal effect estimates under varying data generating models.\\
+The following tables give the empirical coverage of nominal 95\% intervals for \textsc{geepers} and mixture model principal effect estimates under varying data generating models. First we show results when $n=500$ per condition, and then when $n=1000$ per condition. \\
 
-\input{coverageTabAppendix.tex}
+\begin{table}
+  \caption{Empirical coverage of nominal 95\% Confidence intervals for \geepers and \pmm when $n=500$ per condition.}
+  \input{coverageTabAppendix500.tex}
+ \end{table}
 
+ \begin{table}
+  \caption{Empirical coverage of nominal 95\% Confidence intervals for \geepers and \pmm when $n=1000$ per condition.}
+  \input{coverageTabAppendix1000.tex}
+ \end{table}
+
+
+ 
 
 \clearpage
 \subsection{Full RMSE Results}
-The following table gives the root mean squared error (RMSE) for \textsc{geepers}, mixture model, and principal score weighting principal effect estimates under varying data generating models.\\
+The following table gives the root mean squared error (RMSE), $\left\{\sum_b (\hat{\tau}-\tau)^2/500\right\}^{1/2}$, for \textsc{geepers}, mixture model, and principal score weighting principal effect estimates under varying data generating models.\\
 
-\input{rmseTabAppendix}
+\begin{table}
+  \caption{Empirical RMSE  for \geepers, \pmm, and \psw when $n=500$ per condition.}
+  \input{rmseTabAppendix500}
+ \end{table}
+
+
+ \begin{table}
+  \caption{Empirical RMSE  for \geepers, \pmm, and \psw when $n=1000$ per condition.}
+  \input{rmseTabAppendix1000}
+ \end{table}
 
 %\end{table}
 \clearpage
