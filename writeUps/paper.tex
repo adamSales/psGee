@@ -201,7 +201,7 @@ In contrast, $\muc0$ and $\muc1$ are not fully identified without further assump
 We will briefly review two approaches to estimating $\muc0$ and $\muc1$% that do not assume the exclusion restriction
 ---normal mixture modeling and weighting---with some comments in-between on the role for covariates.
 
-\subsubsection{Paremetric Mixture Modeling}
+\subsubsection{Parametric Mixture Modeling}
 %The normal mixture modeling approach to estimating $\muc0$ and $\muc1$ \citep{imbens1997bayesian} assumes that, conditional on $\st$, $Y_C$ is normally distributed.
 Say an analyst assumes that, within principal strata, $Y_C$ is drawn from a parametric model with parameter vector $\bm{\delta}^s$, i.e., $f_{Y_C}(y|\st=s)=g^s(y)$. For instance, \citep{imbens1997bayesian} assumes $Y_C$ is normally distributed within strata, so $g^s(y)=\phi\left(\frac{y-\mucs}{\sigma_C^s}\right)$, where $\phi(\cdot)$ is the standard normal density function, and $\sigma_C^0>0$ and $\sigma_C^1>0$ are standard deviations. 
 Then the probability density of $Y_C$ may be written as
@@ -592,7 +592,7 @@ The first row of Table \ref{tab:coverage} and the first column of Figure \ref{fi
 The remainder of the results reflect violations modeling assumptions for either \geepers or the parametric mixture model or both: interactions in the data generating model between covariates $X$ and treatment assignment $Z$ and/or principal stratum $S$, either of which would violate assumption \ref{ass:rci} and the linear additive model of the \textsc{pmm}, and/or residuals drawn from a uniform distribution, which violates the normality assumption of \textsc{pmm}.
 For \geepers, when $\alpha=0.2$ the presence of interactions in the data-generating model increases sampling variance, but only interactions between $X$ and $Z$ reduce confidence interval coverage. When $\alpha=0.5$, the presence of interactions has little to no effect on the performance of the \geepers estimator, and all 95\% confidence intervals approximately achieve their nominal levels. \geepers makes no assumptions about the shape of the residual distribution and behaves similarly under either normal or uniform residuals.
 
-Like \geepers, \pmm is insensitive to interactions between $X$ and $S$. However, interactions between $X$ and $Z$ in the data generating model skew the \pmm sampling distribution and reduce the coverage of its 95\% confidence intervals, even when $\alpha=0.5$.
+Like \geepers, \pmm is insensitive to interactions between $X$ and $S$. However, interactions between $X$ and $Z$ in the data-generating model skew the \pmm sampling distribution and reduce the coverage of its 95\% confidence intervals, even when $\alpha=0.5$.
 When the residual distribution was uniformly distributed, the \pmm sampling distribution appeared bimodal, and its credible intervals exhibited severe undercoverage.
 
 \label{simsum}In sum, \psw is the least variable of all three estimators, and does not depend on outcome modeling, but is vulnerable to bias from an unmeasured covariate that predicts both $S$ and $Y$.
@@ -601,7 +601,8 @@ Neither \psw nor \pmm is vulnerable to interactions between $X$ and $S$.
 \pmm is highly vulnerable to violations of normality and to interactions between $X$ and $Z$, while \psw is robust to non-normality and robust to $X$-$Z$ interactions when $\alpha = 0.5$.
 These results suggest that researchers who are willing to assume principal ignorability should use \psw, and those who are confident in their parametric model for potential outcomes should use a parametric mixture model. Researchers who are hesitant to accept principal ignorability or a parametric outcome model should consider \geepers. 
 
-The simulation study suggests that none of the three methods evaluated, \geepers, \pmm, or \psw, dominates the others, and offers some guidance on when each estimator may be preferable. \psw is the most precise and requires no assumptions about the distribution of outcomes, but can be quite sensitive to violations of principal ignorability. When the determinants of $\st$ are well-understood and measured, \psw seems to be the best option. When principal ignorability does not hold, potential outcomes are conditionally normal, and there are no $X:Z$ interactions within principal strata, the \pmm estimator outperforms \geepers, though the difference decreases with $n$ or $\alpha$. 
+\label{evalMetric}The simulation study suggests that none of the three methods evaluated---\geepers, \pmm, or \psw---dominates the others, and offers some guidance on when each estimator may be preferable. \psw is the most precise and requires no assumptions about the distribution of outcomes, but can be quite sensitive to violations of principal ignorability. When the determinants of $\st$ are well-understood and measured, \psw seems to be the best option. When principal ignorability does not hold, potential outcomes are conditionally normal, and there are no $X:Z$ interactions within principal strata, the \pmm estimator outperforms \geepers, though the difference decreases with $n$ or $\alpha$. \geepers may be the best choice when conditional normality may not hold, or if there are $X:Z$ interactions and $\bm{x}$ is sufficiently predictive of $\st$ (AUC $\ge$0.675, corresponding to $\alpha \ge 0.5$, may serve as a threshold). 
+These suggestions may depend heavily on the simulation setup here; applying them in general scenarios requires more research. 
 
 
 %=======
