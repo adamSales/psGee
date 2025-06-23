@@ -259,9 +259,9 @@ tikz("simFigs/boxplotsNew.tex",#pdf",
 grid.arrange(norm,unif,nrow=1)
 dev.off()
 
-system("cd simFigs")
+setwd("simFigs")
 system("lualatex boxplotsNew.tex")
-
+setwd("..")
 
 #######################################################
 #### rmse appendix
@@ -374,7 +374,8 @@ cbind(
     kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
     add_header_above(c(" " = 3, #"$\\\\alpha=0$" = 2,
                        "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
-  collapse_rows(columns=1,latex_hline="major",valign="middle")
+    collapse_rows(columns=1,latex_hline="major",valign="middle")%>%
+    footnote(general="\\\\footnotesize Based on 500 replications. $n=500$, $\\\\beta_1=0.3$. Simulation standard error $\\\\approx 1$ percentage point. Estimates colored \\\\rd{red} indicate cases where the assumptions of the model are not met.",escape=FALSE,footnote_as_chunk = TRUE)
 sink()
 
 ########################
