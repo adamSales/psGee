@@ -101,9 +101,9 @@ tab1 <- bind_rows(
   select(measure,everything())
 
 
-  #%>%
-  kbl()%>%
-  collapse_rows(columns=1,latex_hline="major",valign="middle")
+  ## #%>%
+  ## kbl()%>%
+  ## collapse_rows(columns=1,latex_hline="major",valign="middle")
 
 
 bp(pdns,subset=,facet=PE~N,title="Estimation Error by N",ylim=c(-1,1))+
@@ -115,7 +115,7 @@ ggsave('simFigs/byN.jpg',width=6,height=3)
 ### results across B1
 ###############################################################################
 
- pdb1 <- reausultsB1s %>%
+ pdb1 <- resultsB1s %>%
   group_by(b1)%>%
   mutate(AUCf=mean(auc,na.rm=TRUE))%>%
   ungroup()%>%
@@ -222,8 +222,8 @@ pd <- results %>%
     estimator=c(bayes='Mixture',mest='GEEPERs',psw='PSW')[estimator],
     interactionZ=ifelse(intZ,"Z\ninteraction","No Z\ninteraction"),
     interactionS=ifelse(intS,"S\ninteraction","No S\ninteraction"),
-    intAll=ifelse(intZ,ifelse(intS,"X:S & X:Z","X:Z"),ifelse(intS,"X:S","No inter.")),
-    intAll=factor(intAll,levels=c("No inter.","X:Z", "X:S","X:S & X:Z"))
+    intAll=ifelse(intZ,ifelse(intS,"$\\bm{x}:\\st$ & $\\bm{x}:Z$","$\\bm{x}:Z$"),ifelse(intS,"$\\bm{x}:\\st$","No inter.")),
+    intAll=factor(intAll,levels=c("No inter.","$\\bm{x}:Z$", "$\\bm{x}:\\st$","$\\bm{x}:\\st$ & $\\bm{x}:Z$"))
   ) %>%
   filter(estimator=='PSW'|rhat<1.1)
 
@@ -503,8 +503,8 @@ sink('writeUps/rmseTab.tex')
 cbind(
 rmse%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==0)%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=ifelse(estimator=='Mixture','Mix.',estimator),
          rmse)%>%
 pivot_wider(names_from=estimator,values_from=rmse),
@@ -537,8 +537,8 @@ sink('writeUps/rmseTabAppendix500.tex')
 cbind(
 rmse%>%filter(errDist!='mix',n==500,eff!="Diff",b1==.2)%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
@@ -546,8 +546,8 @@ rmse%>%filter(errDist!='mix',n==500,eff!="Diff",b1==.2)%>%
 pivot_wider(names_from=estimator,values_from=rmse),
 rmse%>%filter(errDist!='mix',n==500,mu01==0.3,eff!="Diff",b1==.5)%>%
   transmute(`Res.\nDist.`=c(norm='Norm.',unif='Unif.')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
          n,
          `$\\beta_1$`=mu01,
@@ -568,8 +568,8 @@ sink('writeUps/rmseTabAppendix1000.tex')
 cbind(
 rmse%>%filter(errDist!='mix',n==1000,eff!="Diff",b1==.2)%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
@@ -577,8 +577,8 @@ rmse%>%filter(errDist!='mix',n==1000,eff!="Diff",b1==.2)%>%
 pivot_wider(names_from=estimator,values_from=rmse),
 rmse%>%filter(errDist!='mix',n==1000,mu01==0.3,eff!="Diff",b1==.5)%>%
   transmute(`Res.\nDist.`=c(norm='Norm.',unif='Unif.')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
          n,
          `$\\beta_1$`=mu01,
@@ -624,8 +624,8 @@ cbind(
       mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist))%>%
       filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.2,estimator!="PSW")%>%
       transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=c(Mixture="\\pmm",GEEPERs="\\geepers")[estimator],
          coverage)%>%
       pivot_wider(names_from=estimator,values_from=coverage),
@@ -650,8 +650,8 @@ cbind(
     coverage%>%filter(errDist!='mix',eff!="Diff",b1==0,estimator!='PSW',n==500
                       )%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
@@ -660,8 +660,8 @@ cbind(
 pivot_wider(names_from=estimator,values_from=coverage),
 coverage%>%filter(errDist!='mix',eff!="Diff",b1==.2,estimator!='PSW',n==500)%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
@@ -671,8 +671,8 @@ pivot_wider(names_from=estimator,values_from=coverage)%>%
 select(`\\geepers`,`\\pmm`),
 coverage%>%filter(errDist!='mix',n==500,eff!="Diff",b1==.5,estimator!='PSW')%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          n,
          `$\\beta_1$`=mu01,
@@ -695,8 +695,8 @@ cbind(
     coverage%>%filter(errDist!='mix',eff!="Diff",b1==0,estimator!='PSW',n==1000
                       )%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
@@ -705,8 +705,8 @@ cbind(
 pivot_wider(names_from=estimator,values_from=coverage),
 coverage%>%filter(errDist!='mix',eff!="Diff",b1==.2,estimator!='PSW',n==1000)%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
@@ -716,8 +716,8 @@ pivot_wider(names_from=estimator,values_from=coverage)%>%
 select(`\\geepers`,`\\pmm`),
 coverage%>%filter(errDist!='mix',n==1000,eff!="Diff",b1==.5,estimator!='PSW')%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
-         `X:Z\nInt.?`=ifelse(intZ,'Yes','No'),
-         `X:S\nInt.?`=ifelse(intS,'Yes','No'),
+         `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
+         `$\\bm{x}:\\st$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator=ifelse(estimator=='Mixture','\\pmm',"\\geepers"),
          n,
          `$\\beta_1$`=mu01,
