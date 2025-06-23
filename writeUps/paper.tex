@@ -628,31 +628,32 @@ These suggestions may depend heavily on the simulation setup here; applying them
 
 \caption{\label{tab:coverage}Empirical coverage of nominal 95\% confidence intervals for estimates of $\tau^1$.}
 \centering
-\begin{tabular}[t]{lllllll}
-\toprule
-\multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
-\cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7}
-\makecell[l]{Residual\\Dist.} & \makecell[l]{X:Z\\Int.?} & \makecell[l]{X:S\\Int.?} & \geepers & \pmm & \geepers & \pmm\\
-\midrule
- & No & No & 0.97 & 0.97 & 0.96 & 0.96\\
+% \begin{tabular}[t]{lllllll}
+% \toprule
+% \multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
+% \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7}
+% \makecell[l]{Residual\\Dist.} & \makecell[l]{X:Z\\Int.?} & \makecell[l]{X:S\\Int.?} & \geepers & \pmm & \geepers & \pmm\\
+% \midrule
+%  & No & No & 0.97 & 0.97 & 0.96 & 0.96\\
 
- & Yes & No & \rd{0.88} & \rd{0.74} & \rd{0.94} & \rd{0.89}\\
+%  & Yes & No & \rd{0.88} & \rd{0.74} & \rd{0.94} & \rd{0.89}\\
 
- & No & Yes & \rd{0.98} & \rd{0.97} & \rd{0.97} & \rd{0.96}\\
+%  & No & Yes & \rd{0.98} & \rd{0.97} & \rd{0.97} & \rd{0.96}\\
 
-\multirow{-4}{*}{\raggedright\arraybackslash Normal} & Yes & Yes & \rd{0.9} & \rd{0.77} & \rd{0.94} & \rd{0.88}\\
-\cmidrule{1-7}
- & No & No & 0.97 & \rd{0.4} & 0.95 & \rd{0.61}\\
+% \multirow{-4}{*}{\raggedright\arraybackslash Normal} & Yes & Yes & \rd{0.9} & \rd{0.77} & \rd{0.94} & \rd{0.88}\\
+% \cmidrule{1-7}
+%  & No & No & 0.97 & \rd{0.4} & 0.95 & \rd{0.61}\\
 
- & Yes & No & \rd{0.87} & \rd{0.2} & \rd{0.93} & \rd{0.48}\\
+%  & Yes & No & \rd{0.87} & \rd{0.2} & \rd{0.93} & \rd{0.48}\\
 
- & No & Yes & \rd{0.98} & \rd{0.53} & \rd{0.96} & \rd{0.57}\\
+%  & No & Yes & \rd{0.98} & \rd{0.53} & \rd{0.96} & \rd{0.57}\\
 
-\multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & \rd{0.88} & \rd{0.21} & \rd{0.94} & \rd{0.53}\\
-\bottomrule
-\multicolumn{7}{p{3.5in}}{\footnotesize Based on 500 replications. $n=500$, $\beta_1=0.3$. Simulation standard error $\approx 1$ percentage point. Estimates colored \rd{red} indicate cases where the assumptions of the model are not met.}
+% \multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & \rd{0.88} & \rd{0.21} & \rd{0.94} & \rd{0.53}\\
+% \bottomrule
+% \multicolumn{7}{p{3.5in}}{\footnotesize Based on 500 replications. $n=500$, $\beta_1=0.3$. Simulation standard error $\approx 1$ percentage point. Estimates colored \rd{red} indicate cases where the assumptions of the model are not met.}
 
-\end{tabular}
+% \end{tabular}
+\input{writeUps/coverageTab}
 \end{table}
 
 
