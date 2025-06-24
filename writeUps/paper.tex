@@ -129,14 +129,14 @@ Under a strong, untestable assumption called ``principal ignorability,''  princi
 Principal ignorability is a direct analogue of the strong ignorability assumption in causal observational studies \citep[e.g.][]{rosenbaum1983central}---that all covariates that predict both principal stratum membership and outcomes have been accounted for---in other words, the precise type of assumption that randomized trials are designed to avoid.
 A separate set of results in \citet{jo2002}, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
 
-This paper expands on those latter results by presenting a new principal effect estimator, that boils down to a simple, three-step procedure: first, estimate principal scores, for instance, with logistic regression; then, impute unknown principal subgroup membership indicators with principal scores; and finally estimate principal effects using ordinary least squares (OLS) regression with interactions. %, just as in the pre-treatment subgroup case.
+This paper expands on those latter results by presenting a new principal effect estimator for the case of one-way noncompliance, in which principal stratum membership is observed in one treatment group but not the other (future work will extend our approach to general scenarios). Our estimator boils down to a simple, three-step procedure: first, estimate principal scores, for instance, with logistic regression; then, impute unknown principal subgroup membership indicators with principal scores; and finally estimate principal effects using ordinary least squares (OLS) regression with interactions. %, just as in the pre-treatment subgroup case.
 We show that this estimator is the solution to a set of estimating equations based on the combined moments of principal scores, indicators for treatment assignment and observed principal stratum membership in the treatment group, outcomes, and (optionally) covariates, and give a set of assumptions under which it is consistent for the true principal effects.
 We will refer to the estimators presented here as ``\textsc{geepers}'': general estimating equations for principal effects using regressions.
-\textsc{geepers} estimates rely on the correct specification of regression functions, but unlike common fully parametric methods, they make no assumptions about the shape of the distribution of regression errors.
+\textsc{geepers} estimates rely on the correct specification of regression functions, but unlike common fully-parametric methods, they make no assumptions about the shape of the distribution of regression errors.
 Unlike principal score weighting, \textsc{geepers} does not assume principal ignorability and admits to sandwich-style standard error estimates \citep{stefanskiBoos}, which we provide in the appendix.
 
 After the initial submission of this manuscript, we became aware of \citet{richardson2023estimating}, which suggests a similar, though not identical, estimator to ours, using G-estimation of a structural nested mean model \citep[e.g.][]{wallace2017r}.
-Our development of \textsc{geepers} builds on \citet{richardson2023estimating} by emphasizing connections to both parametric mixture modeling and principal scores analysis, and comparing \textsc{geepers} to those methods in a simulation study.
+Our development of \textsc{geepers} builds on \citet{richardson2023estimating} by emphasizing connections to both parametric mixture modeling and principal score analysis, and comparing \textsc{geepers} to those methods in a simulation study.
 Moreover, \textsc{geepers}, which, in practice, is a combination of logistic regression and OLS, is more accessible to applied researchers while yielding very similar results.
  
 This work advances the literature in three ways: first, it makes an explicit connection between principal score methods, M-estimation, and semi-parametric estimation of principal effects using auxiliary data. Second, it provides a general estimator that relies on two of the most familiar tools in the applied education researcher's toolbox: linear and logistic regression. The \textsc{geepers} method can, therefore, make principal stratification methods accessible for a much broader range of applied education researchers. Lastly, this work includes an extensive simulation study that compares \textsc{geepers} to parametric mixture modeling and principal score weighting under a range of favorable and challenging scenarios. The simulation demonstrates the strengths and weaknesses of each method and the tradeoffs between them.
@@ -185,7 +185,7 @@ Then, since
 \end{equation*}
 estimating principal effects requires estimating $\muc0$, $\mut0$, $\muc1$, and $\mut1$.
 
-We will focus on estimation in completely randomized experiments, that is, we will assume
+We will focus on estimation in completely randomized experiments; that is, we will assume
 \begin{ass}[Randomization]\label{ass:rand}
 \begin{equation*}%\label{eq:randomization}
   \yci,\yti,\sti, \bm{x}_i \independent Z_i
@@ -203,7 +203,7 @@ We will briefly review two approaches to estimating $\muc0$ and $\muc1$% that do
 
 \subsubsection{Parametric Mixture Modeling}
 %The normal mixture modeling approach to estimating $\muc0$ and $\muc1$ \citep{imbens1997bayesian} assumes that, conditional on $\st$, $Y_C$ is normally distributed.
-Say an analyst assumes that, within principal strata, $Y_C$ is drawn from a parametric model with parameter vector $\bm{\delta}^s$, i.e., $f_{Y_C}(y|\st=s)=g^s(y)$. For instance, \citep{imbens1997bayesian} assumes $Y_C$ is normally distributed within strata, so $g^s(y)=\phi\left(\frac{y-\mucs}{\sigma_C^s}\right)$, where $\phi(\cdot)$ is the standard normal density function, and $\sigma_C^0>0$ and $\sigma_C^1>0$ are standard deviations. 
+Say an analyst assumes that, within principal strata, $Y_C$ is drawn from a parametric model, i.e., $f_{Y_C}(y|\st=s)=g^s(y)$. For instance, \citep{imbens1997bayesian} assumes $Y_C$ is normally distributed within strata, so $g^s(y)=\phi\left(\frac{y-\mucs}{\sigma_C^s}\right)$, where $\phi(\cdot)$ is the standard normal density function, and $\sigma_C^0>0$ and $\sigma_C^1>0$ are standard deviations. 
 Then the probability density of $Y_C$ may be written as
 \begin{equation}\label{eq:mixtureModel}
  % f_{Y_C}(y)=Pr(\st=0)\phi\left(\frac{y-\muc0}{\sigma_C^0}\right)+Pr(\st=1)\phi\left(\frac{y-\muc1}{\sigma_C^1}\right)
@@ -229,7 +229,7 @@ Assume a model for principal scores:
 \begin{equation}\label{eq:prinScoreMod}
   \ppip{\bm{\alpha}}=f(\bxsi;\bm{\alpha})
 \end{equation}
-with parameter vector $\bm{\alpha}$. An analyst may estimate $\bm{\alpha}$ by fitting model \eqref{eq:prinScoreMod} using observed $\bm{S}$ and $\bxs$ for subjects with $Z=1$, and then compute estimated principal scores $\ppip{\bm{\hat{\alpha}}}$ for subjects with $Z_i=0$.
+with parameter vector $\bm{\alpha}$. An analyst may estimate $\bm{\alpha}$ as $\bm{\hat{\alpha}}$ by fitting model \eqref{eq:prinScoreMod} using observed $\bm{S}$ and $\bxs$ for subjects with $Z=1$, and then compute estimated principal scores $\hppi=\ppip{\bm{\hat{\alpha}}}$ for subjects with $Z_i=0$.
 
 Going forward, we will occasionally suppress dependence on $\bm{\alpha}$, and write $\ppip{\bm{\alpha}}=\ppi$.
 
@@ -246,15 +246,15 @@ Principal scores can potentially improve inference in a finite mixture model, by
 g^0(y|\bm{x})+\ppip{\bm{\alpha}}%\phi\left(\frac{y-\muc1}{\sigma_C^1}\right)
 g^1(y|\bm{x})
 \end{equation}
-where $f_{Y_C}(y|\bm{x})$ and $g^s(y|\bm{x})$, $s=0,1$, are conditional densities which must be specified. Most commonly, researchers assume a linear normal model, i.e., $g^s(y|\bm{x})=\phi\left(\frac{y-\mucs-\bm{\gamma}'\bm{x}}{\sigma_C^s}\right)$, where the columns of $\bm{x}$ are centered so that $\mathbb{E}[\bm{x}]=\bm{0}$. 
+where $g^s(y|\bm{x})$, $s=0,1$, are conditional densities which must be specified. Most commonly, researchers assume a linear normal model, e.g., $g^s(y|\bm{x})=\phi\left(\frac{y-\mucs-\bm{\gamma}'\bm{x}}{\sigma_C^s}\right)$, where the columns of $\bm{x}$ are centered so that $\mathbb{E}[\bm{x}]=\bm{0}$. 
 %Ideally, a statistician will estimate parameters $\muc0$, $\muc1$, $\mut0$, $\mut1$, $\sigma^0_C$, $\sigma^1_C$, and $\bm{\alpha}$ simultaneously, using maximum likelihood or Bayesian techniques.
 
 Alternatively, an analyst may assume ``principal ignorability'' \citep{jo,dingLu}:
-\begin{ass}[Principal Ignorability]\label{ass:PI}
+%\begin{ass}[Principal Ignorability]\label{ass:PI}
 \begin{equation}\label{eq:pi}
   Y_{C}\independent \st |\bxs
 \end{equation}
-\end{ass}
+%\end{ass}
 or a somewhat weaker version, $\EE[Y_C|\st,\bxs]=\EE[Y_C|\bxs]$ \citep{feller2017principal}.
 That is, the principal stratum is unrelated to control potential outcomes conditional on covariates.
 Principal ignorability \eqref{eq:pi} is reminiscent of ignorability assumptions typical in observational studies. % \citep[e.g.][]{rosenbaum2010design}.
@@ -263,7 +263,7 @@ In particular, an unobserved covariate $u$ that is correlated with both $\st$ an
 
 Under principal ignorability, $\muc0$ and $\muc1$ can be estimated via weighting:
 \begin{equation}\label{eq:psw}
-  \hat{\muc0}_w=\frac{\sum_{i: Z_i=0} Y_i(1-\pp)}{\sum_{i:Z_i=0}1-\pp}\text{ and } \hat{\muc1}_w=\frac{\sum_{i: Z_i=0} Y_i(\pp)}{\sum_{i:Z_i=0}\pp}
+  \hat{\muc0}_w=\frac{\sum_{i: Z_i=0} Y_i(1-\ppi)}{\sum_{i:Z_i=0}1-\ppi}\text{ and } \hat{\muc1}_w=\frac{\sum_{i: Z_i=0} Y_i(\ppi)}{\sum_{i:Z_i=0}\ppi}
 \end{equation}
 
 Principal score weighting (\textsc{psw}) does not require any distributional assumptions and (after estimating principal scores) is very easy to implement.
@@ -310,7 +310,7 @@ The resulting estimator is the solution to the combined estimating equations
   \psi(\bm{\mathcal{O}},[\bm{\hat\theta^1},\bm{\hat{\theta}^2}])=[\psi^1(\bm{\mathcal{O}},\bm{\hat\theta^1}),\psi^2(\bm{\mathcal{O}},\bm{\hat\theta^2})]=\bm{0},
 \end{equation}
 %where the superscript $s$ stands for ``stacked.''
-A variance-covariance matrix estimated using the sandwich formula based on $\psi^s$ accounts for uncertainty from both steps of the estimation procedure. 
+A variance-covariance matrix estimated using the sandwich formula based on $\psi$ accounts for uncertainty from both steps of the estimation procedure. 
 
 
 
@@ -527,7 +527,7 @@ Either type of interaction violates Assumption \ref{ass:rci} since if $\gamma_2\
 Using each simulated dataset, we estimated $\eff0$ and $\eff1$ with three methods: \geepers, a parametric mixture model \eqref{eq:mixtureModelPS} including principal scores---hereafter \pmm---and the principal score weighting estimator \eqref{eq:psw}, hereafter \psw. 
 
 The methods all used the same ``observed'' dataset, consisting of outcomes $Y$, treatment assignments $Z$, two covariates $\bxs=\bxy=\bx=[x_1,x_2]$, and $S$ observed only when $Z=1$.
-The third covariate used in the data generating model, $x_3$, was ``unobserved''--since $x_3$ was correlated with both $\st$ and $Y$, Principal Ignorability (Assumption \ref{ass:PI}) was violated.
+The third covariate used in the data generating model, $x_3$, was ``unobserved''--since $x_3$ was correlated with both $\st$ and $Y$, Principal Ignorability \eqref{eq:pi} was violated.
 
 All three methods used the same principal score model, a logistic regression of $S$ on $\bx$, and an intercept, fit using data from the treatment group in which $S=\st$ was observed, i.e., $\ppf{\bm{\alpha}}{\bx}=logit^{-1}(\alpha_0+\bm{\alpha}'\bx)$.
 

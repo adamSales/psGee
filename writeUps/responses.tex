@@ -127,7 +127,7 @@ Your suggestion of a paragraph summarizing the results was quite helpful. We inc
 \item \begin{itquote}      APA Citations and References: The paper does not adhere to the APA 7th style. Authors are advised to consult the APA Formatting and Style Guide for proper citation and reference formatting throughout the manuscript. Consistency in style is crucial for scholarly publications.
 \end{itquote}
 Thank you. We have fixed the formatting.
-\end{enumerate}
+\End{enumerate}
 
 \section*{Reviewer 2}
 Comments to the Author
@@ -140,10 +140,10 @@ Great work. Well written. Please find some of my comments below. I hope they are
 Thanks for this suggestion---in response, we added Section \ref{sec:mest}
 \item \begin{itquote}      I am wondering if doubly robust PSW estimator would reduce the remaining bias difference between GEEPERs and PSW, and Mixture and PSW.
 \end{itquote}
-This is an interesting suggestion---you're right that the \psw estimator did not include an outcome model, unlike \geepers and \nmm. However, we doubt that an outcome model would substantially reduce the bias of \psw in the simulation. The advantage of doubly-robust estimation is that an outcome model can correct for model misspecification in the propensity (or principal) score model. However, the principal score model in our simulation study was well-specified---the bias of the \psw estimator was due to an unobserved confounder, $x_3$. Unfortunately, like \psw, doubly-robust estimators rely on ignorability, i.e., that all relevant confounders have been measured and included. 
+This is an interesting suggestion---you're right that the \psw estimator did not include an outcome model, unlike \geepers and \pmm. However, we doubt that an outcome model would substantially reduce the bias of \psw in the simulation. The advantage of doubly-robust estimation is that an outcome model can correct for model misspecification in the propensity (or principal) score model. However, the principal score model in our simulation study was well-specified---the bias of the \psw estimator was due to an unobserved confounder, $x_3$. Unfortunately, like \psw, doubly-robust estimators rely on ignorability, i.e., that all relevant confounders have been measured and included. 
 \item \begin{itquote}      GEEPERs seems great, but also, surprised by how efficient Mixture can be. Are there any mechanisms that link M-estimators to Mixture modeling? Just wondering.
 \end{itquote}
-We were also surprised by how well the \nmm performed in the simulation, especially given prior literature detailing its vulnerability \citep[][; cited in the paper]{griffin2008application,feller2016principal}. Its similarity to \geepers in some scenarios is less surprising, since they are both essentially mixture model estimators.
+We were also surprised by how well the \pmm performed in the simulation, especially given prior literature detailing its vulnerability \citep[][; cited in the paper]{griffin2008application,feller2016principal}. Its similarity to \geepers in some scenarios is less surprising, since they are both essentially mixture model estimators.
 
 \item \begin{itquote}    Would it be possible to offer some evaluation metric for GEEPERs, which would indicate, under some conditions researchers could possibly opt or seek other estimators?
 \end{itquote}
