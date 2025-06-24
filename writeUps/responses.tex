@@ -47,7 +47,7 @@
 \usepackage{numdef}
 %\usepackage{multibib}
 \usepackage{rotating}
-
+\usepackage{xspace}
 \usepackage[dvipsnames]{xcolor}
 
 %\startlocaldefs
@@ -91,7 +91,8 @@ The article effectively presents a simulation study comparing three methods and 
 \item    \begin{itquote}  Page 3, Line 10: The rationale for using Principal Stratification to estimate treatment effects for bottom-outers is insufficient. Additionally, it is advisable to compare the Principal Stratification method to other causal inference methods, such as instrumental variable and propensity score analysis, to provide a comprehensive understanding of the chosen approach.
 \end{itquote}
 
-
+We added Section \ref{sec:psInEdTech} to clarify the role principal stratification can play in analyzing implementation data---such as records of which students requested bottom-out hints---from an RCT studying educational effectiveness. 
+In that section, we also compared principal stratification to other relevant methods, as you suggested. 
 
 \item \begin{itquote}
     
@@ -180,19 +181,33 @@ As we stated on page \pageref{evalMetric} (in the paragraph beginning ``The simu
 \begin{itquote} Given this criterion, it seems to me that the simulation should focus on the last three factors in the design.  That is, I would hold the sample size and alpha fixed.  Currently, too many factors are varied at the same time to give a clear picture.  
 I would alter Table 1 to indicate which factors yield assumption violations and then violate these assumptions in isolation instead of relaxing them simultaneously.  As it currently stands, it is quite hard to understand the relative performance of GEEPERs compared to extant methods. Careful relaxation of each assumption allows the reader to see how much bias results from a single factor. 
 \end{itquote}
+The simulation has two parts: in the first part, we estimate the bias and standard error of \geepers and \pmm for a range of values of $\alpha$ and $n$ when the assumptions of both methods are met.
+The goal for the first part is to determine the required sample size and covariate predictability necessary for \geepers to perform well. 
+
+The second part presents results for scenarios where assumptions are violated. 
 The results in Figure \ref{fig:boxplots} and in Table \ref{tab:coverage} now hold $n$ fixed at $n=500$ per group and completely cross the other factors, i.e. $\alpha=0.2$ or $0.5$, interactions between $\bm{x}$ and $\st$ or $Z$, and the distribution of the residuals.
 Now it is apparent from Figure \ref{fig:boxplots} that, for instance, none of the methods are sensitive to interactions between $\bm{x}$ and $\st$, and that \pmm, but not the others, is sensitive to the distribution of the residuals.  
 
-In Table \ref{tab:coverage}, results when one or more assumptions have been violated are highlighted in red.
+Following your fine suggestion, we formatted Table \ref{tab:coverage}, highlighting results in red when one or more assumptions have been violated.
+This format makes it clearer that, for instance, \pmm makes distributional assumptions while \geepers does not, and that \geepers is less sensitive to the assumptions that both estimators make, especially when $\alpha=0.5$. 
 
 
-
-Application.
-
+\subsection{Application}
+\begin{itquote}
 I thought there were a number of less-than-desirable parts to the application. First, the focus on bottoming out is less than ideal. This strikes me as a fairly rare phenomenon. I didn't find the concept very intuitive and had to read just the descriptive section several times to understand why one might be interested in a principal stratification analysis here.  This makes the methods seem not particularly general.  Why not focus on an application with straightforward one-way noncompliance? This is an area where principal stratification is often applied, and the concepts are well understood.
 
 In addition, it isn't ideal that the ATE in each condition is not estimated very precisely; that is, the CI appears to cover zero in all cases. Next, all the principal stratification estimates are pretty close to the same value as the ATE. That serves as another reason this application isn't compelling. It is hard to care about an application where principal stratification doesn't provide much in the way of insights relative to the ATE. Next, the performance of GEEPERs seems to be quite similar to extant methods in each scenario. Overall, to my thinking, there is little to recommend the current application. Again, there is little here that demonstrates the value of GEEPERs.
+\end{itquote}
 
-To my mind, these problems could both be fixed.  That is, the simulations could be redesigned to provide more compelling evidence. Next, the authors may be able to identify better applications.  Therefore, the manuscript should be revised and resubmitted.
+These are important points, which we attempted to address in two ways. 
+Most importantly, we included an additional application example, a dental clinical trial with noncompliance, in which \geepers estimated statistically significant principal effects. This example is clean and straightforward, showing an instance where \geepers yields interesting results. 
+However, our substantive interests and expertise, as well as those of most of the JREE readership, lie in education research rather than dental science, which prevents us from offering a comprehensive discussion of the method's application or interpreting the \emph{a priori} surprising results. 
 
+For that reason, we retained the original application. 
+However, we tried to clarify the role PS could play in analyzing student implementation in an RCT studying educational technology. 
+For instance, in the Introduction, we wrote ``Indeed, if the use of bottom-out hints is considered part of the treatment, then those students who rarely used them are partial compliers---could the treatment still benefit them?''
+Most prominently, we added an extensive discussion in Section \ref{sec:psInEdTech}.
+
+
+    
 \end{document}}

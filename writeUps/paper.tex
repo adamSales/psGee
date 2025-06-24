@@ -7,7 +7,7 @@
 %\RequirePackage[authoryear]{natbib}
 \usepackage{longtable}
 %\usepackage[notablist,tablesfirst]{endfloat}% To `separate' figures and tables from text if required
-
+\usepackage{threeparttable}
 \usepackage{epstopdf}% To incorporate .eps illustrations using PDFLaTeX, etc.
 \usepackage[caption=false]{subfig}% Support for small, `sub' figures and tables
 \usepackage[doublespacing]{setspace}% To produce a `double spaced' document if required
@@ -524,33 +524,36 @@ Either type of interaction violates Assumption \ref{ass:rci} since if $\gamma_2\
 
 \subsubsection{Analysis Models}\label{sec:simMods}
 
-Using each simulated dataset, we estimated $\eff0$ and $\eff1$ with three methods: a mixture model \eqref{eq:mixtureModelPS} including principal scores, \textsc{geepers}, and the principal score weighting estimator \eqref{eq:psw}.
+Using each simulated dataset, we estimated $\eff0$ and $\eff1$ with three methods: \geepers, a parametric mixture model \eqref{eq:mixtureModelPS} including principal scores---hereafter \pmm---and the principal score weighting estimator \eqref{eq:psw}, hereafter \psw. 
 
 The methods all used the same ``observed'' dataset, consisting of outcomes $Y$, treatment assignments $Z$, two covariates $\bxs=\bxy=\bx=[x_1,x_2]$, and $S$ observed only when $Z=1$.
 The third covariate used in the data generating model, $x_3$, was ``unobserved''--since $x_3$ was correlated with both $\st$ and $Y$, Principal Ignorability (Assumption \ref{ass:PI}) was violated.
 
 All three methods used the same principal score model, a logistic regression of $S$ on $\bx$, and an intercept, fit using data from the treatment group in which $S=\st$ was observed, i.e., $\ppf{\bm{\alpha}}{\bx}=logit^{-1}(\alpha_0+\bm{\alpha}'\bx)$.
 
-The mixture estimator then fits two outcome models:
+\pmm, the parametric mixture estimator, then fits two outcome models:
 For the treatment group, the regression model $Y=\beta_0^T+\beta_1^TS+\bm{\gamma}'\bx+\epsilon$ and for the control group, a mixture model of the form \eqref{eq:mixtureModelPS}, but with $\muc0$ and $\muc1$ replaced by regression functions $\beta_0^C+\bm{\gamma}'\bx$ and $\beta_0^C+\beta_1^C+\bm{\gamma}'\bx$, respectively.
 Residual variance was allowed to differ across treatment groups, but not across principal strata.
 These models were fit simultaneously using Bayesian Markov Chain Monte Carlo with Stan \citep{rstan}, and principal effects $\eff0$ and $\eff1$ estimated as $\beta_0^T-\beta_0^C$ and $\beta_0^T+\beta_1^T-\beta_0^C-\beta_1^T$, respectively. We interpreted the posterior mean as a point estimate and the posterior standard deviation as a standard error.
 
 
-For \textsc{geepers} and principal score weighting, the principal score model was fit by itself, to data from the treatment group, using standard maximum likelihood methods.
+For \textsc{geepers} and \psw, the principal score model was fit by itself, to data from the treatment group, using standard maximum likelihood methods.
 For \textsc{geepers}, we used the estimated principal scores in the control group, along with the observed $S$ in the treatment group, to construct $R$, and then fit the model \eqref{eq:reg2} with OLS.
 To estimate standard errors, we computed the sandwich covariance matrix following the procedure detailed in the appendix.
 
-For principal score weighting we plugged estimated principal scores into \eqref{eq:psw} to estimate $\muc0$ and $\muc1$, estimated $\mut0$ and $\mut1$ with the sample means of subjects with $Z=1$ and $S=0$ or $S=1$, respectively, and estimated $\heff0=\hat{\mu}_{Tw}^0-\hat{\mu}_{Cw}^0$ and $\heff1=\hat{\mu}_{Tw}^1-\hat{\mu}_{Cw}^1$.
+For \psw we plugged estimated principal scores into \eqref{eq:psw} to estimate $\muc0$ and $\muc1$, estimated $\mut0$ and $\mut1$ with the sample means of subjects with $Z=1$ and $S=0$ or $S=1$, respectively, and estimated $\heff0=\hat{\mu}_{Tw}^0-\hat{\mu}_{Cw}^0$ and $\heff1=\hat{\mu}_{Tw}^1-\hat{\mu}_{Cw}^1$.
 
 \subsection{Results}\label{sec:simResults}
 In this section, we evaluate estimates of $\eff1$. Results for estimates of $\eff0$ and $\eff1-\eff0$, which are similar, can be found in the online appendix. 
-In replication $b=1,\dots,500$, define the error of a given estimator $\heff1_b$ as $err_b=\heff1_b-\eff1$. The bias of $\heff1$, $\EE[\heff1-\eff1]$, is estimated as $\widehat{bias}=\sum_b err_b/500$, and the empirical standard error is defined as $\left\{\sum_b(\heff1_b-\overline{\heff1})^2/499\right\}^{1/2}$, the sample standard deviation of $\heff1$. We also report the empirical coverage of confidence intervals, the proportion of replications in which $\eff1$ is within the estimated confidence bounds of $\heff1$. Here, we present results on error, bias, empirical standard error, and confidence itnterval coverage; results on root-mean-squared-error %$\left(\widehat{bias}^2+SE_{emp}^2\right)^{1/2}$ 
+In replication $b=1,\dots,500$, define the error of a given estimator $\heff1_b$ as $err_b=\heff1_b-\eff1$. The bias of $\heff1$, $\EE[\heff1-\eff1]$, is estimated as $\widehat{bias}=\sum_b err_b/500$, and the empirical standard error is defined as $\left\{\sum_b(\heff1_b-\overline{\heff1})^2/499\right\}^{1/2}$, the sample standard deviation of $\heff1$. We also report the empirical coverage of confidence intervals, the proportion of replications in which $\eff1$ is within the estimated confidence bounds of $\heff1$. Here, we present results on error, bias, empirical standard error, and confidence interval coverage; results on root-mean-squared-error %$\left(\widehat{bias}^2+SE_{emp}^2\right)^{1/2}$ 
 $\left(\sum_b err_b^2/500\right)^{1/2}$
 are available in the online appendix.
 
 \subsubsection{Varying $n$ and $\alpha$}
-When $\alpha=0$, Assumption \ref{ass:vps} was violated, and \textsc{geepers} estimates were highly erratic; however, as Table \ref{tab:coverage} shows, when other assumptions held, inference remained valid.
+% When $\alpha=0$, Assumption \ref{ass:vps} was violated, and \textsc{geepers} estimates were highly erratic; however, as Table \ref{tab:coverage} shows, when other assumptions held, inference remained valid.
+Our first set of results illustrates the performance of \geepers when all of its assumptions are met.
+Since \geepers is an asymptotic method whose identification depends on $\bm{x}$ as a predictor of $\st$, we examine its bias and standard error as functions of $n$ and $\alpha$.
+We include analogous results for \pmm as a baseline comparison. 
 
 Figure \ref{fig:alphan} shows the empirical bias and standard error (SE) of the \textsc{geepers} and mixture estimator of $\eff1$ as sample size and $\alpha$ varied.
 Across $n$ and $\alpha$, \textsc{geepers} had lower bias and higher SE than the mixture estimator.
@@ -573,8 +576,9 @@ For the remainder of the simulation, we focus on the moderate cases of $n=500$ a
 %   \label{fig:alpha}
 % \end{figure}
 
-\subsubsection{Other Factors}
+\subsubsection{Performance when Assumptions do not Hold}
 
+Our next set of results compares the performance of \geepers, \pmm, and \psw when one or more assumptions of each method may be violated. 
 
 \begin{figure}[!ht]
   \centering
@@ -584,12 +588,19 @@ For the remainder of the simulation, we focus on the moderate cases of $n=500$ a
 \end{figure}
 
 %<<<<<<< HEAD
-Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatter plots, showing estimation error for \textsc{geepers}, the parametric mixture model, and the \textsc{psw} estimator of $\eff1$ for, and Table \ref{tab:coverage} shows empirical coverage of nominal 95\% confidence interval estimates for \textsc{geepers} and a parametric mixture models; when at least one of an estimator's assumptions is violated, the result is colored red.
+Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatter plots, showing estimation error for \geepers, the parametric mixture model \pmm, and the \psw estimator of $\eff1$. Table \ref{tab:coverage} shows empirical coverage of nominal 95\% confidence interval estimates for \geepers and \pmm; when at least one of an estimator's assumptions is violated, the result is colored red.
 
-The first row of Table \ref{tab:coverage} and the first column of Figure \ref{fig:boxplots} show similar results as Figure \ref{fig:alphan}---when all assumptions of both methods are met, \textsc{geepers} is slightly less biased than the parametric mixture model; when $\alpha=0.2$, \textsc{geepers} is much more variable and $\alpha=0.5$ the difference in variance is slight.
+The first column of Figure \ref{fig:boxplots} and the black entries of Table \ref{tab:coverage} show results from scenarios in which all assumptions of \geepers and \pmm are met (\psw relies on principal ignorability, which is violated throughout the simulation study).
+\textsc{geepers} is slightly less biased than the parametric mixture model; when $\alpha=0.2$, \textsc{geepers} is much more variable and $\alpha=0.5$ the difference in variance is slight.
 \textsc{psw} has by far the lowest variance and the highest bias; the latter is due to the violation of principal ignorability. 
+When all assumptions are met, confidence intervals from both \geepers and \pmm achieve their nominal levels. 
 
-The remainder of the results reflect violations modeling assumptions for either \geepers or the parametric mixture model or both: interactions in the data generating model between covariates $X$ and treatment assignment $Z$ and/or principal stratum $S$, either of which would violate assumption \ref{ass:rci} and the linear additive model of the \textsc{pmm}, and/or residuals drawn from a uniform distribution, which violates the normality assumption of \textsc{pmm}.
+The remainder of the results reflect violations modeling assumptions for either \geepers or the parametric mixture model or both: when $\alpha=0$, violating Assumption \ref{ass:vps}; interactions in the data generating model between covariates $X$ and treatment assignment $Z$ and/or principal stratum $S$, either of which would violate assumption \ref{ass:rci} and the linear additive model of the \textsc{pmm}; and/or residuals drawn from a uniform distribution, which violates the normality assumption of \textsc{pmm}.
+
+We omitted the $\alpha=0$ case from Figures \ref{fig:alphan} and \ref{fig:boxplots} since the variance of \geepers and \pmm estimates was so large as to dominate the plot. 
+However, the first column of results in Table \ref{tab:coverage} shows that, when other assumptions are met, CIs from both methods tend to over-cover when $\alpha=0$. 
+In a randomized experiment, $\alpha$ can be estimated directly, making Assumption \ref{ass:vps} testable.
+
 For \geepers, when $\alpha=0.2$ the presence of interactions in the data-generating model increases sampling variance, but only interactions between $X$ and $Z$ reduce confidence interval coverage. When $\alpha=0.5$, the presence of interactions has little to no effect on the performance of the \geepers estimator, and all 95\% confidence intervals approximately achieve their nominal levels. \geepers makes no assumptions about the shape of the residual distribution and behaves similarly under either normal or uniform residuals.
 
 Like \geepers, \pmm is insensitive to interactions between $X$ and $S$. However, interactions between $X$ and $Z$ in the data-generating model skew the \pmm sampling distribution and reduce the coverage of its 95\% confidence intervals, even when $\alpha=0.5$.
@@ -666,6 +677,7 @@ Next, we present a novel analysis of data from the RCT of computer-based math ap
 This analysis aims to shed light on an important question in education research, illustrates model and covariate selection, and includes a discussion on the plausibility of identification assumptions. 
 
 \subsection{Accounting for Imperfect Compliance: Re-Analysis of the Obstetrics and Periodontal Therapy Study}
+\sloppy
 Periodontal disease, a weakening of bone and connective tissue supporting teeth, is highly prevalent among American adults and is associated with adverse pregnancy outcomes, including preterm birth \citep{periodontalEpi}.
 The Obstetrics and Periodontal Therapy Study \citep[(OPTS)][]{michalowicz2006treatment} investigated the efficacy of nonsurgical periodontal treatment to reduce the preterm birth rate; replication data are available at \url{https://causeweb.org/tshs/obstetrics-and-periodontal-therapy/}.
 Pregnant patients at four different hospitals who were at least 16 years old, at less than 16 weeks and 6 days of gestation, and diagnosed with periodontal disease were individually randomized to either receive periodontal treatment during the first 21 weeks of pregnancy ($Z=1$, $n_T=413$) or after delivery ($Z=0$, $n_C=410$).
@@ -720,7 +732,7 @@ If the availability of bottom-out hints plays a positive role in ASSISTments' ef
 If hints (that do not supply the correct answer) and error messages are helpful, but the ability to bottom out is harmful to learning, then we might expect to estimate a positive effect of being assigned to the feedback condition for students who do not bottom out, but a negative effect for students who do. If hints are helpful for learning only if they can be read as worked examples, then we might expect no effect of condition on students who generally do not bottom out, but a positive effect for students who do.
 (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
 
-\subsubsection{Principal Stratification and Alternatives}
+\subsubsection{Principal Stratification and Alternatives}\label{sec:psInEdTech}
 The goal of principal strafication in this context is to determine if assignment to the ASSISTments condition affected students who tend to request frequent bottom-out hints differently than students who tended to request fewer bottom-out hints.
 Is this the right question to ask?
 
