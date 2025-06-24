@@ -106,7 +106,7 @@ Indeed, if the use of bottom-out hints is considered part of the treatment, then
 
 Estimating an effect for bottom-outers, or other partial compliers, is a tricky proposition.
 Causal inference in statistics typically depends on comparisons of outcomes between similar groups of subjects. However, there is no readily identifiable comparison group for bottom-outers, who are only represented in one of the four treatment conditions, and who presumably struggled more frequently, on average, than their non-bottom-outer peers.
-We will formulate a solution using Principal stratification \citep{frangakis}, a framework for defining and estimating effects for post-treatment subgroups, that is, subgroups that may themselves be a function of treatment assignment. It relies on the notion of \emph{potential} subgroups called principal strata: which subgroup would a subject be in if they were (perhaps counterfactually) assigned to one treatment condition or another.
+We will formulate a solution using principal stratification \citep{frangakis}, a framework for defining and estimating effects for post-treatment subgroups, that is, subgroups that may themselves be a function of treatment assignment. It relies on the notion of \emph{potential} subgroups called principal strata: which subgroup would a subject be in if they were (perhaps counterfactually) assigned to one treatment condition or another.
 For example, the appropriate comparison group for bottom-outers is the set of students, assigned to the other treatment arms, who \emph{would have} requested bottom-out hints if only given that option.
 
 Since principal strata membership is based on subjects' responses to both factual and counterfactual treatment assignments, it is unobserved---we don't observe which students in the conditions without bottom-out hints would have bottomed out if given the opportunity.
@@ -664,7 +664,7 @@ These suggestions may depend heavily on the simulation setup here; applying them
 % \multicolumn{7}{p{3.5in}}{\footnotesize Based on 500 replications. $n=500$, $\beta_1=0.3$. Simulation standard error $\approx 1$ percentage point. Estimates colored \rd{red} indicate cases where the assumptions of the model are not met.}
 
 % \end{tabular}
-\input{writeUps/coverageTab}
+\input{coverageTab}
 \end{table}
 
 

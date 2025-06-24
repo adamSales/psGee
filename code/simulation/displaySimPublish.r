@@ -3,6 +3,7 @@ library(broom)
 library(kableExtra)
 library(gridExtra)
 library(ggpubr)
+library(tikzDevice)
 
 
 options(
@@ -127,11 +128,7 @@ ggsave("simFigs/biasSEbyN.jpg",plot=plotByN,width=6,height=3)
   ) %>%
   filter(rhat<1.1)
 
-### figure for appendix
 
-bp(pdb1,facet=PE~B1,title=bquote("Estimation Error by "~alpha),Labeller=label_parsed,labSize=2)+
-  labs(subtitle=bquote("Normal Resid., No Interactions, "~n==500~", "~mu[C]^1-mu[C]^0==0.3))
-ggsave('simFigs/byAlpha.jpg',width=6,height=3)
 
 
 #### figure in the paper
@@ -165,32 +162,8 @@ ggsave("simFigs/biasSEbyB1.jpg",plot=plotByAlpha,width=6,height=3)
 ggarrange(plotByN,plotByAlpha,ncol=1,common.legend = TRUE, legend = "bottom")
 ggsave("simFigs/biasSEbyB1n.jpg",width=5,height=4)
 
-%>%
-ggexport(filename="simFigs/biasSEbyB1n.jpg")
 
-#### table for appendix
-rmseB1 <- pdb1%>%
-  filter(rhat<1.1)%>%
-  group_by(b1,eff,estimator)%>%
-  summarize(rmse=sqrt(mean(errP^2,na.rm=TRUE)))%>%ungroup()
 
- coverageB1 <- pdb1%>%
-  filter(rhat<1.1)%>%
-  group_by(b1,eff,estimator)%>%
-   summarize(coverage=mean(CInormL<=pop & CInormU>=pop,na.rm=TRUE))%>%ungroup()
-
-bind_rows(
-  biasB1%>%filter(eff==1)%>%select(-eff)%>%mutate(b1=paste0(b1,'$'))%>%
-  pivot_wider(names_from=b1,names_prefix="$\\\\alpha=",values_from=bias)%>%mutate(measure="Bias"),
-  seB1%>%filter(eff==1)%>%select(-eff)%>%mutate(b1=paste0(b1,'$'))%>%
-  pivot_wider(names_from=b1,names_prefix="$\\\\alpha=",values_from=se)%>%mutate(measure="SE"),
-  rmseB1%>%filter(eff==1)%>%select(-eff)%>%mutate(b1=paste0(b1,'$'))%>%
-  pivot_wider(names_from=b1,names_prefix="$\\\\alpha=",values_from=rmse)%>%mutate(measure="RMSE"),
-  coverageB1%>%filter(eff==1,estimator!='PSW')%>%select(-eff)%>%mutate(b1=paste0(b1,'$'))%>%
-  pivot_wider(names_from=b1,names_prefix="$\\\\alpha=",values_from=coverage)%>%mutate(measure="95% CI Coverage"))%>%
-  select(measure,everything())%>%
-  kbl()%>%
-  collapse_rows(columns=1,latex_hline="major",valign="middle")
 
 ######################################################################
 ### main results
@@ -345,26 +318,28 @@ sink()
   group_by(n,mu01,errDist,b1,interactionS,interactionZ,intS,intZ,eff,estimator)%>%
    summarize(coverage=mean(CInormL<=pop & CInormU>=pop,na.rm=TRUE))%>%ungroup()
 
-redCov <- function(coverage) paste0("\\rd{",round(coverage,2),"}")
-condRed <- function(coverage,intZ,intS,estimator,errDist)
+redCov <- function(coverage) paste0("\\rd{",sprintf("%.2f",coverage),"}")
+condRed <- function(coverage,intZ,intS,estimator,errDist,b1=1)
     ifelse(intZ|intS,redCov(coverage),
-    ifelse(errDist=="unif"&estimator=="Mixture",redCov(coverage),round(coverage,2)))
+    ifelse(errDist=="unif"&estimator=="\\textsc{pmm}",redCov(coverage),
+    ifelse(estimator=="\\textsc{geepers}"&b1==0,redCov(coverage),sprintf("%.2f",coverage))))
+
 
 sink('writeUps/coverageTab.tex')
 cbind(
-  ## coverage%>%
-##   filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==0)%>%
-## pivot_wider(names_from=estimator,values_from=coverage)
-## ,
-    coverage%>%
-      mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist))%>%
-      filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.2,estimator!="\\textsc{psw}")%>%
+     coverage%>%
+      mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist,b1))%>%
+      filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==0,estimator!="\\textsc{psw}")%>%
       transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
          `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
          `$\\bm{x}:S_T$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator,#=c(Mixture="\\pmm",GEEPERs="\\geepers")[estimator],
          coverage)%>%
-      pivot_wider(names_from=estimator,values_from=coverage),
+    pivot_wider(names_from=estimator,values_from=coverage),
+   coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.2)%>%
+      mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist))%>%
+    pivot_wider(names_from=estimator,values_from=coverage)%>%
+    select(`\\textsc{geepers}`,`\\textsc{pmm}`),
     coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.5)%>%
       mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist))%>%
     pivot_wider(names_from=estimator,values_from=coverage)%>%
@@ -372,10 +347,10 @@ cbind(
 #    rename("\\pmm"="Mixture","\\geepers"="GEEPERs")
   )%>%
     kbl('latex',booktabs=TRUE,col.names=linebreak(names(.)),escape=FALSE,digits=2)%>%
-    add_header_above(c(" " = 3, #"$\\\\alpha=0$" = 2,
+    add_header_above(c(" " = 3, "$\\\\alpha=0$" = 2,
                        "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
     collapse_rows(columns=1,latex_hline="major",valign="middle")%>%
-    footnote(general=c("\\\\footnotesize Based on 500 replications.","$n=500$, $\\\\beta_1=0.3$.", "Simulation standard error $\\\\approx 1$ percentage point.","Estimates colored \\\\rd{red} indicate cases where the assumptions of the model are not met."),escape=FALSE,footnote_as_chunk = TRUE,threeparttable=TRUE)
+    footnote(general=c("\\\\footnotesize Based on 500 replications. $n=500$, $\\\\beta_1=0.3$. Simulation standard error $\\\\approx 1$ percentage point. Estimates colored \\\\rd{red} indicate cases where the assumptions of the model are not met."),escape=FALSE,footnote_as_chunk = TRUE,threeparttable=TRUE)
 sink()
 
 ########################
