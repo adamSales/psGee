@@ -82,14 +82,11 @@ estimates1rest <-
   lapply(alts,
          function(alt)
            est(getDat(alt),psMod=psModRest,
-               covFormY=update(formula(psModAll)[-2],
+               covFormY=update(formula(psModRest)[-2],
                                .~.
                                -SchIDPre+ClaIDPre
                                -UnexcusedDays6+ns(UnexcusedDays6,3)
-                               -pre_MA_total_score+ns(pre_MA_total_score,3)
                                -pre_MSE_total_score+I(pre_MSE_total_score< -2)+ns(pre_MSE_total_score,3)
-                               -pre.total_math_score+ns(pre.total_math_score,4)
-                               -Scale.Score5+ns(Scale.Score5,3)
                                )
                )
          )
