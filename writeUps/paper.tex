@@ -91,9 +91,9 @@ Principal stratification is a framework for making sense of causal effects condi
 
 \section{Introduction}
 
-When students get stuck on math problems during homework or classwork, it may be helpful to offer them hints or other ``just-in-time'' support \cite[e.g][]{jit}, possibly helping them overcome specific misconceptions or other sources of confusion and allowing them to move on in the assignment.
+When students get stuck on math problems during homework or classwork, it may be helpful to offer them hints or other ``just-in-time'' support \cite[e.g.,][]{jit}, possibly helping them overcome specific misconceptions or other sources of confusion and allowing them to move on in the assignment.
 The availability of problem-specific support for struggling students is one potential advantage of educational technology over traditional pencil-and-paper practice.
-On the other hand, the ready availability of hints may discourage students from working through difficult problems on their own, thereby inhibiting their learning.
+On the other hand, the ready availability of hints may discourage students from working through difficult problems independently, thereby hindering their learning.
 
 The literature on hints in online learning is mixed \citep[see, e.g.,][]{aleven2016help,goldin2012learner,sales2021student}, particularly when it comes to requesting a ``bottom-out'' hint. In some online mathematics programs, sequences of hints, which a student can request one at a time, end with a bottom-out hint providing the answer to the problem. On the one hand, hints that include the correct answer are essentially worked examples, which can be beneficial to learning \citep[e.g.]{sweller1985use}. On the other hand, they allow students to ``game the system,'' by simply requesting enough hints to see the right answer and use the software without ever working to solve any problems \citep[e.g.][]{guo2008trying}.
 
@@ -102,7 +102,7 @@ That RCT contrasted four different applications for computer-based math practice
 If that condition benefited students who frequently requested bottom-out hints (``bottom-outers'') more than those who didn't, that may suggest that the availability of bottom-out hints played a role in the condition's effectiveness.
 Alternatively, if students who avoided bottom-out hints benefited more, it may be because the availability of bottom-out hints impeded the condition's effectiveness.
 (There are certainly other factors at play as well, so this analysis would not be conclusive.)
-Indeed, if the use of bottom-out hints is considered part of the treatment, then those students who rarely used them are partial compliers---could the treatment still benefit them?
+Indeed, if the use of bottom-out hints is considered part of the treatment, then those students who rarely used them were partial compliers---did the treatment still benefit them?
 
 Estimating an effect for bottom-outers, or other partial compliers, is a tricky proposition.
 Causal inference in statistics typically depends on comparisons of outcomes between similar groups of subjects. However, there is no readily identifiable comparison group for bottom-outers, who are only represented in one of the four treatment conditions, and who presumably struggled more frequently, on average, than their non-bottom-outer peers.
@@ -117,10 +117,10 @@ In a follow-up analysis, \citet{imbens1997bayesian} relaxed the exclusion restri
 
 \citet{frangakis} introduced the terminology of principal stratification and extended the framework well beyond noncompliance, inspiring a broad literature introducing (and debating) novel applications and estimators.
 For instance, \citet{fellerEtAl2016} estimated differential effects of random assignment to the Head Start early childhood care program for children who, if assigned to control, would receive home-based care, and for those who would attend a different early childhood care program.
-Other methodologists have developed estimators for the evaluation of surrogate outcomes \citep{li2010bayesian}, the investigation of causal mechanisms \citep{lidsayPage}, sample attrition \citep{zhangRubin, ding2011}, and other problems.
+Other methodologists have developed estimators for evaluating surrogate outcomes \citep{li2010bayesian}, investigating causal mechanisms \citep{lidsayPage}, addressing sample attrition \citep{zhangRubin, ding2011}, and other related problems.
 Since interest is often in comparing effects between principal strata---a goal that runs counter to the exclusion restriction---the earliest principal stratification estimators built on \citet{imbens1997bayesian}'s parametric mixture models \citep[e.g.][]{Barnard01062003,mealli2004analyzing}, and that approach remains popular \citep{lidsayPage,fellerEtAl2016}.
-However, these models are often hard to specify and hard or impossible to test.
-Even when they are well-specified they can yield estimates that are severely biased and misleading \citep{griffin2008application,feller2016principal}.
+However, these models are often difficult to specify and can be either hard or impossible to test.
+Even when they are well-specified, they can yield estimates that are severely biased and misleading \citep{griffin2008application,feller2016principal}.
 The most common type of parametric model, the normal mixture model, is especially dubious for studying bottom-outers in \citet{impactPaper}'s RCT, whose outcome, the total score on a 10-item posttest, is not normally distributed.
 
 These concerns have prompted the development of alternative approaches, including bounding \citep{bounding} and randomization inference \citep{nolen2011randomization}.
@@ -129,7 +129,7 @@ Under a strong, untestable assumption called ``principal ignorability,''  princi
 Principal ignorability is a direct analogue of the strong ignorability assumption in causal observational studies \citep[e.g.][]{rosenbaum1983central}---that all covariates that predict both principal stratum membership and outcomes have been accounted for---in other words, the precise type of assumption that randomized trials are designed to avoid.
 A separate set of results in \citet{jo2002}, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
 
-This paper expands on those latter results by presenting a new principal effect estimator for the case of one-way noncompliance, in which principal stratum membership is observed in one treatment group but not the other (future work will extend our approach to general scenarios). Our estimator boils down to a simple, three-step procedure: first, estimate principal scores, for instance, with logistic regression; then, impute unknown principal subgroup membership indicators with principal scores; and finally estimate principal effects using ordinary least squares (OLS) regression with interactions. %, just as in the pre-treatment subgroup case.
+This paper expands on those latter results by presenting a new principal effect estimator for the case of one-way noncompliance, in which principal stratum membership is observed in one treatment group but not the other (future work will extend our approach to general scenarios). Our estimator boils down to a simple, three-step procedure: first, estimate principal scores, for instance, with logistic regression; then, impute unknown principal subgroup membership indicators with principal scores; and finally, estimate principal effects using ordinary least squares (OLS) regression with interactions. %, just as in the pre-treatment subgroup case.
 We show that this estimator is the solution to a set of estimating equations based on the combined moments of principal scores, indicators for treatment assignment and observed principal stratum membership in the treatment group, outcomes, and (optionally) covariates, and give a set of assumptions under which it is consistent for the true principal effects.
 We will refer to the estimators presented here as ``\textsc{geepers}'': general estimating equations for principal effects using regressions.
 \textsc{geepers} estimates rely on the correct specification of regression functions, but unlike common fully-parametric methods, they make no assumptions about the shape of the distribution of regression errors.
@@ -139,7 +139,7 @@ After the initial submission of this manuscript, we became aware of \citet{richa
 Our development of \textsc{geepers} builds on \citet{richardson2023estimating} by emphasizing connections to both parametric mixture modeling and principal score analysis, and comparing \textsc{geepers} to those methods in a simulation study.
 Moreover, \textsc{geepers}, which, in practice, is a combination of logistic regression and OLS, is more accessible to applied researchers while yielding very similar results.
  
-This work advances the literature in three ways: first, it makes an explicit connection between principal score methods, M-estimation, and semi-parametric estimation of principal effects using auxiliary data. Second, it provides a general estimator that relies on two of the most familiar tools in the applied education researcher's toolbox: linear and logistic regression. The \textsc{geepers} method can, therefore, make principal stratification methods accessible for a much broader range of applied education researchers. Lastly, this work includes an extensive simulation study that compares \textsc{geepers} to parametric mixture modeling and principal score weighting under a range of favorable and challenging scenarios. The simulation demonstrates the strengths and weaknesses of each method and the tradeoffs between them.
+This work advances the literature in three ways: first, it makes an explicit connection between principal score methods, M-estimation, and semi-parametric estimation of principal effects using auxiliary data. Second, it provides a general estimator that relies on two of the most familiar tools in the applied education researcher's toolbox: linear and logistic regression. The \textsc{geepers} method can, therefore, make principal stratification methods accessible for a much broader range of applied education researchers. Lastly, this work includes an extensive simulation study that compares \textsc{geepers} to parametric mixture modeling and principal score weighting under a range of favorable and challenging scenarios. The simulation demonstrates the strengths and weaknesses of each method, as well as the trade-offs between them.
 
 The following section gives a formal introduction to principal stratification and briefly describes two common estimation techniques, parametric mixture modeling and principal score weighting.
 Next, Section \ref{sec:geepers} develops \textsc{geepers} estimation and gives conditions for its consistency.
@@ -162,7 +162,7 @@ Assume ``strong monotonicity'' \citep[c.f.][]{dingLu} (also referred to as ``one
 \end{ass}
 Like potential outcomes $\yti$ and $\yci$, $\sci$ and $\sti$ are defined for all subjects, though $\sci$ is only observed when $Z_i=0$ and $\sti$ is only observed when $Z_i=1$. Under strong monotonicity, since $S$ is binary, every subject belongs to one of two ``principal strata,'' $\sti=1$ or $\sti=0$.
 The average treatment effect in each principal stratum, $\eff1=\EE[\tau|\st=1]$ or $\eff0=\EE[\tau|\st=0]$, is called a principal effect. %
-The challenge in estimating principal effects is because strata membership $\sti$ is only observed when $Z_i=1$, in which case $\sti=S_i$, the observed value of $S$.
+The challenge in estimating principal effects is that strata membership $\sti$ is only observed when $Z_i=1$, in which case $\sti=S_i$, the observed value of $S$.
 
 \subsection{Estimating Principal Effects}
 In estimating principal effects for a binary $S$, it will be useful to define four conditional means. For $s\in\{0,1\}$, let
@@ -213,8 +213,7 @@ The probabilities $Pr(\st=0)$ and $Pr(\st=1)$ may be estimated first using data 
 Given these estimates and \eqref{eq:mixtureModel}, parameters $\muc0$ and $\muc1$ may be estimated using maximum likelihood, method of moments, or Bayesian techniques.
 
 This approach has several problems.
-First, the assumption of a conditional parametric model %normality assumption 
-is untestable and limiting.
+First, the assumption of a conditional parametric model is untestable and limiting.
 Unfortunately, even when it holds, mixture model estimates can be unreliable and, in some cases, severely biased \citep{griffin2008application,feller2017principal}.
 
 \subsection{Principal Scores}
@@ -240,7 +239,7 @@ If $\bm{x}$ is informative about $\st$, principal scores will vary between subje
 %In some estimators we will discuss below, two distinct values suffice.
 For a broader discussion, see \citet{ding2011,jiangDing2021}.
 
-Principal scores can potentially improve inference in a finite mixture model, by re-writing \eqref{eq:mixtureModel} as
+Principal scores can potentially improve inference in a finite mixture model by modifying \eqref{eq:mixtureModel} as
 \begin{equation}\label{eq:mixtureModelPS}
   f_{Y_C}(y|\bm{x})=(1-\ppip{\bm{\alpha}})%\phi\left(\frac{y-\muc0}{\sigma_C^0}\right)
 g^0(y|\bm{x})+\ppip{\bm{\alpha}}%\phi\left(\frac{y-\muc1}{\sigma_C^1}\right)
@@ -448,7 +447,7 @@ We replicated each set of conditions 500 times.
 
 \subsubsection{Data Generation}\label{sec:dataGeneration}
 
-In each run of the simulation, we simulated three independent standard normal covariates, $x_k$ $k=1,\dots,3$. However, only the first two covariates were ``observed,'' i.e., were included in the analysis model.
+In each run of the simulation, we simulated three independent standard normal covariates, $x_k$, $k=1,\dots,3$. However, only the first two covariates were ``observed,'' i.e., were included in the analysis model.
 Given all three covariates, the principal scores were set as
 \begin{equation*}
   \ppi=logit^{-1}\left[\alpha(x_{1i}-x_{2i}+x_{3i})\right]
@@ -527,7 +526,7 @@ Either type of interaction violates Assumption \ref{ass:rci} since if $\gamma_2\
 Using each simulated dataset, we estimated $\eff0$ and $\eff1$ with three methods: \geepers, a parametric mixture model \eqref{eq:mixtureModelPS} including principal scores---hereafter \pmm---and the principal score weighting estimator \eqref{eq:psw}, hereafter \psw. 
 
 The methods all used the same ``observed'' dataset, consisting of outcomes $Y$, treatment assignments $Z$, two covariates $\bxs=\bxy=\bx=[x_1,x_2]$, and $S$ observed only when $Z=1$.
-The third covariate used in the data generating model, $x_3$, was ``unobserved''--since $x_3$ was correlated with both $\st$ and $Y$, Principal Ignorability \eqref{eq:pi} was violated.
+The third covariate used in the data-generating model, $x_3$, was ``unobserved''--since $x_3$ was correlated with both $\st$ and $Y$, Principal Ignorability \eqref{eq:pi} was violated.
 
 All three methods used the same principal score model, a logistic regression of $S$ on $\bx$, and an intercept, fit using data from the treatment group in which $S=\st$ was observed, i.e., $\ppf{\bm{\alpha}}{\bx}=logit^{-1}(\alpha_0+\bm{\alpha}'\bx)$.
 
@@ -598,7 +597,7 @@ When all assumptions are met, confidence intervals from both \geepers and \pmm a
 The remainder of the results reflect violations modeling assumptions for either \geepers or the parametric mixture model or both: when $\alpha=0$, violating Assumption \ref{ass:vps}; interactions in the data generating model between covariates $X$ and treatment assignment $Z$ and/or principal stratum $S$, either of which would violate assumption \ref{ass:rci} and the linear additive model of the \textsc{pmm}; and/or residuals drawn from a uniform distribution, which violates the normality assumption of \textsc{pmm}.
 
 We omitted the $\alpha=0$ case from Figures \ref{fig:alphan} and \ref{fig:boxplots} since the variance of \geepers and \pmm estimates was so large as to dominate the plot. 
-However, the first column of results in Table \ref{tab:coverage} shows that, when other assumptions are met, CIs from both methods tend to over-cover when $\alpha=0$. 
+However, the first column of results in Table \ref{tab:coverage} shows that, when other assumptions are met, confidence intervals from both methods tend to over-cover when $\alpha=0$. 
 In a randomized experiment, $\alpha$ can be estimated directly, making Assumption \ref{ass:vps} testable.
 
 For \geepers, when $\alpha=0.2$ the presence of interactions in the data-generating model increases sampling variance, but only interactions between $X$ and $Z$ reduce confidence interval coverage. When $\alpha=0.5$, the presence of interactions has little to no effect on the performance of the \geepers estimator, and all 95\% confidence intervals approximately achieve their nominal levels. \geepers makes no assumptions about the shape of the residual distribution and behaves similarly under either normal or uniform residuals.
@@ -613,7 +612,7 @@ Neither \psw nor \pmm is vulnerable to interactions between $X$ and $S$.
 These results suggest that researchers who are willing to assume principal ignorability should use \psw, and those who are confident in their parametric model for potential outcomes should use a parametric mixture model. Researchers who are hesitant to accept principal ignorability or a parametric outcome model should consider \geepers. 
 
 \label{evalMetric}The simulation study suggests that none of the three methods evaluated---\geepers, \pmm, or \psw---dominates the others, and offers some guidance on when each estimator may be preferable. \psw is the most precise and requires no assumptions about the distribution of outcomes, but can be quite sensitive to violations of principal ignorability. When the determinants of $\st$ are well-understood and measured, \psw seems to be the best option. When principal ignorability does not hold, potential outcomes are conditionally normal, and there are no $X:Z$ interactions within principal strata, the \pmm estimator outperforms \geepers, though the difference decreases with $n$ or $\alpha$. \geepers may be the best choice when conditional normality may not hold, or if there are $X:Z$ interactions and $\bm{x}$ is sufficiently predictive of $\st$ (AUC $\ge$0.675, corresponding to $\alpha \ge 0.5$, may serve as a threshold). 
-These suggestions may depend heavily on the simulation setup here; applying them in general scenarios requires more research. 
+These suggestions may depend heavily on the simulation setup; applying them in general scenarios requires further research. 
 
 
 %=======
@@ -674,7 +673,7 @@ To illustrate \textsc{geepers} and compare it to the other discussed methods, we
 First, we briefly replicate an analysis from \citet{richardson2023estimating} using the \textsc{geepers} and the other methods discussed above.
 This is a relatively straightforward example of an experiment with imperfect compliance in which \citet{richardson2023estimating} estimated statistically significant effects overall in both principal strata.
 Next, we present a novel analysis of data from the RCT of computer-based math applications reported in \citet{impactPaper}, and look into the role of bottom-out hints, as described in the introduction.
-This analysis aims to shed light on an important question in education research, illustrates model and covariate selection, and includes a discussion on the plausibility of identification assumptions. 
+This analysis aims to shed light on an important question in education research, illustrate model and covariate selection, and include a discussion on the plausibility of identification assumptions. 
 
 \subsection{Accounting for Imperfect Compliance: Re-Analysis of the Obstetrics and Periodontal Therapy Study}
 \sloppy
@@ -710,7 +709,7 @@ The results are displayed in Figure \ref{fig:opt}% and Table \ref{tab:optEffs}
 : both \textsc{geepers} and the Bayesian mixture model gave similar results to those reported in \citet{richardson2023estimating} from BSIV.
 For the principal stratum of subjects who would not fully complete the treatment, those three methods estimated that assignment to the treatment condition reduced percentage of dental sites with bleeding by 31--34 percentage points; for subjects who would complete the treatment, the three estimated a reduction of 14-16 percentage points.
 The conclusion of these methods is somewhat surprising: that the effect was larger for subjects who would not complete the treatment than for those who would (the two strata had similar bleeding percentages at baseline, and a logit transformation of the outcome leaves the results qualitatively unchanged). 
-One possible explanation is the conjecture that subjects stop showing up for treatment once their periodontal disease has abated.
+One possible explanation is the conjecture that subjects stopped attending treatment once their periodontal disease improved.
 
 In contrast, principal score weighting resulted in very similar effects for both strata---a reduction of 23--25 percentage points, which is close to the estimated intent-to-treat effect of 25 percentage points.
 
@@ -733,7 +732,7 @@ If hints (that do not supply the correct answer) and error messages are helpful,
 (These hypothetical results may be masked by other treatment effect heterogeneity between students who would or wouldn't bottom out, but the results could still be informative.)
 
 \subsubsection{Principal Stratification and Alternatives}\label{sec:psInEdTech}
-The goal of principal strafication in this context is to determine if assignment to the ASSISTments condition affected students who tend to request frequent bottom-out hints differently than students who tended to request fewer bottom-out hints.
+The goal of principal stratification in this context is to determine if assignment to the ASSISTments condition affected students who tended to request frequent bottom-out hints differently than students who tended to request fewer bottom-out hints.
 Is this the right question to ask?
 
 In a similar context, \citet{sales2021student} suggests two alternative approaches: the average effect of requesting bottom-out hints on posttest scores for students in the ASSISTments condition, and estimating natural direct and indirect effects of assignment to the ASSISTments condition, treating bottom-out hint requests as a mediator.
@@ -742,7 +741,7 @@ Unfortunately, confounding is a major concern in this case, since, presumably, s
 The best available measure of students' baseline ability, their score on the 10-item pretest, is likely insufficient.
 That said, a plausible estimate of the average effect of bottom-out hint requests would be a valuable contribution to the literature, and a suitably innovative observational design \citep[e.g.][]{beck} may bear fruit.
 
-Another arguable disadvantage of the observational study approach is that it overlooks the broader context of the experiment, focusing on whether bottom-out hints affect posttest scores rather than examining their role in ASSISTments' overall effectiveness.
+Another arguable disadvantage of the observational study approach is that it overlooks the broader context of the experiment, focusing solely on whether bottom-out hints affect posttest scores rather than examining their role in the overall effectiveness of ASSISTments.
 A second approach, mediation analysis, contextualizes the bottom-out effect within the larger experiment.
 It, too, relies on the same non-confounding assumption as an observational study, and also suffers from an additional challenge: mediation analysis relies on a ``common support'' condition that ``the mediator state must not be a deterministic function of the treatment'' \citep[p. 225]{celli2022causal}.
 However, bottom-out hints are unavailable in the other three arms of the study, violating this condition (\citealt{sales2021student} offers a solution, which we find unconvincing).
@@ -799,12 +798,12 @@ The model selection process is recorded in the GitHub repository cited above.
 
 Lastly, Assumption \ref{ass:ci} implies that there is no interaction between $\bxs$ and $\st$ in the outcome model. Further, for the sake of statistical efficiency, we did not consider outcome models with interactions between covariates and $Z$.
 \emph{A priori}, the student attribute that poses the greatest threat to these modeling choices is prior achievement, that is, scores on the pretest and the fifth-grade state test.
-This is both because they measure a similar construct to the posttest, and because \cite{impactPaper} found a pretest-treatment interaction in a different treatment contrast.
-Following that reasoning, we conducted a third parallel analysis excluding prior achievement covariates.% in $\bxs$ but including all covariates in $\bxy$.
+This is both because they measure a similar construct to the posttest and because \cite{impactPaper} found a pretest-treatment interaction in a different treatment contrast.
+Following that reasoning, we conducted a third parallel analysis excluding prior achievement covariates. % in $\bxs$ but including all covariates in $\bxy$.
 
 All three principal score models were fit to data from students in the ASSISTments group, for whom bottom-out status ($S$) was observed; hence, the same model fit was used for all three treatment contrasts.
 
-Outcome models for all analyses adjusted for all of the variables that were in the corresponding principal score models, in addition to measurements of students' prior knowledge; also, the models substituted class fixed effects for school fixed effects.\footnote{Why use a coarser set of fixed effects for the principal score model than the outcome regression? First, the principal score model was fit to a smaller sample (only students in the ``Instant'' condition), so some classrooms only included one student, which can lead to poor fit. Second, the asymptotics of logistic regression are more restricted than OLS, so logistic regression tends to perform poorly when the number of parameters increases with the sample size \citep{agresti}.}
+Outcome models for all analyses included for all of the variables that were in the corresponding principal score models, in addition to measurements of students' prior knowledge; also, the models substituted class fixed effects for school fixed effects.\footnote{Why use a coarser set of fixed effects for the principal score model than the outcome regression? First, the principal score model was fit to a smaller sample (only students in the ``Instant'' condition), so some classrooms only included one student, which can lead to poor fit. Second, the asymptotics of logistic regression are more restricted than OLS, so logistic regression tends to perform poorly when the number of parameters increases with the sample size \citep{agresti}.}
 As with principal score models, we checked model fit with residual plots and modified model specifications accordingly.
 
 
@@ -858,14 +857,14 @@ Figure \ref{fig:compare} shows principal effect estimates from \textsc{geepers} 
 
 The \textsc{psw} model used the same principal score model as \textsc{geepers}, while the Bayesian model used the same principal score and outcome model specifications.
 
-The Bayesian mixture model assumed that outcomes were normally distributed, conditional on covariates and principal stratum, with a residual standard deviation that varied between principal strata. This modeling assumption is necessarily false since post-test scores were integers between 0 and 10. All model parameters with support in $\mathbb{R}$ were given standard normal priors, while standard deviation parameters were given half-standard normal priors.
+The Bayesian mixture model assumed that outcomes were normally distributed, conditional on covariates and principal strata, with a residual standard deviation that varied between principal strata. This modeling assumption is necessarily false since post-test scores were integers between 0 and 10. All model parameters with support in $\mathbb{R}$ were given standard normal priors, while standard deviation parameters were given half-standard normal priors.
 The principal score and outcome models were fit simultaneously using a Markov Chain Monte Carlo algorithm \citep{rstan}.
 
 The \textsc{psw} estimators did not include any covariate outcome modeling. Standard errors for the \textsc{psw} estimates were estimated using the bootstrap, with resampling done within schools.
 
 For all three sets of estimators, approximate 95\% confidence intervals were estimated by adding and subtracting twice the standard error from the point estimate (or twice the posterior standard deviation from the posterior mean, in the Bayesian mixture model).
 
-The other estimation strategies largely agreed with \textsc{geepers} and with each other in the contrast between ASSISTments and BAU, and, to a lesser extent, in the contrast between ASSISTments and DragonBox. The biggest difference between the methods was in the contrast with FH2T, in which the Bayesian mixture model resulted in a larger difference between the two principal effects, as well as the largest standard errors, while the two \textsc{psw} principal effect estimates were quite similar.  However, these differences are difficult to interpret due to the large uncertainty around all of the point estimates.
+The other estimation strategies largely agreed with \textsc{geepers} and with each other in the contrast between ASSISTments and BAU, and, to a lesser extent, in the contrast between ASSISTments and DragonBox. The biggest difference between the methods was in the contrast with FH2T, in which the Bayesian mixture model resulted in a larger difference between the two principal effects, as well as the largest standard errors, while the two \textsc{psw} principal effect estimates were quite similar.  However, these differences are difficult to interpret due to the large uncertainty surrounding all the point estimates.
 
 \section{Discussion}\label{sec:discussion}
 \textsc{geepers} is a straightforward approach to principal effect estimation under strong monotonicity, built on widely-used regression models, which is more robust---though sometimes less precise---than alternative approaches under a wide array of scenarios.
@@ -873,7 +872,7 @@ The other estimation strategies largely agreed with \textsc{geepers} and with ea
 There is good reason to hope that extensions to \textsc{geepers}, including cases in which $S$ takes more than two values, may be straightforward.
 For instance, in truncation by death problems \citep[e.g.][]{zhangRubin,ding2011} with weak monotonicity, $S_i=1$ if participant $i$ survives (or, more generally, if the outcome $Y_i$ is measured) and 0 otherwise, interest is typically in the principal effect for the ``always survive'' principal stratum in which $\sti=S_{ci}=1$.
 If, say, $\sti\ge S_{Ci}$, then every subject in the control condition with $S_i=1$ is in the always survive stratum, while those subjects in the treatment condition with $S_i=1$ are a mixture of the always survive and $\sti=1;\;S_{Ci}=0$ stratum.
-This scenario is broadly similar to the strong monotonicity, one-way noncompliance situation that this paper discussed.
+This scenario is broadly similar to the strong monotonicity, one-way noncompliance situation discussed in this paper.
 On the other hand, when no monotonicity assumption holds, both $\st$ and $S_C$ will have to be imputed for every subject; further research is necessary to determine the appropriate way to do so.
 
 Another direction of extension involved the principal score model \eqref{eq:pscore}.
@@ -885,7 +884,7 @@ Second, if the principal score model cannot be formulated as the solution to a s
 Lastly, can over-fit principal score models cause bias or other estimation problems, and if so, are there ways to protect against overfitting?
 
 Sampling error prevents firm conclusions regarding principal effects for students who would, if given the opportunity, request frequent bottom-out hints.
-However, the results are consistent with the hypothesis that ASSISTments is less effective for frequent bottom-out requesters when compared to a similar program without hints or immediate feedback. We hypothesize that many students who request bottom-out hints frequently are gaming the system, abetted by the availability of bottom-out hints.
+However, the results are consistent with the hypothesis that ASSISTments is less effective for frequent bottom-out requesters when compared to a similar program without hints or immediate feedback. We hypothesize that many students who frequently request bottom-out hints are gaming the system, facilitated by the availability of these hints.
 
 \textsc{geepers} is a flexible, easily-implementable method for principal effect estimation for one-way noncompliance, with predictive covariates; extensions to a broader set of circumstances could be a boon to causal modeling.
 
