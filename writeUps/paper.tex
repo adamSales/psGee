@@ -47,9 +47,10 @@
 %\usepackage{multibib}
 \usepackage{rotating}
 
-\usepackage[dvipsnames]{xcolor}
+\usepackage[dvipsnames,table]{xcolor}
 
 %\startlocaldefs
+\definecolor{lightgray}{gray}{0.9}
 
 \newcommand{\rd}[1]{\textcolor{BrickRed}{#1}}
 
@@ -434,7 +435,8 @@ For the remainder of the paper, we will refer to principal effect estimators $\h
 
 We conducted a simulation study to compare the performance of \textsc{geepers} with that of a Bayesian mixture model and a principal score weighting estimator, in both favorable and unfavorable circumstances.
 The study was designed to answer three sets of overarching questions.
-First, how does the performance of the \textsc{geepers} estimator vary under different conditions, including sample size, the extent to which $\bx$ predicts $\st$, whether and how the principal effects themselves vary, and when important interactions are omitted from the outcome model?
+First, how does the performance of the \textsc{geepers} estimator vary under different conditions, including sample size, the extent to which $\bx$ predicts $\st$, %whether and how the principal effects themselves vary, 
+and when important interactions are omitted from the outcome model?
 Second, how does \textsc{geepers} compare with mixture modeling? Is it competitive in circumstances favorable to both techniques? Does it avoid the pitfalls of mixture modeling when the parametric assumptions of the normal mixture model fail?
 Third, are there ways or circumstances when the principal score weighting estimator outperforms \textsc{geepers} or a mixture estimator even though principal ignorability does not hold?
 
@@ -458,7 +460,7 @@ Principal stratum $\sti\in \{0,1\}$ was simulated as $S_i\sim Bern(\ppi)$.
 
 \label{potential}Potential and observed outcomes were generated as
 \begin{equation}\label{eq:y-sim}
-Y_i=\beta_1\sti+\beta_3Z_i\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i%\\
+Y_i=0.3 Z_i\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i%\\
 \end{equation}
 %   \begin{split}
 %   \yci&=\beta_1\sti+(\gamma_1+\gamma_2\sti)(x_{1i}+x_{2i})+\frac{1}{\sqrt{6}}x_{3i}+\epsilon_i\\
@@ -466,12 +468,14 @@ Y_i=\beta_1\sti+\beta_3Z_i\sti+(\gamma_1+\gamma_2\sti+\gamma_3Z_i)(x_{1i}+x_{2i}
 %   Y_i&=Z_i\yti+(1-Z_i)\yci
 %   \end{split}
 % \end{equation}
-with $\beta_3=0.3-\beta_1$, $\EE[\epsilon_i]=0$, and $Var(\epsilon_i)=1/2$.
-The distribution of $\epsilon_i$, $\beta_1$, and values of coefficients $\gamma_1$, $\gamma_2$, and $\gamma_3$ were manipulated factors in the study.
-As described below, in most simulated scenarios, $\gamma_1=1/\sqrt{6}$ and $\gamma_2=\gamma_3=0$. In these cases there is no average treatment effect in the $\st=0$ stratum, and, since  $Var(\gamma_1(x_1+x_2+x_3))=1/2$ and $Var(\epsilon_i)=1/2$, covariates explained half of the variance of $Y$ within treatment group and principal stratum, and observed covariates $x_1$ and $x_2$ explained 1/3 of that variance.
-These values are in line with estimates from outcome models in Section \ref{sec:fh2t} and are typical in education contexts \cite{hedgesHedberg}.
+with %$\beta_3=0.3-\beta_1$, 
+$\EE[\epsilon_i]=0$, and $Var(\epsilon_i)=1/2$.
+The distribution of $\epsilon_i$ and values of coefficients $\gamma_1$, $\gamma_2$, and $\gamma_3$ were manipulated factors in the study.
 
 Treatment assignment $Z$ was simulated as independent of all the other variables, with half of the subjects assigned to treatment $Z=1$ and the rest to control $Z=0$.
+
+Since the covariates were centered and independent of $Z$, the true principal effects were 
+$\eff0=\gamma_3\EE[x1+x2|\st=0]$ and $\eff1=0.3+\gamma_3\EE[x1+x2|\st=1]$; in most simulation scenarios $\gamma_3=0$ so $\eff0=0$ and $\eff1=0.3$. 
 
 
 \subsubsection{Manipulated Factors}\label{sec:manipulatedFactors}
@@ -481,6 +485,7 @@ The five factors are not completely crossed---in particular, we let $n$ and $\al
 \begin{table}
     \caption{\label{tab:factor} Manipulated factors in simulation study}
   \centering
+  %\rowcolors{1}{}{lightgray}
 \begin{tabular}{r|rl}%{*{3}{c}}
   \hline
   Factor &\multicolumn{2}{l}{Levels}\\
@@ -488,8 +493,8 @@ The five factors are not completely crossed---in particular, we let $n$ and $\al
 Sample size per condition $n$ &\multicolumn{2}{l}{$100,200,\dots,900,1000$}\\
 $\alpha$ &\multicolumn{2}{l}{$0,0.2,0.3,\dots,0.9,1$}\\
 The distribution of $\epsilon_i$&\multicolumn{2}{l}{ Normal, Uniform}\\
-$\beta_1$ & \multicolumn{2}{l}{0, 0.3}\\
-Interactions in \eqref{eq:y-sim} & None & $\gamma_1=1/\sqrt{6};\gamma_2=\gamma_3=0$\\ 
+%$\beta_1$ & \multicolumn{2}{l}{0, 0.3}\\
+\multirow{4}{*}{Interactions in \eqref{eq:y-sim}} & None & $\gamma_1=1/\sqrt{6};\gamma_2=\gamma_3=0$\\ 
 & $\bm{x}:\st$ & $\gamma_1=3/(4\sqrt{6})$; $\gamma_2=1/(2\sqrt{6})$; $\gamma_3=0$\\
 & $\bm{x}:Z$&$\gamma_1=1/\sqrt{6};\gamma_2=0$; $\gamma_3=1/(2\sqrt{6})$\\
 & $\bm{x}:\st$ \& $\bm{x}:Z$& $\gamma_1=3/(4\sqrt{6})$; $\gamma_2=\gamma_3=1/(2\sqrt{6})$\\
@@ -510,12 +515,16 @@ Normal $\epsilon\sim\mathcal{N}(0,1/2)$, as assumed by the mixture model estimat
 %\item[Mixture] $f_\epsilon(x)=\frac{1}{4}\phi\left((x+1/3)\sqrt{6}\right)+\frac{1}{4}\phi\left((x-1)\sqrt{6})\right)$
 %The mixture distribution for $\epsilon$ was designed to be particularly difficult for the mixture model estimator.
 
-$\bm{\beta_1}$\textbf{:} When $\beta_1=0$, there is only one mixture component in the control
-group, which can be problematic for mixture modeling \citep{griffin2008application,feller2016principal}. Conversely, when $\beta_1=0.3$, unless there is an interaction between $Z$ and covariates (i.e., $\gamma_3\ne 0$), $\eff0=\eff1=0$, so there is no average treatment effect for either principal stratum.
+% $\bm{\beta_1}$\textbf{:} When $\beta_1=0$, there is only one mixture component in the control
+% group, which can be problematic for mixture modeling \citep{griffin2008application,feller2016principal}. Conversely, when $\beta_1=0.3$, unless there is an interaction between $Z$ and covariates (i.e., $\gamma_3\ne 0$), $\eff0=\eff1=0$, so there is no average treatment effect for either principal stratum.
 
 
-\textbf{\emph{Interactions between $\st$ or $Z$ and covariates:}} The last two factors---the presence of interactions between covariates and $\st$ and $Z$, respectively---test the performance of a model that does not include interactions when that modeling assumption is false.
+\textbf{\emph{Interactions between $\st$ or $Z$ and covariates:}} The factor---the presence of interactions between covariates and $\st$ and $Z$, respectively--- tests the performance of a model that does not include interactions when that modeling assumption is false.
+
 When neither interaction was present, $\gamma_2=\gamma_3=0$, then $\gamma_1=1/\sqrt{6}$.
+In these cases, since  $Var(\gamma_1(x_1+x_2+x_3))=1/2$ and $Var(\epsilon_i)=1/2$, covariates explained half of the variance of $Y$ within treatment group and principal stratum, and observed covariates $x_1$ and $x_2$ explained 1/3 of that variance.
+These values align with estimates from outcome models in Section \ref{sec:fh2t} and are typical in education contexts \cite{hedgesHedberg}.
+
 When there was an interaction between covariates and $\sti$, then $\gamma_1=3/(4\sqrt{6})$ and $\gamma_2=1/(2\sqrt{6})$, so that the slopes for $x_1$ and $x_2$ varied by half their magnitude between principal strata, and on average they were equal to $1/\sqrt{6}$, as in the no-interaction case.
 Interactions between covariates and $Z$ were controlled by $\gamma_3$: when there were interactions, $\gamma_3=1/(2\sqrt{6})$, otherwise $\gamma_3=0$.
 Either type of interaction violates Assumption \ref{ass:rci} since if $\gamma_2\ne 0$ or $\gamma_3 \ne 0$, there is no single vector $\bm{\gamma}$ that can fully capture the dependence of $\yc$ and $\yt$ on $S$---instead, the dependence varies with $\st$ and/or with $Z$.
@@ -531,12 +540,11 @@ The third covariate used in the data-generating model, $x_3$, was ``unobserved''
 All three methods used the same principal score model, a logistic regression of $S$ on $\bx$, and an intercept, fit using data from the treatment group in which $S=\st$ was observed, i.e., $\ppf{\bm{\alpha}}{\bx}=logit^{-1}(\alpha_0+\bm{\alpha}'\bx)$.
 
 \pmm, the parametric mixture estimator, then fits two outcome models:
-For the treatment group, the regression model $Y=\beta_0^T+\beta_1^TS+\bm{\gamma}'\bx+\epsilon$ and for the control group, a mixture model of the form \eqref{eq:mixtureModelPS}, but with $\muc0$ and $\muc1$ replaced by regression functions $\beta_0^C+\bm{\gamma}'\bx$ and $\beta_0^C+\beta_1^C+\bm{\gamma}'\bx$, respectively.
+For the treatment group, the regression model $Y=\beta_0^T+\beta_1^TS+\bm{\gamma}'\bx+\epsilon$ and for the control group, a mixture model of the form \eqref{eq:mixtureModelPS}, but with linear normal models for $g^s(y|x_1,x_2)$. 
 Residual variance was allowed to differ across treatment groups, but not across principal strata.
-These models were fit simultaneously using Bayesian Markov Chain Monte Carlo with Stan \citep{rstan}, and principal effects $\eff0$ and $\eff1$ estimated as $\beta_0^T-\beta_0^C$ and $\beta_0^T+\beta_1^T-\beta_0^C-\beta_1^T$, respectively. We interpreted the posterior mean as a point estimate and the posterior standard deviation as a standard error.
+These models were fit simultaneously using Bayesian Markov Chain Monte Carlo with Stan \citep{rstan}. We interpreted the posterior mean as a point estimate and the posterior standard deviation as a standard error.
 
-
-For \textsc{geepers} and \psw, the principal score model was fit by itself, to data from the treatment group, using standard maximum likelihood methods.
+For \textsc{geepers} and \psw, the principal score model was fitted to data from the treatment group using standard maximum likelihood methods.
 For \textsc{geepers}, we used the estimated principal scores in the control group, along with the observed $S$ in the treatment group, to construct $R$, and then fit the model \eqref{eq:reg2} with OLS.
 To estimate standard errors, we computed the sandwich covariance matrix following the procedure detailed in the appendix.
 
@@ -554,7 +562,7 @@ Our first set of results illustrates the performance of \geepers when all of its
 Since \geepers is an asymptotic method whose identification depends on $\bm{x}$ as a predictor of $\st$, we examine its bias and standard error as functions of $n$ and $\alpha$.
 We include analogous results for \pmm as a baseline comparison. 
 
-Figure \ref{fig:alphan} shows the empirical bias and standard error (SE) of the \textsc{geepers} and mixture estimator of $\eff1$ as sample size and $\alpha$ varied.
+Figure \ref{fig:alphan} shows the empirical bias and standard error (SE) of the \textsc{geepers} and \pmm estimators of $\eff1$ as sample size and $\alpha$ varied.
 Across $n$ and $\alpha$, \textsc{geepers} had lower bias and higher SE than the mixture estimator.
 \textsc{geepers} was positively biased for low $n$ with bias converging to close to 0 (up to simulation error) for $n\ge 300$, and was roughly unbiased (up to simulation error) for $\alpha \ge 0.2$, with $n$ fixed at 500.
 The SE of the \textsc{geepers} decreased rapidly for $100\le n \le 500$ and $0.2\le \alpha \le 0.5$ and more gradually for higher values of $n$ and $\alpha$.
@@ -796,14 +804,14 @@ However, this strategy can also lead to overfitting, which would decrease out-of
 In an alternative analysis, we chose a subset of covariates to include in $\bxs$ and $\bxy$ with a backward stepwise selection algorithm minimizing the AIC \citep{aic} of the principal score model and then modified the resulting models based on residual plots.
 The model selection process is recorded in the GitHub repository cited above.
 
-Lastly, Assumption \ref{ass:ci} implies that there is no interaction between $\bxs$ and $\st$ in the outcome model. Further, for the sake of statistical efficiency, we did not consider outcome models with interactions between covariates and $Z$.
+Lastly, Assumption \ref{ass:ci} implies that there is no interaction between $\bxs$ and $\st$ in the outcome model. 
 \emph{A priori}, the student attribute that poses the greatest threat to these modeling choices is prior achievement, that is, scores on the pretest and the fifth-grade state test.
 This is both because they measure a similar construct to the posttest and because \cite{impactPaper} found a pretest-treatment interaction in a different treatment contrast.
 Following that reasoning, we conducted a third parallel analysis excluding prior achievement covariates. % in $\bxs$ but including all covariates in $\bxy$.
 
 All three principal score models were fit to data from students in the ASSISTments group, for whom bottom-out status ($S$) was observed; hence, the same model fit was used for all three treatment contrasts.
 
-Outcome models for all analyses included for all of the variables that were in the corresponding principal score models, in addition to measurements of students' prior knowledge; also, the models substituted class fixed effects for school fixed effects.\footnote{Why use a coarser set of fixed effects for the principal score model than the outcome regression? First, the principal score model was fit to a smaller sample (only students in the ``Instant'' condition), so some classrooms only included one student, which can lead to poor fit. Second, the asymptotics of logistic regression are more restricted than OLS, so logistic regression tends to perform poorly when the number of parameters increases with the sample size \citep{agresti}.}
+Outcome models for all analyses included all variables from the corresponding principal score models, but substituted class fixed effects for school fixed effects.\footnote{Why use a coarser set of fixed effects for the principal score model than the outcome regression? First, the principal score model was fit to a smaller sample (only students in the ``Instant'' condition), so some classrooms only included one student, which can lead to poor fit. Second, the asymptotics of logistic regression are more restricted than OLS, so logistic regression tends to perform poorly when the number of parameters increases with the sample size \citep{agresti}.}
 As with principal score models, we checked model fit with residual plots and modified model specifications accordingly.
 
 
