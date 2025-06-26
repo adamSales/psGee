@@ -97,7 +97,7 @@ plotByN=bind_rows(
     annotate('text',600,.11,label=list(bquote(paste(#atop(
                                 "Normal Resid., No Interactions, ",alpha==0.5))),#", "~mu[C]^1-mu[C]^0==0.3))),
              parse=TRUE)+
-  scale_x_continuous(name="Sample Size Per Group (n)",breaks=c(seq(100,500,200),1000))+
+  scale_x_continuous(name="Sample Size Per Group (n)",breaks=c(seq(100,700,200),1000))+
   #ggtitle("Bias and Standard Error by n")+
   theme(legend.title=element_blank())
 ggsave("simFigs/biasSEbyN.jpg",plot=plotByN,width=6,height=3)
@@ -150,10 +150,11 @@ full_join(seB1,biasB1)%>%filter(eff==1,estimator!="PSW",b1>0)%>%summarize(across
 plotByAlpha=bind_rows(
   seB1%>%mutate(se=se/5,meas="SE")%>%rename(what=se),
   biasB1%>%mutate(meas="Bias")%>%rename(what=bias))%>%
-  filter(b1>0,eff==1,estimator!="PSW")%>%
+  filter(b1>0.1,eff==1,estimator!="PSW")%>%
   ggplot(aes(b1,what,color=estimator,group=paste0(estimator,meas),linetype=meas,fill=estimator,shape=meas))+
   geom_point()+geom_line()+geom_hline(yintercept=0)+#,linetype="dashed")+
-  scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*5,name='Standard Error'))+
+    scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*5,name='Standard Error'))+
+    scale_x_continuous(breaks=seq(0,1,0.2),minor_breaks=seq(0.1,0.9,0.2),labels=sprintf("%0.1f",seq(0,1,0.2)))+
   scale_shape_manual(values=c(0,16))+
     annotate('text',.7,.08,label=list(bquote(
                                paste(#atop(
@@ -201,7 +202,7 @@ pd <- results %>%
 ### figure for paper
 
 norm<-bp(pd,
-   subset=b1 > 0& errDist=='norm'& eff==1&mu01==0.3&n==500&PE=='Stratum 1',
+   subset=b1 > 0& errDist=='norm'& eff==1&mu01==0&n==500&PE=='Stratum 1',
    title="Normal Residuals",ylim=c(-1.5,1.5),#c(-1.5,1.5),
    facet=B1~intAll,#interactionZ+interactionS,
    Labeller=labeller(B1="none",#label_parsed,
@@ -218,7 +219,7 @@ norm<-bp(pd,
   scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
 
 unif<-bp(pd,
-   subset=b1 > 0& errDist=='unif'& eff==1&mu01==0.3&n==500&PE=='Stratum 1',
+   subset=b1 > 0& errDist=='unif'& eff==1&mu01==0&n==500&PE=='Stratum 1',
    title="Uniform Residuals",ylim=c(-1.5,1.5),#c(-1.5,1.5),
    facet=B1~intAll,#interactionZ+interactionS,
    Labeller=labeller(B1=label_parsed,intAll=label_value),labSize=2.
@@ -255,16 +256,16 @@ rmse <- pd%>%
 
 sink('writeUps/rmseTabAppendix500.tex')
 cbind(
-rmse%>%filter(errDist!='mix',n==500,eff!="Diff",b1==.2)%>%
+rmse%>%filter(errDist!='mix',n==500,eff!="Diff",b1==.2,mu01==0)%>%
   transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
          `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
          `$\\bm{x}:S_T$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator,#=c(Mixture="\\pmm",GEEPERs="\\geepers",PSW="\\psw")[estimator],
-         `$\\beta_1$`=mu01,
+#         `$\\beta_1$`=mu01,
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
          rmse)%>%
 pivot_wider(names_from=estimator,values_from=rmse),
-rmse%>%filter(errDist!='mix',n==500,mu01==0.3,eff!="Diff",b1==.5)%>%
+rmse%>%filter(errDist!='mix',n==500,mu01==0,eff!="Diff",b1==.5)%>%
   transmute(`Res.\nDist.`=c(norm='Norm.',unif='Unif.')[errDist],
          `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
          `$\\bm{x}:S_T$\nInt.?`=ifelse(intS,'Yes','No'),
@@ -295,7 +296,7 @@ rmse%>%filter(errDist!='mix',n==1000,eff!="Diff",b1==.2)%>%
          `Prin.\nEff`=paste0('$\\tau^',eff,'$'),
          rmse)%>%
 pivot_wider(names_from=estimator,values_from=rmse),
-rmse%>%filter(errDist!='mix',n==1000,mu01==0.3,eff!="Diff",b1==.5)%>%
+rmse%>%filter(errDist!='mix',n==1000,mu01==0,eff!="Diff",b1==.5)%>%
   transmute(`Res.\nDist.`=c(norm='Norm.',unif='Unif.')[errDist],
          `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
          `$\\bm{x}:S_T$\nInt.?`=ifelse(intS,'Yes','No'),
@@ -337,18 +338,18 @@ sink('writeUps/coverageTab.tex')
 cbind(
      coverage%>%
       mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist,b1))%>%
-      filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==0,estimator!="\\textsc{psw}")%>%
+      filter(n==500,eff==1,errDist!='mix',mu01==0,b1==0,estimator!="\\textsc{psw}")%>%
       transmute(`Residual\nDist.`=c(norm='Normal',unif='Uniform')[errDist],
          `$\\bm{x}:Z$\nInt.?`=ifelse(intZ,'Yes','No'),
          `$\\bm{x}:S_T$\nInt.?`=ifelse(intS,'Yes','No'),
          estimator,#=c(Mixture="\\pmm",GEEPERs="\\geepers")[estimator],
          coverage)%>%
     pivot_wider(names_from=estimator,values_from=coverage),
-   coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.2)%>%
+   coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0,b1==.2)%>%
       mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist))%>%
     pivot_wider(names_from=estimator,values_from=coverage)%>%
     select(`\\textsc{geepers}`,`\\textsc{pmm}`),
-    coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0.3,b1==.5)%>%
+    coverage%>%filter(n==500,eff==1,errDist!='mix',mu01==0,b1==.5)%>%
       mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist))%>%
     pivot_wider(names_from=estimator,values_from=coverage)%>%
     select(`\\textsc{geepers}`,`\\textsc{pmm}`)#%>%
@@ -358,7 +359,7 @@ cbind(
     add_header_above(c(" " = 3, "$\\\\alpha=0$" = 2,
                        "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
     collapse_rows(columns=1,latex_hline="major",valign="middle")%>%
-    footnote(general=c("\\\\footnotesize Based on 500 replications. $n=500$, $\\\\beta_1=0.3$. Simulation standard error $\\\\approx 1$ percentage point. Estimates colored \\\\rd{red} indicate cases where the assumptions of the model are not met."),escape=FALSE,footnote_as_chunk = TRUE,threeparttable=TRUE)
+    footnote(general=c("\\\\footnotesize Based on 500 replications. $n=500$. Simulation standard error $\\\\approx 1$ percentage point. Estimates colored \\\\rd{red} indicate cases where the assumptions of the model are not met."),escape=FALSE,footnote_as_chunk = TRUE,threeparttable=TRUE)
 sink()
 
 ########################

@@ -38,7 +38,7 @@ source('regression.r')
 
 
 fullsim(nrep,ns=c(500,1000),mu01=c(0,.3),mu10=0,b1s=c(0,0.2,0.5),
-	ext='',cl=cl,start=1)
+	ext='',cl=cl,ncores=ncore,start=1)
 
 
 pswResults=sapply(seq(max(as.numeric(gsub('dat|\\.RData','',list.files('simData/'))),na.rm=TRUE)),
@@ -55,16 +55,15 @@ save(pswResults,file='simResults/pswResults.RData')
 
 ################################
 ### look at wider ranges of n and alpha
-fullsim(nrep,ns=100,mu01=.3,mu10=0,errDist=c('norm','unif'),b1s=c(0,.2,.5),ext='n100',cl=cl)
-fullsim(nrep,ns=100,mu01=0,mu10=0,errDist=c('norm'),b1s=c(.5),intS=FALSE,intZ=FALSE,ext='n100_mu01is0')#,cl=cl)
-fullsim(nrep,ns=500,mu01=0,mu10=0,errDist=c('norm'),b1s=c(.1),intS=FALSE,intZ=FALSE,ext='b1s.1_mu01is0')#,cl=cl)
 
-fullsim(nrep,ns=c(200,300,400,600,700,800),errDist='norm',b1s=.5,intS=FALSE,intZ=FALSE,mu01=.3,mu10=0,ext='ns',cl=cl)
+fullsim(nrep,ns=c(100,200,300,400,600,700,800,900),errDist='norm',b1s=.5,intS=FALSE,intZ=FALSE,mu01=.3,mu10=0,ext='ns',cl=cl,
+        ncores=ncore)
 
-fullsim(nrep,ns=c(200,300,400,600,700,800),errDist='norm',b1s=.5,intS=FALSE,intZ=FALSE,mu01=0,mu10=0,ext='ns_mu01is0')#,cl=cl)
+fullsim(nrep,ns=c(200,300,400,600,700,800),errDist='norm',b1s=.5,intS=FALSE,intZ=FALSE,mu01=0,mu10=0,ext='ns_mu01is0',cl=cl,
+            ncores=ncore)
 
-fullsim(nrep,ns=500,errDist='norm',b1s=c(.3,.4,seq(.6,1,.1)),intS=FALSE,intZ=FALSE,mu01=.3,mu10=0,ext='b1s',cl=cl)
-fullsim(nrep,ns=500,errDist='norm',b1s=c(.3,.4,seq(.6,1,.1)),intS=FALSE,intZ=FALSE,mu01=0,mu10=0,ext='b1ss_mu01is0')#,cl=cl)
+fullsim(nrep,ns=500,errDist='norm',b1s=c(.1,.3,.4,seq(.6,1,.1)),intS=FALSE,intZ=FALSE,mu01=0,mu10=0,ext='b1ss_mu01is0',cl=cl,
+            ncores=ncore)
 
 fullsim(nrep,ns=500,errDist=c("norm","unif"),b1s=c(0.3,0.4),intZ=TRUE,mu10=0,mu01=0.3,ext="alpha34")
 

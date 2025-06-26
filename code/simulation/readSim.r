@@ -6,8 +6,13 @@ source('code/simulation/readSimFuncs.r')
 #### read, process results from main simulation
 print(load('simResults/pswResults.RData'))
 
-results=loadRes(pswResults=pswResults)
-save(results,file='simResults/fullResults.RData')
+if(file.exists("simResults/fullResults.RData")){
+    load("simResults/fullResults.RData")
+} else{
+    results=loadRes(pswResults=pswResults)
+    save(results,file='simResults/fullResults.RData')
+}
+
 
 resultsN100=loadRes(ext2='n100_mu01is0')
 #save(resultsN100,file='simResults/resultsN100.RData')
@@ -16,6 +21,8 @@ resultsN100=loadRes(ext2='n100_mu01is0')
 resultsNs=loadRes(ext2="ns_mu01is0")
 
 resultsB1s=loadRes(ext2='b1ss_mu01is0')
+
+resB101=loadRes(ext2="b01_mu01is0")
 
 ### merge results by n
 load('simResults/casesns_mu01is0.RData')
@@ -48,7 +55,8 @@ load('simResults/casesb1ss_mu01is0.RData')
 casesB1=cases
 
 resultsB1s=bind_rows(
-  resultsB1s,
+    resultsB1s,
+    resB101,
   filter(results,run%in%(left_join(casesB1[1,],casesTot%>%mutate(run=1:n())%>%select(-b1))%>%pull(run)))
   )
 save(resultsB1s,file='simResults/resultsB1s_mu01is0.RData')

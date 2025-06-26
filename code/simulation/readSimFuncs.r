@@ -87,7 +87,9 @@ bayesProc <- function(res1,facs){
 
 
 loadRes <- function(ext1='',ext2='',pswResults){
-    load(paste0('simResults',ext1,'/cases',ext2,'.RData'))
+    if(file.exists(paste0('simResults',ext1,'/cases',ext2,'.RData'))){
+        load(paste0('simResults',ext1,'/cases',ext2,'.RData'))
+    } else cases <- cbind(1:sum(grepl(paste0('sim[0-9]+',ext2,'\\.RData'),list.files(paste0("simResults",ext1,"/")))))
 
     results <- list()
 #    summ <- NULL
