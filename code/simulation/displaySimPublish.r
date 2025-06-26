@@ -38,8 +38,8 @@ source('code/simulation/readSimFuncs.r')
 #### after simulation results have been loaded and pre-processed...
 ## source('code/simulation/readSim.r')
 load('simResults/fullResults.RData')
-load('simResults/resultsNs.RData')
-load('simResults/resultsB1s.RData')
+load('simResults/resultsNs_mu01is0.RData')
+load('simResults/resultsB1s_mu01is0.RData')
 
 
 ###############################################################################
@@ -94,7 +94,9 @@ plotByN=bind_rows(
   geom_point()+geom_line()+geom_hline(yintercept=0)+#,linetype="dotted",size=2)+
   scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*3,name='Standard Error'))+
   scale_shape_manual(values=c(0,16))+
-  annotate('text',600,.11,label=list(bquote(atop("Normal Resid., No Interactions, ",alpha==0.5~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
+    annotate('text',600,.11,label=list(bquote(paste(#atop(
+                                "Normal Resid., No Interactions, ",alpha==0.5))),#", "~mu[C]^1-mu[C]^0==0.3))),
+             parse=TRUE)+
   scale_x_continuous(name="Sample Size Per Group (n)",breaks=c(seq(100,500,200),1000))+
   #ggtitle("Bias and Standard Error by n")+
   theme(legend.title=element_blank())
@@ -153,8 +155,12 @@ plotByAlpha=bind_rows(
   geom_point()+geom_line()+geom_hline(yintercept=0)+#,linetype="dashed")+
   scale_y_continuous(name="Bias",sec.axis=sec_axis(trans=~.*5,name='Standard Error'))+
   scale_shape_manual(values=c(0,16))+
-  annotate('text',.7,.08,label=list(bquote(atop("Normal Resid., No Interactions, ",n==500~", "~mu[C]^1-mu[C]^0==0.3))),parse=TRUE)+
-  xlab(bquote(alpha))#+ggtitle(bquote("Bias and Standard Error by "~alpha))
+    annotate('text',.7,.08,label=list(bquote(
+                               paste(#atop(
+                                   "Normal Resid., No Interactions, ",n==500))),# "~mu[C]^1-mu[C]^0==0.3))),
+             parse=TRUE)+
+    xlab(bquote(alpha))#+ggtitle(bquote("Bias and Standard Error by "~alpha))
+
 ggsave("simFigs/biasSEbyB1.jpg",plot=plotByAlpha,width=6,height=3)
 
 
@@ -326,6 +332,8 @@ condRed <- function(coverage,intZ,intS,estimator,errDist,b1=1)
 
 
 sink('writeUps/coverageTab.tex')
+
+
 cbind(
      coverage%>%
       mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist,b1))%>%

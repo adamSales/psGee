@@ -87,7 +87,7 @@ bayesProc <- function(res1,facs){
 
 
 loadRes <- function(ext1='',ext2='',pswResults){
-    load(paste0('simResults/cases',ext1,ext2,'.RData'))
+    load(paste0('simResults',ext1,'/cases',ext2,'.RData'))
 
     results <- list()
 #    summ <- NULL
@@ -95,7 +95,7 @@ loadRes <- function(ext1='',ext2='',pswResults){
     for(i in 1:nrow(cases)){#length(fn)){
         #if(i %% 10==0)
             cat(round(i/nrow(cases)*100),'%',sep='')#length(fn)*100), '% ')
-      load(paste0('simResults/sim',i,ext1,ext2,'.RData'))#fn[i]))
+      load(paste0('simResults',ext1,'/sim',i,ext2,'.RData'))#fn[i]))
       if(!missing(pswResults))
         res <- map(1:length(res),
                    ~append(res[[.]],list(psw=unlist(pswResults[[i]][.,]))))
