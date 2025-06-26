@@ -333,8 +333,6 @@ condRed <- function(coverage,intZ,intS,estimator,errDist,b1=1)
 
 
 sink('writeUps/coverageTab.tex')
-
-
 cbind(
      coverage%>%
       mutate(coverage=condRed(coverage,intZ,intS,estimator,errDist,b1))%>%
@@ -359,7 +357,7 @@ cbind(
     add_header_above(c(" " = 3, "$\\\\alpha=0$" = 2,
                        "$\\\\alpha=0.2$" = 2, "$\\\\alpha=0.5$" = 2),escape=FALSE)%>%
     collapse_rows(columns=1,latex_hline="major",valign="middle")%>%
-    footnote(general=c("\\\\footnotesize Based on 500 replications. $n=500$. Simulation standard error $\\\\approx 1$ percentage point. Estimates colored \\\\rd{red} indicate cases where the assumptions of the model are not met."),escape=FALSE,footnote_as_chunk = TRUE,threeparttable=TRUE)
+    footnote(general=c("\\\\footnotesize Based on 500 replications. $n=500$. Simulation standard error $\\\\approx 1$ percentage point. Estimates colored \\\\rd{red} indicate cases where the assumptions of the model are not met."),escape=FALSE,footnote_as_chunk = TRUE,threeparttable=TRUE)%>%print()
 sink()
 
 ########################

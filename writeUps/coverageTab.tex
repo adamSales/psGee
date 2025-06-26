@@ -1,0 +1,30 @@
+
+\begin{threeparttable}
+\begin{tabular}[t]{lllllllll}
+\toprule
+\multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0$} & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
+\cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7} \cmidrule(l{3pt}r{3pt}){8-9}
+\makecell[l]{Residual\\Dist.} & \makecell[l]{$\bm{x}:Z$\\Int.?} & \makecell[l]{$\bm{x}:S_T$\\Int.?} & \textsc{geepers} & \textsc{pmm} & \textsc{geepers} & \textsc{pmm} & \textsc{geepers} & \textsc{pmm}\\
+\midrule
+ & No & No & \rd{1.00} & 1.00 & 0.97 & 0.97 & 0.97 & 0.95\\
+
+ & Yes & No & \rd{0.85} & \rd{0.70} & \rd{0.91} & \rd{0.74} & \rd{0.93} & \rd{0.82}\\
+
+ & No & Yes & \rd{1.00} & \rd{0.99} & \rd{0.98} & \rd{0.99} & \rd{0.95} & \rd{0.95}\\
+
+\multirow{-4}{*}{\raggedright\arraybackslash Normal} & Yes & Yes & \rd{0.86} & \rd{0.74} & \rd{0.92} & \rd{0.76} & \rd{0.94} & \rd{0.82}\\
+\cmidrule{1-9}
+ & No & No & \rd{1.00} & \rd{0.16} & 0.97 & \rd{0.23} & 0.95 & \rd{0.49}\\
+
+ & Yes & No & \rd{0.85} & \rd{0.06} & \rd{0.85} & \rd{0.09} & \rd{0.93} & \rd{0.33}\\
+
+ & No & Yes & \rd{1.00} & \rd{0.28} & \rd{0.98} & \rd{0.26} & \rd{0.96} & \rd{0.52}\\
+
+\multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & \rd{0.81} & \rd{0.11} & \rd{0.85} & \rd{0.17} & \rd{0.92} & \rd{0.45}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[para]
+\item \textit{Note: } 
+\item \footnotesize Based on 500 replications. $n=500$. Simulation standard error $\approx 1$ percentage point. Estimates colored \rd{red} indicate cases where the assumptions of the model are not met.
+\end{tablenotes}
+\end{threeparttable}
