@@ -311,6 +311,12 @@ psw1 <- function(dat,psMod){
 
 print.psw <- function(x, ...) print(x$coef,...)
 
+bsSchool <- function(dat){
+  datS <- split(dat,dat$SchIDPre)
+  do.call("rbind",
+          lapply(datS,function(x) x[sample(1:nrow(x),nrow(x),replace=TRUE),]))
+}
+
 bsInd=function(data)
   data[sample(1:nrow(data),nrow(data),replace=TRUE),]
 

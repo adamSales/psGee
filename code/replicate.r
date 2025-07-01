@@ -3,6 +3,8 @@ library(dplyr)
 library(ggplot2)
 library(readr)
 library(tidyr)
+library(sandwich)
+library(lmtest)
 library(forcats)
 library(arm)
 library(randomForest)
@@ -19,14 +21,23 @@ library(tibble)
 library(coefplot)
 library(splines)
 library(tikzDevice)
-library(colorspace)
 select <- dplyr::select
 
-palette <- qualitative_hcl(4)
-names(palette)=c("\\textsc{pmm}","\\textsc{geepers}","\\textsc{psw}","\\textsc{bsiv}")
+
+options(mc.cores = 2)
+
+### NYC subway colors
+### from https://data.ny.gov/widgets/3uhz-sej2
+palette <- c(
+"#0039A6",
+"#00ADD0",
+"#EE352E",
+"#808183"#,
+)#%>%protan()
+#qualitative_hcl(4)
+names(palette)=c("\\textsc{pmm}","\\textsc{psw}","\\textsc{geepers}","\\textsc{bsiv}")
 
 source('code/regression.r')
-source('code/fh2t/psw.r')
 
 auc <- function(x,y)
   if(length(unique(y))==2 & length(y)==length(x)){
@@ -35,7 +46,30 @@ auc <- function(x,y)
     wilcox.test(x,y)$statistic/(legnth(x)*length(y))
 
 aucMod <- function(mod)
-  auc(mod$linear,1-mod$y)
+    auc(mod$linear,1-mod$y)
+
+
+
+############################################################
+############################################################
+###
+### OPTS analysis
+###
+#########################################################
+############################################################
+
+source("code/OPTS/opts.r")
+
+
+
+############################################################
+############################################################
+###
+### FH2T analysis
+###
+#########################################################
+############################################################
+
 
 ############################################################
 ### make dataset

@@ -64,7 +64,16 @@ load('simResults/resultsB1s_mu01is0.RData')
     interactionS=ifelse(intS,"S interaction","No\nS interaction"),
     N=paste0("n=",n)
   ) %>%
-  filter(rhat<1.1)
+     filter(rhat<1.1)
+
+
+### any statistically significant bias?
+pdns%>%filter(eff=="1")%>%
+    group_by(estimator,n)%>%
+    summarize(bias=mean(errP),pval=t.test(errP)$p.value)%>%
+    mutate(p.adj=p.adjust(pval,method="BH"),
+           p.holm=p.adjust(pval,method="holm"))%>%
+    print(n=Inf)
 
 
 
@@ -130,6 +139,13 @@ ggsave("simFigs/biasSEbyN.jpg",plot=plotByN,width=6,height=3)
   ) %>%
   filter(rhat<1.1)
 
+### any statistically significant bias?
+pdb1%>%filter(eff=="1",rhat<1.1,estimator!="PSW")%>%
+    group_by(estimator,b1)%>%
+    summarize(bias=mean(errP),pval=round(t.test(errP)$p.value,4))%>%
+    mutate(p.adj=p.adjust(pval,method="BH"),
+           p.holm=p.adjust(pval,method="holm"))%>%
+    print(n=Inf)
 
 
 

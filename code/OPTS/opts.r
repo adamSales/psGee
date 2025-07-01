@@ -1,31 +1,7 @@
-library(rstan)
-library(dplyr)
-library(tibble)
-library(ggplot2)
-library(sandwich)
-library(lmtest)
-library(tableone)
-library(purrr)
-library(kableExtra)
-library(tidyr)
-
-rstan_options(auto_write = FALSE)
 
 
-source('code/regression.r')
-options(mc.cores = 2)
 
-auc <- function(x,y)
-  if(length(unique(y))==2 & length(y)==length(x)){
-    wilcox.test(x~y)$statistic/(sum(y)*(sum(1-y)))
-  }else
-    wilcox.test(x,y)$statistic/(legnth(x)*length(y))
-
-aucMod <- function(mod)
-  auc(mod$linear,1-mod$y)
-
-
-print(load('code/OPTS/OPT_Study_PersonLevel_Data.RData'))
+print(load('data/OPT_Study_PersonLevel_Data.RData'))
 ## downloaded from https://www.causeweb.org/tshs/obstetrics-and-periodontal-therapy/
 
 
@@ -65,10 +41,10 @@ tab1 <- map(list(`Full Data`=opt,`Complete Cases`=cca),
     t())%>%
     do.call("cbind",.)
 
-
+sink("results/optsTable1.tex")
 kbl(tab1[-c(1:2),],format="latex",booktabs=TRUE,col.names=tab1[2,],caption="Descriptive statistics---mean and standard deviation or count and percent---for study variables in the full OPT dataset and in the analysis sample (i.e. complete cases)",label="optTab1" )%>%
     add_header_above(c(" ","Full Data"=2,"Complete Cases"=2))
-
+sink()
 
 
 ## "included 640 participants with nonmissing values for the covariates and
@@ -142,7 +118,7 @@ sdat <- list(
     sdat$ncovY=ncol(Xout)
 
 
-  psStan <- stan(file = 'code/fh2t/psModSimp.stan',data=sdat)
+psStan <- stan(file = 'code/fh2t/psModSimp.stan',data=sdat)
 save(psStan,file='code/OPTS/psStanSimp.RData')
 load('code/OPTS/psStanSimp.RData')
 
@@ -205,9 +181,12 @@ effects%>%pivot_wider(id_cols=eff,names_from=method,values_from=c(estimates,SE))
 effects%>%pivot_wider(id_cols=method,names_from=eff,values_from=c(estimates,SE))%>%
     select(method,ends_with("eff0"),ends_with("eff1"),ends_with("diff"))
 
-effects%>%filter(eff!="diff")%>%
+
+
+
+optPlot <- effects%>%filter(eff!="diff")%>%
     mutate(
-        EFF=ifelse(eff=='eff0',
+        EFF=ifelse(eff=='eff0', ## Positioning
             ifelse(method=="GEEPERS",-.105,
             ifelse(method=="BSIV",-.035,
             ifelse(method=='Mixture',0.035,.105))),
@@ -218,32 +197,27 @@ effects%>%filter(eff!="diff")%>%
             c(eff1="Complete Treatment",eff0="Partial Treatment",diff="Difference")[eff],
             levels=c("Partial Treatment","Complete Treatment","Difference")),
         ymin=estimates-2*SE,
-        ymax=estimates+2*SE)%>%
-    ggplot(aes(EFF,estimates,color=method,ymin=ymin,ymax=ymax))+
+        ymax=estimates+2*SE,
+        meth=c(Mixture='\\textsc{pmm}',GEEPERS='\\textsc{geepers}',PSW='\\textsc{psw}',BSIV="\\textsc{bsiv}")[method],
+        meth=factor(meth,levels=c("\\textsc{geepers}","\\textsc{bsiv}","\\textsc{pmm}","\\textsc{psw}")))%>%
+    ggplot(aes(EFF,estimates,color=meth,ymin=ymin,ymax=ymax))+
     geom_point()+
-    geom_errorbar(width=0)+
-    geom_hline(yintercept=ATE$coef)+
+    geom_errorbar(width=0,linewidth=2)+
+    geom_hline(yintercept=0)+
+    geom_hline(yintercept=ATE$coef,linetype="dashed")+
     geom_point(data=ateDF,aes(EFF,estimates),color='black',inherit.aes=FALSE)+
     geom_errorbar(data=ateDF,aes(EFF,ymin=ymin,ymax=ymax),width=0,color='black',inherit.aes=FALSE)+
     scale_x_continuous("Principal Stratum",breaks=c(0,.25,.5),minor_breaks=NULL,
-                     labels=c("Partial\nTreatment","ATE","Complete\nTreatment"),limits=c(-.15,.65))+
+                       labels=c("Partial\nTreatment","ATE","Complete\nTreatment"),limits=c(-.15,.65))+
+        scale_color_manual(values=palette)+
   labs(color='Method',y='Principal Effect')+
-  theme(legend.position="top")
-ggsave("figure/opts.pdf",width=5,height=3,units="in")
+  theme(legend.position="top")#%>%print()
+
+tikz("figure/opts.tex",width=5,height=3,standAlone=TRUE)
+print(optPlot)
+dev.off()
 
 
-
-
-
-
-
-cca2 <- cca
-cca2$Y <- qlogis(cca$Y)
-cca2 <- subset(cca2,is.finite(Y))
-nrow(cca2)
-
-est(cca2,~ETXU_CAT1+OFIBRIN1)
-
-
-### other analyses: try different baseline variables
-### there are 36, so choose(36,2)=630 combinations of 2
+setwd("figure")
+system("lualatex opts.tex")
+setwd("..")
