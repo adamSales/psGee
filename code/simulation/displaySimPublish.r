@@ -215,7 +215,10 @@ pd <- results %>%
   ) %>%
   filter(estimator=='PSW'|rhat<1.1)
 
+#######################################################
 ### figure for paper
+#######################################################
+
 
 norm<-bp(pd,
    subset=b1 > 0& errDist=='norm'& eff==1&mu01==0&n==500&PE=='Stratum 1',
@@ -258,6 +261,53 @@ dev.off()
 setwd("simFigs")
 system("lualatex boxplotsNew.tex")
 setwd("..")
+
+
+#######################################################
+### "boxplots" figure with n=1000 for appendix
+#######################################################
+norm1000<-bp(pd,
+   subset=b1 > 0& errDist=='norm'& eff==1&mu01==0&n==1000&PE=='Stratum 1',
+   title="Normal Residuals",ylim=c(-1.5,1.5),#c(-1.5,1.5),
+   facet=B1~intAll,#interactionZ+interactionS,
+   Labeller=labeller(B1="none",#label_parsed,
+                     intAll=label_value),labSize=2.5
+   )+
+    labs(y=bquote("Estimation Error for "~tau^1),#subtitle="No Interactions",
+         x=NULL)+
+  #theme_bw()+
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+          strip.text.y=element_blank(),strip.background.y=element_blank(),
+                                        #plot.subtitle = element_text(size=10),
+        legend.position="none")+
+  scale_fill_manual(values=c('#1b9e77','#d95f02','#7570b3'))+
+  scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
+
+unif1000<-bp(pd,
+   subset=b1 > 0& errDist=='unif'& eff==1&mu01==0&n==1000&PE=='Stratum 1',
+   title="Uniform Residuals",ylim=c(-1.5,1.5),#c(-1.5,1.5),
+   facet=B1~intAll,#interactionZ+interactionS,
+   Labeller=labeller(B1=label_parsed,intAll=label_value),labSize=2.
+   )+
+    labs(y=NULL,#bquote("Estimation Error for "~tau^1),#subtitle="No Interactions",
+         x=NULL)+
+  #theme_bw()+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+                                        #plot.subtitle = element_text(size=10),
+        legend.position="none")+
+  scale_fill_manual(values=c('#1b9e77','#d95f02','#7570b3'))+
+  scale_color_manual(values=c('#1b9e77','#d95f02','#7570b3'))
+
+#pdf(
+tikz("simFigs/boxplotsAppendixN1000.tex",#pdf",
+     width=6.5,height=4,standAlone=TRUE)
+grid.arrange(norm1000,unif1000,nrow=1)
+dev.off()
+
+setwd("simFigs")
+system("lualatex boxplotsAppendixN1000.tex")
+setwd("..")
+
 
 #######################################################
 #### rmse appendix

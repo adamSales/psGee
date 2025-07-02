@@ -90,7 +90,10 @@ psMod <- geepers$psMod
 arm::binnedplot(predict(psMod,type='response'),resid(psMod,type='response'))
 summary(psMod)
 
-aucMod(psMod)
+print(aucMod(psMod))
+
+### standardized coefficients:
+print(glm(S~scale(ETXU_CAT1)+scale(OFIBRIN1),data=mf,family=binomial))
 
 ## bs <- replicate(5000,
 ##                 coef(
