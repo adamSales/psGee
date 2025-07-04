@@ -1,7 +1,9 @@
 \documentclass[]{article}
 \usepackage[letterpaper]{geometry}
 \usepackage{xr}
+
 \externaldocument{writeUps/appendix}
+
 \RequirePackage{amsmath,amsfonts,amssymb,amsthm}
 %\RequirePackage[authoryear]{natbib}
 \usepackage{longtable}
@@ -13,7 +15,9 @@
 \bibpunct[, ]{(}{)}{;}{a}{,}{,}%
 \renewcommand\bibfont{\fontsize{10}{12}\selectfont}% To set the list of references in 10 point font using natbib.sty
 
-\usepackage{xspace} 
+\usepackage{xspace}
+
+\usepackage{placeins}
 
 % \theoremstyle{plain}% Theorem-like structures provided by asthma.sty
 % \newtheorem{theorem}{Theorem}[section]
@@ -53,8 +57,6 @@
 \input{notation.tex}
 
 
-\usepackage{endfloat}% To `separate' figures and tables from text if required
-
 
 %\endlocaldefs
 %\newcites{supp}{Supplementary References}
@@ -69,19 +71,21 @@
 %\maketitle
 
 %\begin{aug}
+
 %  \author{
 %  Adam C. Sales\thanks{CONTACT Adam C. Sales. Email: asales@wpi.edu}, Kirk P. Vanacore, and Erin R. Ottmar%\\
 %  %\affil{Worcester Polytechnic Institute, Worcester, MA, USA}
 % }
 
-% \maketitle
+%   \maketitle
+\date{}
 
 
 \maketitle
 
 
 \begin{abstract}
-Principal stratification is a framework for making sense of causal effects conditioned on variables that themselves may have been affected by treatment. For instance, one component of an educational computer application is the availability of “bottom-out” hints that provide the answer. In evaluating a recent experimental evaluation against alternative programs without bottom-out hints, researchers may be interested in estimating separate average treatment effects for students who, if given the opportunity, would request bottom-out hints frequently, and for students who would not. Most principal stratification estimators rely on strong structural or modeling assumptions, and many require advanced statistical training to fit and check. In this paper, we introduce a new M-estimation principal effect estimator for one-way noncompliance based on a binary indicator. Estimates may be computed using conventional regressions (though the standard errors require a specialized sandwich formula) and do not rely on distributional assumptions. We present a simulation study that demonstrates the novel method's greater robustness compared to popular alternatives and illustrate the method through two real-data analyses.
+Principal stratification is a framework for making sense of causal effects conditioned on variables that themselves may have been affected by treatment. For instance, one component of an educational computer application is the availability of “bottom-out” hints that provide the answer. In evaluating a recent experimental evaluation against alternative programs without bottom-out hints, researchers may be interested in estimating separate average treatment effects for students who, if given the opportunity, would request bottom-out hints frequently, and for students who would not. Most principal stratification estimators rely on strong structural or modeling assumptions, and many require advanced statistical training to fit and check, making them inaccessible to many applied researchers. In this paper, we introduce a new principal effect estimator for one-way noncompliance based on a binary indicator. Estimates may be computed using conventional regressions (though the standard errors require a specialized sandwich formula) and do not rely on distributional assumptions. We present a simulation study that demonstrates the novel method's greater robustness compared to popular alternatives and illustrate the method through two real-data analyses.
 \end{abstract}
 % \begin{keywords}
 % Causal Inference; Principal Stratification; Educational Technology
@@ -124,23 +128,33 @@ However, these models are often difficult to specify and can be either hard or i
 Even when they are well-specified, they can yield estimates that are severely biased and misleading \citep{griffin2008application,feller2016principal}.
 The most common type of parametric model, the normal mixture model, is especially dubious for studying bottom-outers in \citet{impactPaper}'s RCT, whose outcome, the total score on a 10-item posttest, is not normally distributed.
 
+Parametric mixture models are often difficult for applied researchers to implement---it is far removed from the regression models that dominate quantiative social science.
+Fitting them may require familiarity with Bayesian Markov Chain Monte Carlo methods or liklihood optimization routines---even when these are automated \citep[e.g.]{PStrata}, they are slow and require an additional round of diagnostics for model convergence.
+Furthermore, the usual model checking techniques of regression analysis, such as examining residuals, are not straightforward to apply in these contexts.
+Combined with their fragility and heavy dependence on model specification, these factors have severely limited their accessibility to applied researchers. 
+
 These concerns have prompted the development of alternative approaches, including bounding \citep{bounding} and randomization inference \citep{nolen2011randomization}.
 Of particular importance is the ``principal score,'' \citep{jo,dingLu,feller2017principal}, or the probability that a subject belongs to a particular principal stratum, as a function of pre-treatment covariates.
 Under a strong, untestable assumption called ``principal ignorability,''  principal scores can be transformed into weights to compute an unbiased estimate of principal effects.
 Principal ignorability is a direct analogue of the strong ignorability assumption in causal observational studies \citep[e.g.][]{rosenbaum1983central}---that all covariates that predict both principal stratum membership and outcomes have been accounted for---in other words, the precise type of assumption that randomized trials are designed to avoid.
-A separate set of results in \citet{jo2002}, \citet{ding2011}, \citet{jiangDing2021}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
+A separate set of results in \citet{jo2002}, \citet{ding2011},
+\citet{jiangDing2021}, \citet{richardson2023estimating}, and others have shown that, under certain circumstances, researchers can use baseline covariates to identify and estimate principal effects without relying on principal ignorability.
 
 This paper expands on those latter results by presenting a new principal effect estimator for the case of one-way noncompliance, in which principal stratum membership is observed in one treatment group but not the other (future work will extend our approach to general scenarios). Our estimator boils down to a simple, three-step procedure: first, estimate principal scores, for instance, with logistic regression; then, impute unknown principal subgroup membership indicators with principal scores; and finally, estimate principal effects using ordinary least squares (OLS) regression with interactions. %, just as in the pre-treatment subgroup case.
 We show that this estimator is the solution to a set of estimating equations based on the combined moments of principal scores, indicators for treatment assignment and observed principal stratum membership in the treatment group, outcomes, and (optionally) covariates, and give a set of assumptions under which it is consistent for the true principal effects.
+
 We will refer to the estimators presented here as ``\textsc{geepers}'': general estimating equations for principal effects using regressions.
 \textsc{geepers} estimates rely on the correct specification of regression functions, but unlike common fully-parametric methods, they make no assumptions about the shape of the distribution of regression errors.
 Unlike principal score weighting, \textsc{geepers} does not assume principal ignorability and admits to sandwich-style standard error estimates \citep{stefanskiBoos}, which we provide in the appendix.
+Unlike any principal stratification estimator we are aware of, \geepers estimates are based on widely-used regression techniques, making them easy to compute, check, and understand for researchers without an extensive background in statistics. 
+Existing methods fail to meet three needs: (1) accessibility, (2) robustness, and (3) model flexibility. \textsc{geepers} addresses all three.
 
-After the initial submission of this manuscript, we became aware of \citet{richardson2023estimating}, which suggests a similar, though not identical, estimator to ours, using G-estimation of a structural nested mean model \citep[e.g.][]{wallace2017r}.
-Our development of \textsc{geepers} builds on \citet{richardson2023estimating} by emphasizing connections to both parametric mixture modeling and principal score analysis, and comparing \textsc{geepers} to those methods in a simulation study.
-Moreover, \textsc{geepers}, which, in practice, is a combination of logistic regression and OLS, is more accessible to applied researchers while yielding very similar results.
+
+%After the initial submission of this manuscript, we became aware of \citet{richardson2023estimating}, which suggests a similar, though not identical, estimator to ours, using G-estimation of a structural nested mean model \citep[e.g.][]{wallace2017r}.
+%Our development of \textsc{geepers} builds on \citet{richardson2023estimating} by emphasizing connections to both parametric mixture modeling and principal score analysis, and comparing \textsc{geepers} to those methods in a simulation study.
+%Moreover, \textsc{geepers}, which, in practice, is a combination of logistic regression and OLS, is more accessible to applied researchers while yielding very similar results.
  
-This work advances the literature in three ways: first, it makes an explicit connection between principal score methods, M-estimation, and semi-parametric estimation of principal effects using auxiliary data. Second, it provides a general estimator that relies on two of the most familiar tools in the applied education researcher's toolbox: linear and logistic regression. The \textsc{geepers} method can, therefore, make principal stratification methods accessible for a much broader range of applied education researchers. Lastly, this work includes an extensive simulation study that compares \textsc{geepers} to parametric mixture modeling and principal score weighting under a range of favorable and challenging scenarios. The simulation demonstrates the strengths and weaknesses of each method, as well as the trade-offs between them.
+%This work advances the literature in three ways: first, it makes an explicit connection between principal score methods, M-estimation, and semi-parametric estimation of principal effects using auxiliary data. Second, it provides a general estimator that relies on two of the most familiar tools in the applied education researcher's toolbox: linear and logistic regression. The \textsc{geepers} method can, therefore, make principal stratification methods accessible for a much broader range of applied education researchers. Lastly, this work includes an extensive simulation study that compares \textsc{geepers} to parametric mixture modeling and principal score weighting under a range of favorable and challenging scenarios. The simulation demonstrates the strengths and weaknesses of each method, as well as the trade-offs between them.
 
 The following section gives a formal introduction to principal stratification and briefly describes two common estimation techniques, parametric mixture modeling and principal score weighting.
 Next, Section \ref{sec:geepers} develops \textsc{geepers} estimation and gives conditions for its consistency.
@@ -508,32 +522,10 @@ The factors were completely crossed, except for some levels of $n$ and $\alpha$,
 % \end{tabular}
 % \end{table}
 
-\begin{table}
-    \caption{\label{tab:factor} Manipulated factors in simulation study}
-  \centering
-  %\rowcolors{1}{}{lightgray}
-\begin{tabular}{r|ll}%{*{3}{c}}
-  \hline
-  Factor &\multicolumn{2}{l}{Levels}\\
-  \hline
-Sample size per condition $n$ &\multicolumn{2}{l}{$100^*,200^*,300^*,400^*,500,600^*,700^*,800^*,900^*,1000$}\\
-$\alpha$ &\multicolumn{2}{l}{$\rd{0},0.2,0.3^\dagger,0.4^\dagger,0.5,0.6^\dagger,0.7^\dagger,0.8^\dagger,0.9^\dagger,1^\dagger$}\\
-The distribution of $\epsilon_i$&\multicolumn{2}{l}{ Normal, 
-\rd{Uniform}}\\
-%$\beta_1$ & \multicolumn{2}{l}{0, 0.3}\\
-\multirow{4}{*}{Interactions in \eqref{eq:y-sim}}& None:  $\gamma_1=1/\sqrt{6};\gamma_2=\gamma_3=0$\\ 
-& \rd{$\bm{x}:\st$}: $\gamma_1=3/(4\sqrt{6})$; $\gamma_2=1/(2\sqrt{6})$; $\gamma_3=0$\\
-& \rd{$\bm{x}:Z$}: $\gamma_1=1/\sqrt{6};\gamma_2=0$; $\gamma_3=1/(2\sqrt{6})$\\
-& \rd{$\bm{x}:\st$ \& $\bm{x}:Z$}: $\gamma_1=3/(4\sqrt{6})$; $\gamma_2=\gamma_3=1/(2\sqrt{6})$\\
-% between $\st$ and covariates & No, Yes\\
-% Interactions between $Z$ and covariates& No, Yes\\
-\hline
-\multicolumn{3}{p{4.5in}}{\footnotesize Factor levels in red violate assumptions of \geepers, \pmm, or both. Factors fully crossed except where indicated.}\\
-\multicolumn{3}{p{4.5in}}{\footnotesize $*$ Only tested with $\alpha=0.5$, normal $\epsilon$, no interactions in \eqref{eq:y-sim}.}\\
-\multicolumn{3}{p{4.5in}}{\footnotesize $\dagger$ Only tested with $n=500$, normal $\epsilon$, no interactions in \eqref{eq:y-sim}.}
+\begin{center}
+  [Table \ref{tab:factor} around here]\\
+\end{center}
 
-\end{tabular}
-\end{table}
 
 \textbf{\emph{Sample Size per condition $\bm{n}$:}} The guarantees of M-estimation are all asymptotic, so we examined the behavior of \textsc{geepers} at a range of sample sizes to determine its finite-sample properties. The range of 100--1000 was chosen to represent typical student-level randomized trials in education, for instance, \citet{growthMindsetRuralBurnette} with $n=115$ in the treatment group and $n=107$ in the control group, or \citet{impactPaper}, which initially randomized an average of 1000 students to each condition.
 
@@ -583,7 +575,7 @@ To estimate standard errors, we computed the sandwich covariance matrix followin
 For \psw we plugged estimated principal scores into \eqref{eq:psw} to estimate $\muc0$ and $\muc1$, estimated $\mut0$ and $\mut1$ with the sample means of subjects with $Z=1$ and $S=0$ or $S=1$, respectively, and estimated $\heff0=\hat{\mu}_{Tw}^0-\hat{\mu}_{Cw}^0$ and $\heff1=\hat{\mu}_{Tw}^1-\hat{\mu}_{Cw}^1$.
 
 \subsection{Results}\label{sec:simResults}
-In this section, we evaluate estimates of $\eff1$. Results for estimates of $\eff0$ and $\eff1-\eff0$, which are similar, can be found in the online appendix. 
+In this section, we evaluate estimates of $\eff1$. Results for estimates of $\eff0$, which are similar, can be found in the online appendix. 
 In replication $b=1,\dots,500$, define the error of a given estimator $\heff1_b$ as $err_b=\heff1_b-\eff1$. The bias of $\heff1$, $\EE[\heff1-\eff1]$, is estimated as $\widehat{bias}=\sum_b err_b/500$, and the empirical standard error is defined as $\left\{\sum_b(\heff1_b-\overline{\heff1})^2/499\right\}^{1/2}$, the sample standard deviation of $\heff1$. We also report the empirical coverage of confidence intervals, the proportion of replications in which $\eff1$ is within the estimated confidence bounds of $\heff1$. Results on root-mean-squared-error %$\left(\widehat{bias}^2+SE_{emp}^2\right)^{1/2}$ 
 $\left(\sum_b err_b^2/500\right)^{1/2}$
 are in the online appendix.
@@ -598,32 +590,22 @@ Across $n$ and $\alpha$, \textsc{geepers} was approximately unbiased,\footnote{A
 
 \geepers had a higher SE than \pmm, particularly when $n=100$ or $\alpha=0.2$. The \psw advantage is far less dramatic for higher levels of $n$ and $\alpha$, eventually diminishing to approximately zero. 
 
-% \begin{figure}[!ht]
-%   \centering
-%   \includegraphics[width=4.5in]{../simFigs/biasSEbyB1N.jpg}
-%   \caption{Empirical bias and standard error of \textsc{geepers} and Mixture estimates of $\eff1$ as sample size per treatment group $n$ or $\alpha$ varied. There were 500 replications for each $n$ or $\alpha$. Other factors were held fixed at the noted values.}
-%   \label{fig:alphan}
-% \end{figure}
 
-% \begin{figure}
-%   \centering
-%   \includegraphics{../simFigs/biasSEbyB1.jpg}
-%   \caption{Empirical bias and standard error of M- and Mixture estimates of $\muc1$ as $\alpha$ varies from 0.1 to 1. There were 500 replications for each $n$. Other factors were held fixed at the noted values.}
-%   \label{fig:alpha}
-% \end{figure}
+\begin{center}
+  [Figure \ref{fig:alphan} around here]\\
+\end{center}
 
 \subsubsection{Performance when Assumptions do not Hold}
 
-Our next set of results compares the performance of \geepers, \pmm, and \psw when one or more assumptions of each method may be violated. 
+Our next set of results compares the performance of \geepers, \pmm,
+and \psw when one or more assumptions of each method may be violated.
+We present results for $n=500$ here; results from when $n=1,000$,
+which are similar, can be found in the online appendix. 
 
-% \begin{figure}[!ht]
-%   \centering
-%   \includegraphics[width=5.5in,clip]{../simFigs/boxplotsNew.pdf}
-%   \caption{Violin and scatter plots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} under varying conditions. For all plots, $n=500$; there were 500 replications for each set of conditions. Annotations indicate the number of extreme outliers excluded from the plotting area.}
-%   \label{fig:boxplots}
-% \end{figure}
+\begin{center}
+  [Figure \ref{fig:boxplots} around here]\\
+\end{center}
 
-%<<<<<<< HEAD
 Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatter plots, showing estimation errors for \geepers, \pmm, and \psw. Table \ref{tab:coverage} shows empirical coverage rates of nominal 95\% confidence interval estimates for \geepers and \pmm; when at least one of an estimator's assumptions is violated, the result is colored red.
 
 When all of the \geepers and \pmm assumptions were met, that is, when $\epsilon\sim\mathcal{N}(0,1/2)$, $\alpha>0$, and there were no covariate interactions in \eqref{eq:y-sim}, results for $\geepers$ and $\pmm$ were the same as in the previous section; in addition, confidence intervals from both methods achieved their nominal levels. 
@@ -669,38 +651,9 @@ These suggestions may depend heavily on the simulation setup; applying them in g
 % >>>>>>> overleaf-2025-06-12-1948
 
 
-
-\begin{table}%[!ht]
-
-\caption{\label{tab:coverage}Empirical coverage of nominal 95\% confidence intervals for estimates of $\tau^1$.}
-\centering
-% \begin{tabular}[t]{lllllll}
-% \toprule
-% \multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
-% \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7}
-% \makecell[l]{Residual\\Dist.} & \makecell[l]{X:Z\\Int.?} & \makecell[l]{X:S\\Int.?} & \geepers & \pmm & \geepers & \pmm\\
-% \midrule
-%  & No & No & 0.97 & 0.97 & 0.96 & 0.96\\
-
-%  & Yes & No & \rd{0.88} & \rd{0.74} & \rd{0.94} & \rd{0.89}\\
-
-%  & No & Yes & \rd{0.98} & \rd{0.97} & \rd{0.97} & \rd{0.96}\\
-
-% \multirow{-4}{*}{\raggedright\arraybackslash Normal} & Yes & Yes & \rd{0.9} & \rd{0.77} & \rd{0.94} & \rd{0.88}\\
-% \cmidrule{1-7}
-%  & No & No & 0.97 & \rd{0.4} & 0.95 & \rd{0.61}\\
-
-%  & Yes & No & \rd{0.87} & \rd{0.2} & \rd{0.93} & \rd{0.48}\\
-
-%  & No & Yes & \rd{0.98} & \rd{0.53} & \rd{0.96} & \rd{0.57}\\
-
-% \multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & \rd{0.88} & \rd{0.21} & \rd{0.94} & \rd{0.53}\\
-% \bottomrule
-% \multicolumn{7}{p{3.5in}}{\footnotesize Based on 500 replications. $n=500$, $\beta_1=0.3$. Simulation standard error $\approx 1$ percentage point. Estimates colored \rd{red} indicate cases where the assumptions of the model are not met.}
-
-% \end{tabular}
-\input{coverageTab}
-\end{table}
+\begin{center}
+  [Table \ref{tab:coverage} around here]\\
+\end{center}
 
 
 
@@ -734,12 +687,10 @@ That left a total sample size of 640, with 314 randomized to the treatment condi
 For all three estimation methods, we estimated principal scores with logistic regression of $\st$ on the two covariates.
 For \textsc{geepers} and \textsc{psw}, we used standard maximum likelihood methods and data from the treatment group, achieving an AUC of 0.68. For the mixture model, we incorporated the logistic regression specification as a sub-model within a larger Bayesian model fit in Stan.
 
-\begin{figure}
-  \centering
-  \includegraphics{figure/opts.pdf}
-  \caption{Estimated principal effects and 95\% confidence or credible intervals for the Obstetrics and Periodontal Therapy Study, using four estimation methods. Results for BSIV were taken from \citet{richardson2023estimating}.}
-  \label{fig:opt}
-\end{figure}
+
+\begin{center}
+  [Figure \ref{fig:opt} around here]\\
+\end{center}
 
 
 The results are displayed in Figure \ref{fig:opt}% and Table \ref{tab:optEffs}
@@ -781,7 +732,7 @@ That said, a plausible estimate of the average effect of bottom-out hint request
 Another arguable disadvantage of the observational study approach is that it overlooks the broader context of the experiment, focusing solely on whether bottom-out hints affect posttest scores rather than examining their role in the overall effectiveness of ASSISTments.
 A second approach, mediation analysis, contextualizes the bottom-out effect within the larger experiment.
 It, too, relies on the same non-confounding assumption as an observational study, and also suffers from an additional challenge: mediation analysis relies on a ``common support'' condition that ``the mediator state must not be a deterministic function of the treatment'' \citep[p. 225]{celli2022causal}.
-However, bottom-out hints are unavailable in the other three arms of the study, violating this condition (\citealt{sales2021student} offers a solution, which we find unconvincing).
+However, bottom-out hints are unavailable in the other three arms of the study, violating this condition (\citealt{sales2021student} offer a solution, which we find unconvincing).
 
 A principal stratification approach treats bottom-out hint requests as a type of compliance.
 In other words, if we consider full implementation of the ASSISTments condition to include frequent bottom-out hint requests, students assigned to ASSISTments but who requested few bottom-out hints only partially complied with their treatment assignment.
@@ -871,22 +822,18 @@ Perhaps non-bottom-outers tend to have higher prior knowledge, and, as \cite{imp
 
 Perhaps the simplest explanation for observed differences in point estimates is sampling error, which cannot be ruled out.
 
-\begin{figure}
-  \centering
-  \includegraphics{figure/prinEffs.pdf}
-  \caption{Principal effect estimates with 95\% confidence intervals using three different principal score models, alongside ATE estimates and 95\% confidence intervals, for contrasts between the ASSISTments condition and each of the three other conditions in the study.}
-  \label{fig:effects}
-\end{figure}
+
+\begin{center}
+  [Figure \ref{fig:effects} around here]\\
+\end{center}
 
 \subsubsection{Comparing Principal Stratification Methods}
 
 
-\begin{figure}
-  \centering
-  \includegraphics{figure/compareMethods.pdf}
-  \caption{Principal effect estimates with 95\% confidence or credible intervals using three different principal stratification methods, alongside ATE estimates and 95\% confidence intervals, for contrasts between the ASSISTments condition and each of the three other conditions in the study. The \textsc{geepers} estimates used the ``All Covariates'' principal score model.}
-  \label{fig:compare}
-\end{figure}
+\begin{center}
+  [Figure \ref{fig:compare} around here]\\
+\end{center}
+
 
 Figure \ref{fig:compare} shows principal effect estimates from \textsc{geepers} (using the All Covariates principal score model) compared to analogous estimates using Bayesian mixture modeling and \textsc{psw}, alongside estimates of the overall average treatment effects, labeled ``ATE.''
 
@@ -902,7 +849,7 @@ For all three sets of estimators, approximate 95\% confidence intervals were est
 The other estimation strategies largely agreed with \textsc{geepers} and with each other in the contrast between ASSISTments and BAU, and, to a lesser extent, in the contrast between ASSISTments and DragonBox. The biggest difference between the methods was in the contrast with FH2T, in which the Bayesian mixture model resulted in a larger difference between the two principal effects, as well as the largest standard errors, while the two \textsc{psw} principal effect estimates were quite similar.  However, these differences are difficult to interpret due to the large uncertainty surrounding all the point estimates.
 
 \section{Discussion}\label{sec:discussion}
-\textsc{geepers} is a straightforward approach to principal effect estimation under strong monotonicity, built on widely-used regression models, which is more robust---though sometimes less precise---than alternative approaches under a wide array of scenarios.
+\textsc{geepers} is a straightforward approach to principal effect estimation under strong monotonicity, which is more robust---though sometimes less precise---than alternative approaches under a wide array of scenarios. It is built on widely-used regression models, making it accessible to applied researchers. 
 
 There is good reason to hope that extensions to \textsc{geepers}, including cases in which $S$ takes more than two values, may be straightforward.
 For instance, in truncation by death problems \citep[e.g.][]{zhangRubin,ding2011} with weak monotonicity, $S_i=1$ if participant $i$ survives (or, more generally, if the outcome $Y_i$ is measured) and 0 otherwise, interest is typically in the principal effect for the ``always survive'' principal stratum in which $\sti=S_{ci}=1$.
@@ -928,10 +875,128 @@ However, the results are consistent with the hypothesis that ASSISTments is less
 Replication materials can be found at
 \url{https://osf.io/fu2sv/?view_only=b2baebc2f3054ef796717863e4a9662f}.
 
+\section*{AI Disclosure}
+We used Grammarly Pro (Version 14.1243.0) and ChatGPT (GPT-4-turbo, current as of July 2025) for editing and language improvement. 
+
 
 \bibliographystyle{apalike}
 \bibliography{MOM}
 
+\clearpage
 
+\FloatBarrier
+\section*{Tables and Figures}
+\FloatBarrier
+
+\begin{table}[t]
+    \caption{\label{tab:factor} Manipulated factors in simulation study}
+  \centering
+  %\rowcolors{1}{}{lightgray}
+\begin{tabular}{r|ll}%{*{3}{c}}
+  \hline
+  Factor &\multicolumn{2}{l}{Levels}\\
+  \hline
+Sample size per condition $n$ &\multicolumn{2}{l}{$100^*,200^*,300^*,400^*,500,600^*,700^*,800^*,900^*,1000$}\\
+$\alpha$ &\multicolumn{2}{l}{$\rd{0},0.2,0.3^\dagger,0.4^\dagger,0.5,0.6^\dagger,0.7^\dagger,0.8^\dagger,0.9^\dagger,1^\dagger$}\\
+The distribution of $\epsilon_i$&\multicolumn{2}{l}{ Normal, 
+\rd{Uniform}}\\
+%$\beta_1$ & \multicolumn{2}{l}{0, 0.3}\\
+\multirow{4}{*}{Interactions in \eqref{eq:y-sim}}& None:  $\gamma_1=1/\sqrt{6};\gamma_2=\gamma_3=0$\\ 
+& \rd{$\bm{x}:\st$}: $\gamma_1=3/(4\sqrt{6})$; $\gamma_2=1/(2\sqrt{6})$; $\gamma_3=0$\\
+& \rd{$\bm{x}:Z$}: $\gamma_1=1/\sqrt{6};\gamma_2=0$; $\gamma_3=1/(2\sqrt{6})$\\
+& \rd{$\bm{x}:\st$ \& $\bm{x}:Z$}: $\gamma_1=3/(4\sqrt{6})$; $\gamma_2=\gamma_3=1/(2\sqrt{6})$\\
+% between $\st$ and covariates & No, Yes\\
+% Interactions between $Z$ and covariates& No, Yes\\
+\hline
+\multicolumn{3}{p{4.5in}}{\footnotesize Factor levels in red violate assumptions of \geepers, \pmm, or both. Factors fully crossed except where indicated.}\\
+\multicolumn{3}{p{4.5in}}{\footnotesize $*$ Only tested with $\alpha=0.5$, normal $\epsilon$, no interactions in \eqref{eq:y-sim}.}\\
+\multicolumn{3}{p{4.5in}}{\footnotesize $\dagger$ Only tested with $n=500$, normal $\epsilon$, no interactions in \eqref{eq:y-sim}.}
+
+\end{tabular}
+\end{table}
+
+\clearpage
+
+\begin{table}%[!ht]
+
+\caption{\label{tab:coverage}Empirical coverage of nominal 95\% confidence intervals for estimates of $\tau^1$.}
+\centering
+% \begin{tabular}[t]{lllllll}
+% \toprule
+% \multicolumn{3}{c}{ } & \multicolumn{2}{c}{$\alpha=0.2$} & \multicolumn{2}{c}{$\alpha=0.5$} \\
+% \cmidrule(l{3pt}r{3pt}){4-5} \cmidrule(l{3pt}r{3pt}){6-7}
+% \makecell[l]{Residual\\Dist.} & \makecell[l]{X:Z\\Int.?} & \makecell[l]{X:S\\Int.?} & \geepers & \pmm & \geepers & \pmm\\
+% \midrule
+%  & No & No & 0.97 & 0.97 & 0.96 & 0.96\\
+
+%  & Yes & No & \rd{0.88} & \rd{0.74} & \rd{0.94} & \rd{0.89}\\
+
+%  & No & Yes & \rd{0.98} & \rd{0.97} & \rd{0.97} & \rd{0.96}\\
+
+% \multirow{-4}{*}{\raggedright\arraybackslash Normal} & Yes & Yes & \rd{0.9} & \rd{0.77} & \rd{0.94} & \rd{0.88}\\
+% \cmidrule{1-7}
+%  & No & No & 0.97 & \rd{0.4} & 0.95 & \rd{0.61}\\
+
+%  & Yes & No & \rd{0.87} & \rd{0.2} & \rd{0.93} & \rd{0.48}\\
+
+%  & No & Yes & \rd{0.98} & \rd{0.53} & \rd{0.96} & \rd{0.57}\\
+
+% \multirow{-4}{*}{\raggedright\arraybackslash Uniform} & Yes & Yes & \rd{0.88} & \rd{0.21} & \rd{0.94} & \rd{0.53}\\
+% \bottomrule
+% \multicolumn{7}{p{3.5in}}{\footnotesize Based on 500 replications. $n=500$, $\beta_1=0.3$. Simulation standard error $\approx 1$ percentage point. Estimates colored \rd{red} indicate cases where the assumptions of the model are not met.}
+
+% \end{tabular}
+\input{coverageTab}
+\end{table}
+
+
+\clearpage
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=4.5in]{../simFigs/biasSEbyB1N.jpg}
+  \caption{Empirical bias and standard error of \textsc{geepers} and Mixture estimates of $\eff1$ as sample size per treatment group $n$ or $\alpha$ varied. There were 500 replications for each $n$ or $\alpha$. Other factors were held fixed at the noted values.}
+  \label{fig:alphan}
+\end{figure}
+
+
+\clearpage
+
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=5.5in,clip]{../simFigs/boxplotsNew.pdf}
+  \caption{Violin and scatter plots of 500 simulation estimation errors for estimators described in Section~\ref{sec:simMods} under varying conditions. For all plots, $n=500$; there were 500 replications for each set of conditions. Annotations indicate the number of extreme outliers excluded from the plotting area.}
+  \label{fig:boxplots}
+\end{figure}
+\clearpage
+
+
+\begin{figure}
+  \centering
+  \includegraphics{figure/opts.pdf}
+  \caption{Estimated principal effects and 95\% confidence or credible intervals for the Obstetrics and Periodontal Therapy Study, using four estimation methods. Results for BSIV were taken from \citet{richardson2023estimating}.}
+  \label{fig:opt}
+\end{figure}
+
+\clearpage
+
+
+\begin{figure}
+  \centering
+  \includegraphics{figure/prinEffs.pdf}
+  \caption{Principal effect estimates with 95\% confidence intervals using three different principal score models, alongside ATE estimates and 95\% confidence intervals, for contrasts between the ASSISTments condition and each of the three other conditions in the study.}
+  \label{fig:effects}
+\end{figure}
+
+\clearpage
+
+
+\begin{figure}
+  \centering
+  \includegraphics{figure/compareMethods.pdf}
+  \caption{Principal effect estimates with 95\% confidence or credible intervals using three different principal stratification methods, alongside ATE estimates and 95\% confidence intervals, for contrasts between the ASSISTments condition and each of the three other conditions in the study. The \textsc{geepers} estimates used the ``All Covariates'' principal score model.}
+  \label{fig:compare}
+\end{figure}
 
 \end{document}
