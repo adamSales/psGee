@@ -1,7 +1,9 @@
 \documentclass[]{article}
 \usepackage[letterpaper]{geometry}
 \usepackage{xr}
-\externaldocument{appendix}
+
+\externaldocument{writeUps/appendix}
+
 \RequirePackage{amsmath,amsfonts,amssymb,amsthm}
 %\RequirePackage[authoryear]{natbib}
 \usepackage{longtable}
@@ -55,8 +57,6 @@
 \input{notation.tex}
 
 
-%\usepackage{endfloat}% To `separate' figures and tables from text if required
-
 
 %\endlocaldefs
 %\newcites{supp}{Supplementary References}
@@ -71,9 +71,11 @@
 %\maketitle
 
 %\begin{aug}
-  \author{
-  Adam C. Sales\thanks{CONTACT Adam C. Sales. Email: asales@wpi.edu}, Kirk P. Vanacore, and Erin R. Ottmar%\\
-   }
+
+%  \author{
+%  Adam C. Sales\thanks{CONTACT Adam C. Sales. Email: asales@wpi.edu}, Kirk P. Vanacore, and Erin R. Ottmar%\\
+%  %\affil{Worcester Polytechnic Institute, Worcester, MA, USA}
+% }
 
 %   \maketitle
 \date{}
@@ -592,8 +594,6 @@ Across $n$ and $\alpha$, \textsc{geepers} was approximately unbiased,\footnote{A
   [Figure \ref{fig:alphan} around here]\\
 \end{center}
 
-
-
 \subsubsection{Performance when Assumptions do not Hold}
 
 Our next set of results compares the performance of \geepers, \pmm,
@@ -605,7 +605,6 @@ which are similar, can be found in the online appendix.
   [Figure \ref{fig:boxplots} around here]\\
 \end{center}
 
-%<<<<<<< HEAD
 Figure \ref{fig:boxplots} shows violin plots, layered on top of jittered scatter plots, showing estimation errors for \geepers, \pmm, and \psw. Table \ref{tab:coverage} shows empirical coverage rates of nominal 95\% confidence interval estimates for \geepers and \pmm; when at least one of an estimator's assumptions is violated, the result is colored red.
 
 When all of the \geepers and \pmm assumptions were met, that is, when $\epsilon\sim\mathcal{N}(0,1/2)$, $\alpha>0$, and there were no covariate interactions in \eqref{eq:y-sim}, results for $\geepers$ and $\pmm$ were the same as in the previous section; in addition, confidence intervals from both methods achieved their nominal levels. 
@@ -876,6 +875,7 @@ Replication materials can be found at
 
 \section*{AI Disclosure}
 We used Grammarly Pro (Version 14.1243.0) and ChatGPT (GPT-4-turbo, current as of July 2025) for editing and language improvement. 
+
 
 \bibliographystyle{apalike}
 \bibliography{MOM}

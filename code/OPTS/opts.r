@@ -1,21 +1,46 @@
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(tidyr)
+library(sandwich)
+library(lmtest)
+library(forcats)
+library(arm)
+library(randomForest)
+library(missForest)
+library(estimatr)
+library(splines)
+library(rstan)
+library(kableExtra)
+library(texreg)
+library(tableone)
+library(xtable)
+library(purrr)
+library(tibble)
+library(coefplot)
+library(splines)
+library(tikzDevice)
+select <- dplyr::select
 
 
 
-print(load('data/OPT_Study_PersonLevel_Data.RData'))
-## downloaded from https://www.causeweb.org/tshs/obstetrics-and-periodontal-therapy/
+
+### load in data from the website (accessed 7/3/2025)
+print(load(url("https://causeweb.org/tshs/datasets/OPT_Study_PersonLevel_Data.RData")))
 
 
+############################################################
+###
+### process the data
+###
+#########################################################
 
+###
 opt <- opt%>%
   mutate(OFIBRIN1=as.numeric(as.character(OFIBRIN1)),
          ETXU_CAT1=as.numeric(as.character(ETXU_CAT1)))
 
 levels(opt$Group)=c(T="Treatment",C="Control")[levels(opt$Group)]
-
-xtabs(~is.na(OFIBRIN1)+is.na(ETXU_CAT1)+is.na(V5..BOP),data=opt)
-
-sum(is.na(opt$V5..BOP))
-sum((is.na(opt$ETXU_CAT1)|is.na(opt$OFIBRIN1))&!is.na(opt$V5..BOP))
 
 cca <- opt%>%filter(!is.na(OFIBRIN1),!is.na(ETXU_CAT1),!is.na(V5..BOP))%>%
     #select(Group, OFIBRIN1,ETXU_CAT1,V5..BOP,Tx.comp.,Completed.EDC,BL..BOP)%>%
@@ -23,6 +48,8 @@ cca <- opt%>%filter(!is.na(OFIBRIN1),!is.na(ETXU_CAT1),!is.na(V5..BOP))%>%
          Y=V5..BOP/100,
          Z=Group=='Treatment')
 
+
+#### table from the appendix
 tab1 <- map(list(`Full Data`=opt,`Complete Cases`=cca),
             function(dat)
                 dat%>%
@@ -46,6 +73,7 @@ kbl(tab1[-c(1:2),],format="latex",booktabs=TRUE,col.names=tab1[2,],caption="Desc
     add_header_above(c(" ","Full Data"=2,"Complete Cases"=2))
 sink()
 
+##### complete case analysis
 
 ## "included 640 participants with nonmissing values for the covariates and
 ## outcome, of whom 314 were assigned to the treatment arm and 326 to the
@@ -65,8 +93,11 @@ cca <- cca%>%
          Z=Group=='Treatment')#%>%
 #  select(-Tx.comp.)#,-Completed.EDC)
 
-
-##### table for appendix
+############################################################
+###
+#### calucuate ATE
+###
+#########################################################
 
 
 
@@ -74,18 +105,17 @@ cca <- cca%>%
 ATE <- t.test(Y~Group,data=cca)
 ATE$coef <- coef(lm(Y~Group,data=cca))[2]
 
-### geepers
-geepers <- est(cca,~ETXU_CAT1+OFIBRIN1)
+
+############################################################
+###
+#### GEEPERS
+###
+#########################################################
+
+geepers <- est(cca,covFormU=~ETXU_CAT1+OFIBRIN1)
 
 
-bs=matrix(nrow=1000,ncol=3)
-for(i in 1:1000){
-  pe=pointEst(cca[sample(1:nrow(cca),nrow(cca),replace=TRUE),],~ETXU_CAT1+OFIBRIN1)
-  coefs <- coef(pe$outMod)
-  bs[i,] <- c(coefs['ZTRUE'],coefs['ZTRUE']+coefs['ZTRUE:Sp'],coefs['ZTRUE:Sp'])
-}
-apply(bs,2,sd)
-
+##### check principal score model
 psMod <- geepers$psMod
 arm::binnedplot(predict(psMod,type='response'),resid(psMod,type='response'))
 summary(psMod)
@@ -95,14 +125,14 @@ print(aucMod(psMod))
 ### standardized coefficients:
 print(glm(S~scale(ETXU_CAT1)+scale(OFIBRIN1),data=mf,family=binomial))
 
-## bs <- replicate(5000,
-##                 coef(
-##                   pointEst(
-##                     cca[sample(1:nrow(cca),nrow(cca),replace=TRUE),],
-##                     ~ETXU_CAT1+OFIBRIN1)$outMod
-##                 )['ZTRUE']
-##                 )
 
+############################################################
+###
+#### Bayesian mixture model
+###
+#########################################################
+
+## put the data in the proper format
 Xout <- model.matrix(geepers$outMod)
 Xout <- Xout[,-c(1,which(colnames(Xout)%in%c('Z','Sp','Z:Sp')))]
 
@@ -142,8 +172,22 @@ rownames(mixEffs) <- c(notbottomOuterATE="eff0",
                        ATEdiff="diff")[rownames(mixEffs)]
 
 
+############################################################
+###
+#### PSW
+###
+#########################################################
+
+
 PSW <- psw(cca,psMod)
 print(PSW)
+
+
+############################################################
+###
+#### Plot estimates for paper
+###
+#########################################################
 
 ateDF <-
     data.frame(EFF=.25,

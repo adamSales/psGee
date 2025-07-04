@@ -1,9 +1,11 @@
+
 \documentclass[]{article}
 \usepackage[letterpaper]{geometry}
 \usepackage{placeins}
 
 \usepackage{xr}
-\externaldocument{paper}
+\externaldocument{writeUps/paper}
+
 \RequirePackage{amsmath,amsfonts,amssymb,amsthm}
 %\RequirePackage[authoryear]{natbib}
 \usepackage{longtable}
@@ -52,7 +54,7 @@
 
 \newcommand{\rd}[1]{\textcolor{BrickRed}{#1}}
 
-\input{notation.tex}
+\input{writeUps/notation.tex}
 
 %\endlocaldefs
 %\newcites{supp}{Supplementary References}
@@ -72,6 +74,7 @@
 
 \section{Appendix: Proofs and Calculations}
 \subsection{Proof for Lemma \ref{lemma:expectation}}
+
 As a preliminary, note that
 % \begin{align*}
 %   \EE[\st|\hpp]&=\EE\left\{\EE[\st|\pp,\hpp]|\hpp\right\}\\
@@ -384,30 +387,17 @@ Then if $r_i=p_i$,
 
 If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},\bm{\alpha})=0$.
 
-%\clearpage
-
-%\processdelayedfloats
-
-
-%\setcounter{page}{1}
-
-% \begin{center}
-% \large
-%     \textbf{Online Appendices for ``GEEPERs: Principal Stratification using Principal Scores and Stacked Estimating Equations''}
-%   \end{center}
   \FloatBarrier
 \section{Additional Simulation Results}
 \FloatBarrier
 \subsection{Plot of  AUC versus $\alpha$}
 \FloatBarrier
+
 \begin{center}
 
-    \includegraphics[width=5.5in]{../simFigs/alphaAUC.pdf}
+    \includegraphics[width=5.5in]{simFigs/alphaAUC.pdf}
 
 \end{center}
-%\begin{table}
-%\caption{Coverage of nominal 95\% confidence intervals}
-%\clearpage
 
 \FloatBarrier
 \subsection{Full Empirical 95\% Interval Coverage Results}
@@ -417,12 +407,12 @@ The following tables give the empirical coverage of nominal 95\% intervals for \
 
 \begin{table}
   \caption{Empirical coverage of nominal 95\% Confidence intervals for \geepers and \pmm when $n=500$ per condition.}
-  \input{coverageTabAppendix500.tex}
+  \input{writeUps/coverageTabAppendix500.tex}
  \end{table}
 
  \begin{table}
   \caption{Empirical coverage of nominal 95\% Confidence intervals for \geepers and \pmm when $n=1000$ per condition.}
-  \input{coverageTabAppendix1000.tex}
+  \input{writeUps/coverageTabAppendix1000.tex}
  \end{table}
 
 
@@ -433,17 +423,18 @@ The following tables give the empirical coverage of nominal 95\% intervals for \
 \subsection{Full RMSE Results}
 \FloatBarrier
 
+=======
 The following table gives the root mean squared error (RMSE), $\left\{\sum_b (\hat{\tau}-\tau)^2/500\right\}^{1/2}$, for \textsc{geepers}, mixture model, and principal score weighting principal effect estimates under varying data generating models.\\
 
 \begin{table}
   \caption{Empirical RMSE  for \geepers, \pmm, and \psw when $n=500$ per condition.}
-  \input{rmseTabAppendix500}
+  \input{writeUps/rmseTabAppendix500}
  \end{table}
 
 
  \begin{table}
   \caption{Empirical RMSE  for \geepers, \pmm, and \psw when $n=1000$ per condition.}
-  \input{rmseTabAppendix1000}
+  \input{writeUps/rmseTabAppendix1000}
  \end{table}
 
 %\end{table}
@@ -457,6 +448,7 @@ The following table gives the root mean squared error (RMSE), $\left\{\sum_b (\h
 \FloatBarrier
 \subsection{Summary Statistics}
 \FloatBarrier
+
 The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
 
 \begin{table}
@@ -507,6 +499,7 @@ Regression estimates from three principal score logit models and three outcome r
 
 \small
 %\input{outcomeRegAppendix}
+
 \input{psTab}
 
 \input{regTab}
