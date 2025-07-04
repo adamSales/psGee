@@ -1,0 +1,521 @@
+\documentclass[]{article}
+\usepackage[letterpaper]{geometry}
+\usepackage{placeins}
+
+\usepackage{xr}
+\externaldocument{paper}
+\RequirePackage{amsmath,amsfonts,amssymb,amsthm}
+%\RequirePackage[authoryear]{natbib}
+\usepackage{longtable}
+\usepackage{threeparttable}
+\usepackage[caption=false]{subfig}
+\usepackage[doublespacing]{setspace}
+
+\usepackage[longnamesfirst,sort]{natbib}
+\bibpunct[, ]{(}{)}{;}{a}{,}{,}%
+\renewcommand\bibfont{\fontsize{10}{12}\selectfont}% To set the list of references in 10 point font using natbib.sty
+
+\usepackage{xspace} 
+
+% \theoremstyle{plain}% Theorem-like structures provided by asthma.sty
+% \newtheorem{theorem}{Theorem}[section]
+% \newtheorem{lemma}[theorem]{Lemma}
+% \newtheorem{corollary}[theorem]{Corollary}
+% \newtheorem{prop}[theorem]{Proposition}
+
+% \theoremstyle{definition}
+% \newtheorem{definition}[theorem]{Definition}
+% \newtheorem{example}[theorem]{Example}
+
+% \theoremstyle{remark}
+% \newtheorem{remark}{Remark}
+% \newtheorem{notation}{Notation}
+
+
+\usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
+\usepackage{bm}
+\usepackage[hidelinks]{hyperref}
+\usepackage{graphicx}
+\usepackage{mathtools}
+%\usepackage{fullpage}
+\usepackage{makecell}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{numdef}
+%\usepackage{multibib}
+\usepackage{rotating}
+
+\usepackage[dvipsnames,table]{xcolor}
+
+%\startlocaldefs
+\definecolor{lightgray}{gray}{0.9}
+
+\newcommand{\rd}[1]{\textcolor{BrickRed}{#1}}
+
+\input{notation.tex}
+
+%\endlocaldefs
+%\newcites{supp}{Supplementary References}
+\begin{document}
+
+%\begin{frontmatter}
+
+
+
+\title{Online Appendices for ``GEEPERs: Principal Stratification using
+  Principal Scores and Stacked Estimating Equations''}
+\date{}
+%\runtitle{\textsc{geepers}}
+\maketitle
+
+\appendix
+
+\section{Appendix: Proofs and Calculations}
+\subsection{Proof for Lemma \ref{lemma:expectation}}
+As a preliminary, note that
+% \begin{align*}
+%   \EE[\st|\hpp]&=\EE\left\{\EE[\st|\pp,\hpp]|\hpp\right\}\\
+%              &=\EE\left\{\EE[\st|\pp]|\hpp\right\}\\
+%              &=\EE[\pp|\hpp]=\hpp
+% \end{align*}
+
+%Then, note
+\begin{align*}
+  \EE[Y_C|\pp]&=\EE\left\{\EE[Y_C|\pp,\st]|\pp\right\}\\
+             &=\EE\left\{\EE[Y_C|\st]|\pp\right\}\tag*{by \eqref{eq:assumption}}\\
+             &=\EE[\muc1\st+\muc0(1-\st)|\pp]\\
+             &=\muc1\pp+\muc0(1-\pp)
+\end{align*}
+
+Then we have
+\begin{equation*}
+  \begin{split}
+    \EE[Y_C]=&\EE\EE[Y_C|\pp]=\muc1\EE\pp+\muc0(1-\EE\pp)\\
+    =&\muc0+\EE\pp(\muc1-\muc0)
+    \end{split}
+\end{equation*}
+
+Next we have
+
+\begin{align*}
+  \EE[Y_C\pp]&=\EE\left\{\EE[Y_C\pp|\pp]\right\}\\
+            &=\EE\left\{\pp\EE[Y_C|\pp]\right\}\\
+            &=\EE\left\{\pp\left[\muc1\pp+\muc0(1-\pp)\right]\right\}\\
+            &=\EE[\pp]\muc0+\EE[\pp^2](\muc1-\muc0)
+\end{align*}
+
+In the treatment group, $\st$ is observed, so
+\begin{align*}
+    \EE[Y_T]=&\mut0+\EE[\st](\mut1-\mut0)\tag*{and}\\
+    \EE[\st Y_T]=&\EE[\st]\mut0+\EE[\st^2](\mut1-\mut0)
+\end{align*}
+
+Due to Assumption \ref{ass:rand} (randomization), $\EE[Y|Z=0]=\EE[Y_C]$, $\EE[Y|Z=1]=\EE[Y_T]$, $\EE[Y\pp|Z=0]=\EE[Y_C\pp]$ and $\EE[YS|Z=1]=\EE[Y_T\st]$, completing the proof.
+
+\subsection{Proof for Proposition \ref{prop:reg1}}
+
+Replacing $\sti$ and $\pp$ in \eqref{eq:estEq0} with $\ri$, as in \eqref{eq:ri}, and replacing $\tilde{\Psi}_i$ with $\Psi_i=\begin{psmallmatrix} 1 & 0&1&0\\ 0&1&0&1\\0&0&1&0\\0&0&0&1\end{psmallmatrix}\tilde{\Psi}_i$ gives an equivalent set of estimating equations $\sum_{i=1}^{n_C}\Psi_i=\bm{0}$ with $\Psi_i=$
+\begin{equation}\label{eq:estEq1}
+\begin{pmatrix}
+    Y_i-\muc0-\ri(\muc1-\muc0)-Z_i(\mut0-\muc0)-Z_i\ri(\mut1-\mut0-\muc1+\muc0)\\
+    \ri Y_i-\ri\muc0-\ri^2(\muc1-\muc0)-Z_i\ri(\mut0-\muc0)-Z_i\ri^2(\mut0-\mut1-\muc0+\muc1)\\
+    Z_iY_i-Z_i\mut0-Z_i\ri (\mut1-\mut0)\\
+    Z_i\ri Y_i -Z_i\ri\mut0-Z_i\ri^2(\mut1-\mut0)
+
+\end{pmatrix}
+\end{equation}
+These are equivalent to the estimating equations for OLS model \eqref{eq:regression0} with $\beta_0=\muc0$, $\beta_1=\muc1-\muc0$, $\beta_2=\mut0-\muc0$, and $\beta_3=\mut1-\mut0-\muc1-\muc0$.
+Therefore, under standard OLS regularity conditions the estimated parameter vector $\bm{\hat{\beta}}$ is consistent, completing the proof.
+
+
+\subsection{A Stronger Version of Proposition \ref{prop:reg2} and a Proof}
+
+
+
+\begin{prop}\label{prop:interactions}
+  Say, for $i=1,\dots,n$, principal scores $\ppi$ are generated as \eqref{eq:pscore}, with parameters $\bm{\alpha}$ identified and consistently estimable with M-estimation, and there exist $\beta_0$, $\beta_1$, $\beta_2$, $\beta_3$, $\bm{\gamma_1}$, $\bm{\gamma_2}$, $\bm{\gamma_3}$ and $\bm{\gamma_4}$ such that $\{Y_i,Z_i,\sti,\bxy_i\}_{i=1}^n$ are independent and identically distributed with
+  \begin{equation}\label{eq:interaction}
+    \begin{split}
+    \EE[Y_i|\st,Z,\bx]=&\beta_0+\beta_1\sti+\beta_2 Z_i+\beta_3Z_i\sti\\
+    &+\bm{\gamma_1}'\bxy_i+\bm{\gamma_2}'\bxy_i\sti+
+    \bm{\gamma_3}'\bxy Z_i+\bm{\gamma_4}'\bxy_i Z_i\sti
+    \end{split}
+  \end{equation}
+
+  Then, under Assumptions \ref{ass:sm}, \ref{ass:rand}, and \ref{ass:vps}, if $\ppi$ is linearly independent of $\bxy$, a researcher may follow the following procedure to estimate principal effects:
+  \begin{enumerate}
+  \item Estimate principal scores by fitting model \eqref{eq:pscore} to data from the treatment group
+  \item Replace $\sti$ with $\ri$ (as defined in \ref{eq:ri}) in model \eqref{eq:interaction} and fit with OLS
+  \item Estimate principal effects as:
+   \begin{equation}\label{eq:prinEffEstApp}
+  \begin{split}
+    \heff0_{int}&\equiv \hat{\beta}_2+\bm{\hat{\gamma}_3}'\overline{\bxy}_{Z=1,S=0}\\
+    \heff1_{int}&\equiv \hat{\beta}_2+\hat{\beta}_3+(\bm{\hat{\gamma}_3}+\bm{\hat{\gamma}_4})'\overline{\bxy}_{Z=1,S=1}
+  \end{split}
+   \end{equation}
+   where $\overline{\bxy}_{Z=1,S=0}$ and $\overline{\bxy}_{Z=1,S=0}$ are the vector of covariate sample means for the subsets of subjects with $Z=1$ and $S=0$ or $S=1$, respectively.
+  \end{enumerate}
+  Then $\heff0_{G}$ and $\heff1_{int}$ are M-estimators. If the estimating equations for \eqref{eq:prinEffEstApp} are each bounded by an integrable function of $\{\bm{Y},\bxy, \bm{S},\pp,\bm{Z}\}$ that does not depend on $\{\bm{\beta},\bm{\gamma}\}$, then $\heff0_{int}\rightarrow_p\eff0$ and $\heff1_{int}\rightarrow_p\eff1$ as $n\rightarrow\infty$.
+
+  If the parameter estimates of the principal score model are asymptotically normal, second partial derivatives of the estimating equations for \eqref{eq:prinEffEstApp} are bounded by an integrable function of the data for values of $\{\bm{\beta},\bm{\gamma}\}$ in a neighborhood of their probability limits, and the sandwich components of \eqref{eq:sandwich}, $A$ and $B$, exist and are finite, and if $B$ is non-singular, then $\heff0_{int}$ and $\heff1_{int}$ are jointly asymptotically normal, with a variance of the form \eqref{eq:sandwich}.
+\end{prop}
+
+Equation \eqref{eq:interaction} implies Assumption \ref{ass:rci} with $\bm{\gamma_2}=\bm{\gamma_3}=\bm{\gamma_4}=0$.
+
+\begin{proof}
+First of all, by \eqref{eq:interaction},
+\begin{equation*}
+\begin{split}
+  \EE[Y_T-Y_C|\st=0]&\\
+  =&\EE[Y|Z=1,\st=0]-\EE[Y|Z=1,\st=0]\\
+  =&\beta_2+\bm{\gamma_3}'\EE[\bxy|\st=0]
+\end{split}
+\end{equation*}
+and
+\begin{equation*}
+\begin{split}
+  \EE[Y_T-Y_C|\st=1]&\\
+  =&\EE[Y|Z=1,\st=1]-\EE[Y|Z=1,\st=1]\\
+  =&\beta_2+\beta_3+(\bm{\gamma_3}'+\bm{\gamma_4}')\EE[\bxy|\st=1]
+\end{split}
+\end{equation*}
+Furthermore, $\overline{\bxy}_{Z=1,S=0}\rightarrow \EE[\bxy|\st=0]$ and $\overline{\bxy}_{Z=1,S=1}\rightarrow \EE[\bxy|\st=1]$ as $n\rightarrow \infty$.
+
+We will show that the estimated coefficients from model \eqref{eq:interaction}, but with $R$ replacing $\st$, fit with OLS, are consistent for $\bm{\beta}$ and $\bm{\gamma}$ from \eqref{eq:interaction}.
+
+First, note that $\EE[S]=\EE\EE[S|\bx]=\EE[\pp]$ and
+\begin{align*}
+  \EE[\bx S]&=\EE[\bx S|Z=1]=\EE[\bx S|Z=0] \mbox{ (due to randomization)}\\
+  &=\EE[\bx\EE[S|\bx]|Z=0]=\EE[\bx\pp|Z=0]=\EE[\bx\pp]
+\end{align*}
+implying that, according to \eqref{eq:interaction},
+\begin{equation*}
+  \begin{split}
+    \EE[Y|\bx,Z=0]&=\beta_0+\beta_1\pp+\bm{\gamma_1}'\bxy+\bm{\gamma_2}'\bxy\pp\\
+                  &=\beta_0+\beta_1R+\bm{\gamma_1}'\bxy+\bm{\gamma_2}'\bxy R\\
+    \EE[Y|\bx,S,Z=1]&=\beta_0+\beta_2+(\beta_1+\beta_3)S+(\bm{\gamma_1}+\bm{\gamma_3})\bxy+(\bm{\gamma_2}+\bm{\gamma_4})\bxy S\\
+    &=\beta_0+\beta_2+(\beta_1+\beta_3)R+(\bm{\gamma_1}+\bm{\gamma_3})\bxy+(\bm{\gamma_2}+\bm{\gamma_4})\bxy R
+  \end{split}
+\end{equation*}
+Therefore,
+\begin{align*}
+  \EE[Y]=&\EE[Y|Z=0]+\EE[Z]\left\{\EE[Y|Z=1]-\EE[Y|Z=0]\right\}\\
+  =&\beta_0+\beta_1\EE[R]+\beta_2\EE[Z]+\beta_3\EE[ZR]+\bm{\gamma_1}'\EE[\bxy]+\bm{\gamma_2}'\EE[\bxy R]\\
+  &+\bm{\gamma_3}'\EE[\bxy Z]+\bm{\gamma_4}\EE[\bxy RZ]
+\end{align*}
+
+Analogous reasoning leads to expressions for $\EE[RY]$, $\EE[\bxy Y]$, $\EE[ZY]$,  $\EE[ZRY]$, $\EE[\bxy YZ]$, and $\EE[\bxy RZY]$.
+These, in turn, give rise to estimating equations
+\begin{equation*}
+\begin{split}
+  &\psi_i=\\ &\begin{pmatrix}
+  Y_i\\
+  \phantom{}\\
+  Y_i\ri\\
+    \phantom{}\\
+  Y_iZ_i\\
+  \phantom{}\\
+  Y_iZ_i\ri\\
+  \phantom{}\\
+  Y_i\bxy_i\\
+  \phantom{}\\
+  Y_i\bxy_i\ri\\
+  \phantom{}\\
+  Y_i\bxy_iZ_i\\
+  \phantom{}\\
+  Y_i\bxy_iZ_i\ri\\
+  \phantom{}\end{pmatrix} - \begin{pmatrix*}[l]
+    \beta_0+\beta_1R_i+\beta_2Z_i+\beta_3Z_iR_i\\
+    \quad+\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
+    \beta_0\ri+\beta_1R_i^2+\beta_2Z_i\ri+\beta_3Z_iR_i^2\\
+    \quad+\ri\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
+    (\beta_0+\beta_2)Z_i+(\beta_1+\beta_3)R_iZ_i\\
+    \quad+Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\\
+    \beta_0Z_i\ri+(\beta_1+\beta_3)Z_iR_i^2+\beta_2Z_i\ri\\
+    \quad+Z_iR_i\left\{\bm{\gamma_1}'+\bm{\gamma_3}'+R_i(\bm{\gamma_2}'+\bm{\gamma_4}')\right\}\bxy \\
+    \beta_0\bxyt+\beta_1R_i\bxyt+\beta_2Z_i\bxyt+\beta_3Z_iR_i\bxyt\\
+    \quad {}+\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
+    \beta_0\ri\bxyt+\beta_1R_i^2\bxyt+\beta_2Z_i\ri\bxyt+\beta_3Z_iR_i^2\bxyt\\
+    \quad {}+\ri\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
+        (\beta_0+\beta_2)Z_i\bxyt+(\beta_1+\beta_3)R_iZ_i\bxyt\\
+    \quad {}+Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
+\beta_0\ri Z_i\bxyt+\beta_1R_i^2Z_i\bxyt+\beta_2\ri Z_i\bxyt+\beta_3Z_iR_i^2\bxyt\\
+    \quad {}+\ri Z_i\left\{\bm{\gamma_1}'+R_i\bm{\gamma_2}'+Z_i\bm{\gamma_3}'+R_iZ_i\bm{\gamma_4}'\right\}\bxy\bxyt\\
+  \end{pmatrix*}
+  \end{split}
+\end{equation*}
+with $\EE[\psi_i]=0$.
+These are the estimating equations for the regression model \eqref{eq:interaction}, with $R$ replacing $\st$, fit by OLS.
+Consistency and asymptotic normality follow from theorems 7.8.1 and 7.8.2, respectively, of \citet{boosStefanskiBook}
+\end{proof}
+
+\subsection{Sandwich Matrix Calculations}
+
+Here we will derive the sandwich variance-covariance matrix for the \textsc{geepers} estimate without interactions between $\bx$ and either $Z$ or $\st$---i.e., with $\bm{\gamma_2}=\bm{\gamma_3}=\bm{\gamma_4}=0$ in the notation of \eqref{eq:interaction}---and estimating principal scores using a generalized linear model.
+
+We propose estimating principal effects in two stages.
+First, fit the model
+\begin{equation}\label{eq:psMod}
+  \ppi=Pr(\sti=1|\bxsi)=f(\bm{\alpha}'\bxsit)
+\end{equation}
+for some inverse link function $f(\cdot)$, where $\bxsit=[1,\bxsi]$, using (observed) values from the treatment group, and estimating $\hat{\alpha}$.
+Then let
+\begin{equation}\label{eq:ps}
+  \hat{p}_i=f(\bm{\hat{\alpha}}'\bxsit)
+\end{equation}
+for all subjects in the experiment.
+
+Finally, fit model
+\begin{equation}\label{eq:regression}
+  Y_i=\beta_0+\beta_1r_i+\beta_2Z_i+\beta_3Z_i\ri+\bm{\gamma}'\bxy_i+\epsilon_i
+\end{equation}
+to estimate $\bm{\beta}$ and hence principal effects, where $\bm{x}_i$ is a set of covariates predictive of $Y$ within principal strata.
+Let $\bm{\beta}=[\beta_0,\beta_1,\beta_2,\beta_3,\bm{\gamma}']'$.
+
+\sloppy
+Following \eqref{eq:stacked}, let $\blam(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\alpha},\bm{\beta})=\begin{pmatrix} Z_i\Omega(\bxsi,S_i;\bm{\alpha})\\ \Psi(\bxy_i,\bxsi,Y_i,Z_i,\ri(\bm{\alpha});\bm{\beta})\end{pmatrix}$, the stacked estimating equations of \eqref{eq:psMod} and \eqref{eq:regression}.
+Going forward, for the sake of brevity, we will write $\blam_i(\bm{\alpha},\bm{\beta})=\blam(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\hat{\alpha}},\bm{\hat{\beta}})$, where dependence on the data for $i$ is captured in the subscript $i$, with similar meanings for $\Psi_i(\bm{\alpha},\bm{\beta})$ and $\omega_i(\bm{\alpha})$.
+%Then let $\blamh_i=\blam_i(Z_i,S_i,\bxsi,\bxy_i,Y_i;\bm{\hat{\alpha}},\bm{\hat{\beta}})$ be the estimating equations evaluated at the estimated parameters, and let
+
+%\begin{equation*}
+%\dblam_i=\frac{\partial}{\partial [\alpha,\beta]'} \blam_i\Bigr|_{\substack{\bm{\alpha}=\bm{\hat{\alpha}}\\\bm{\beta}=\bm{\hat{\beta}}}}
+%\end{equation*}
+%the derivative matrix of $\blam$ evaluated at the estimated parameters.
+
+The variance-covariance matrix for $\bm{\hat{\alpha}}$ and $\bm{\hat{\beta}}$ can be estimated as:
+\begin{equation*}
+  \widehat{var}\left([\bm{\hat{\alpha}}',\bm{\hat{\beta}}']'\right)=A^{-1}BA^{-t}
+\end{equation*}
+where
+\begin{equation*}%\label{eq:Amat}
+  A=\sum_i \frac{\partial}{\partial [\bm{\alpha},\bm{\beta}]'} \blam_i\Bigr|_{\substack{\bm{\alpha}=\bm{\hat{\alpha}}\\\bm{\beta}=\bm{\hat{\beta}}}}
+\end{equation*}
+and
+\begin{equation*}%\label{eq:Bmat}
+  B=\sum_i \blam_i(\bm{\hat{\alpha}},\bm{\hat{\beta}})\blam_i(\bm{\hat{\alpha}},\bm{\hat{\beta}})'
+\end{equation*}
+
+Following \citet[][p. 373]{carroll2006measurement}, we %separate the estimating equations $\Psi$ into $\phi$ and $\psi$, estimating equations for models \eqref{
+can decompose the matrices into diagonal elements
+\begin{equation*}
+    \begin{split}
+        A_{1,1}&=\sum_i \partial \Omega_i/\partial \bm{\alpha}|_{\bm{\alpha}=\bm{\hat{\alpha}}}\\
+        A_{2,2}&=\sum_i\partial\Psi_i/\partial \bm{\beta}|_{\bm{\beta}=\bm{\hat{\beta}}}\\
+        B_{1,1}&=\sum_i\Omega_i(\bm{\hat\alpha})\Omega_i(\bm{\hat\alpha})'\\
+        B_{2,2}&=\sum_i \Psi_i(\bm{\hat\alpha},\bm{\hat\beta})\Psi_i(\bm{\hat\alpha},\bm{\hat\beta})'
+    \end{split}
+\end{equation*}
+ that pertain to the parameter sets $\bm{\alpha}$ and $\bm{\beta}$ and the estimating equations for models \eqref{eq:psMod} and  \eqref{eq:regression}, respectively, and
+ \begin{equation*}
+     \begin{split}
+         A_{21}&=\sum_i\partial\Psi_i/\partial \bm{\alpha}|_{\bm{\alpha}=\bm{\hat{\alpha}}}\\
+         B_{12}=B_{21}'&=\sum_i \Omega_i(\bm{\hat{\alpha}})\Psi_i(\bm{\hat{\alpha}},\bm{\hat{\beta}})'
+     \end{split}
+ \end{equation*}
+ which capture the dependence of model \eqref{eq:regression} on the parameters $\bm{\alpha}$ from \eqref{eq:psMod} and the covariance between the estimating equations of the two models.
+
+ The sub-matrix $A_{12}=\sum_i \partial \Omega_i/\partial \bm{\beta}=0$, since \eqref{eq:psMod} does not depend on $\bm{\beta}$.
+
+The diagonal matrices $A_{1,1}$ and $A_{2,2}$ and $B_{1,1}$ and $B_{2,2}$ are all the typical ``bread'' and ``meat'' matrices from M-estimation of generalized linear models and OLS.
+%In practice, we use the estimates from the \texttt{sandwich} package in \texttt{R}, adjusted in two ways: first, the function \texttt{bread} actually gives $A^{-1}$, not $A$; second, we must pay careful attention to sample sizes, since the sample size for \eqref{eq:psMod} includes only treated observations (with observed $S$) and \eqref{eq:regression} contains all observations.
+Calculation of the matrices $B_{12}$ and $B_{21}$ is straightforward after vectors $\Omega_i(\bm{\hat{\alpha}})$ and $\Psi_i(\bm{\hat{\alpha}},\bm{\hat{\beta}})$ have been calculated.
+Some specialized calculation is necessary for matrix $A_{21}$.
+
+\subsection{$A_{21}$ Matrix}
+The estimating equations for the regression \eqref{eq:regression} are
+\begin{equation}\label{eq:eeOLS}
+  \psi(Y_i,\bxy_i,\bxsi,\bm{\beta},\alpha)=X_iY_i-X_iX_i'\bm{\beta}
+\end{equation}
+Where $X_i=[1,r_i,Z_i,r_iZ_i,\bxyt_i]'$.
+In other words,
+\begin{align*}
+  \psi(Y_i,&\bxy_i,\bxsi,\bm{\beta},\bm{\alpha})=\\
+  &\left\{
+  \begin{array}{l}
+    Y_i-\left(\beta_0+\beta_1r_i+\beta_2Z_i+\beta_3Z_ir_i+\bm{\gamma}'\bxy_i\right)\\
+    r_iY_i-r_i\left(\beta_0+\beta_2Z_i+\bm{\gamma}'\bxy_i\right)-r_i^2\left(\beta_1+\beta_3Z_i\right)\\
+    Z_iY_i-Z_i\left(\beta_0+\beta_1r_i+\beta_2Z_i+\beta_3Z_ir_i+\bm{\gamma}'\bxy_i\right)\\
+    Z_ir_iY_i-Z_ir_i\left(\beta_0+\beta_2Z_i+\bm{\gamma}'\bxy_i\right)-Z_ir_i^2\left(\beta_1+\beta_3Z_i\right)\\
+    \bxy_iY_i-\bxy_i\left(\beta_0+\beta_1r_i+\beta_2Z_i+\beta_3Z_ir_i+\bm{\gamma}'\bxy_i\right)
+  \end{array}
+  \right\}
+\end{align*}
+(noting that $Z^2=Z$).
+These depend on $\bm{\alpha}$ when $r_i=p_i$, i.e., when $Z_i=0$.% or $S_i$ is missing.
+Then note that, following \eqref{eq:ps}, and letting $\eta_i=\bm{\alpha}'\bxsit$
+\begin{equation}\label{eq:derivP}
+  \frac{\partial p_i}{\partial \bm{\alpha}'}=f'(\eta_i)\frac{\partial \eta_i}{\partial \bm{\alpha}'}=f'(\eta_i)\bxsitp
+\end{equation}
+and that
+\begin{equation}
+  \frac{\partial p_i^2}{\partial \bm{\alpha}'}=2p_i\frac{\partial p_i}{\partial \bm{\alpha}'}=2f(\eta)f'(\eta_i)\bxsitp=2p_if'(\eta_i)\bxsitp
+\end{equation}
+
+Then if $r_i=p_i$,
+% \begin{align*}
+%   \frac{\partial}{\partial \bm{\alpha}'}&\psi(Y_i,\bxy_i,\bm{\beta},\bm{\alpha})=\\
+%   &\left[\begin{array}{c}
+%           -(\beta_1+\beta_3Z_i)\frac{\partial p_i}{\partial \bm{\alpha}'}\\
+%           (Y_i-\beta_0-\beta_2Z_i-\bm{\gamma}'\bm{x}_{i})\partial p/\partial\bm{\alpha}'-(\beta_1+\beta_3Z_i)\partial p^2/\partial \bm{\alpha}'\\
+%           -(\beta_1+\beta_3Z_i)\frac{\partial p_i}{\partial \bm{\alpha}'}Z_i\\
+%           Z_i\left[(Y_i-\beta_0-\beta_2Z_i-\bm{\gamma}'\bm{x}_{i})\partial p/\partial\bm{\alpha}'-(\beta_1+\beta_3Z_i)\partial p^2/\partial \bm{\alpha}'\right]\\
+%           -(\beta_1+\beta_3Z_i)\frac{\partial p_i}{\partial \bm{\alpha}'}\bxy_i
+%         \end{array}\right]\\
+%   =& \left[\begin{array}{c}
+%           -(\beta_1+\beta_3Z_i)f'(\eta_i)\bxsitp\\
+%           \left[Y_i-\beta_0-\beta_2Z_i-\bxy_i'\bm{\gamma}-2p_i(\beta_1+\beta_3Z_i)\right]f'(\eta_i)\bxsitp\\
+%           -Z_i\beta_1f'(\eta_i)\bxsitp\\
+%           Z_i\left[Y_i-\beta_0-\beta_2Z_i-\bxy_i'\bm{\gamma}-2p_i(\beta_1+\beta_3)\right]f'(\eta_i)\bxsitp\\
+%           -(\beta_1+\beta_3Z_i)f'(\eta_i)\bxy_i\bxsitp
+%     \end{array}\right]
+% \end{align*}
+
+% When $S$ is observed for all members of the treatment group, $Z_i=0$ whenever $r_i=p_i$, so the latter expression reduces to
+\begin{align*}
+  \frac{\partial}{\partial \bm{\alpha}'}&\psi(Y_i,\bxy_i,\bm{\beta},\bm{\alpha})=\\
+  & \left[\begin{array}{c}
+          -(\beta_1)f'(\eta_i)\bxsitp\\
+          \left[Y_i-X_i'\bm{\beta}-2p_i(\beta_1)\right]f'(\eta_i)\bxsitp\\
+          0\\
+          0\\
+          -\beta_1f'(\eta_i)\bxy_i\bxsitp
+    \end{array}\right]
+\end{align*}
+
+If $r_i=S_i$, $\frac{\partial}{\partial \bm{\alpha}'}\psi(Y_i,\bxy_i,\bm{\beta},\bm{\alpha})=0$.
+
+%\clearpage
+
+%\processdelayedfloats
+
+
+%\setcounter{page}{1}
+
+% \begin{center}
+% \large
+%     \textbf{Online Appendices for ``GEEPERs: Principal Stratification using Principal Scores and Stacked Estimating Equations''}
+%   \end{center}
+  \FloatBarrier
+\section{Additional Simulation Results}
+\FloatBarrier
+\subsection{Plot of  AUC versus $\alpha$}
+\FloatBarrier
+\begin{center}
+
+    \includegraphics[width=5.5in]{../simFigs/alphaAUC.pdf}
+
+\end{center}
+%\begin{table}
+%\caption{Coverage of nominal 95\% confidence intervals}
+%\clearpage
+
+\FloatBarrier
+\subsection{Full Empirical 95\% Interval Coverage Results}
+\FloatBarrier
+
+The following tables give the empirical coverage of nominal 95\% intervals for \textsc{geepers} and mixture model principal effect estimates under varying data generating models. First we show results when $n=500$ per condition, and then when $n=1000$ per condition. \\
+
+\begin{table}
+  \caption{Empirical coverage of nominal 95\% Confidence intervals for \geepers and \pmm when $n=500$ per condition.}
+  \input{coverageTabAppendix500.tex}
+ \end{table}
+
+ \begin{table}
+  \caption{Empirical coverage of nominal 95\% Confidence intervals for \geepers and \pmm when $n=1000$ per condition.}
+  \input{coverageTabAppendix1000.tex}
+ \end{table}
+
+
+ 
+
+%\clearpage
+\FloatBarrier
+\subsection{Full RMSE Results}
+\FloatBarrier
+
+The following table gives the root mean squared error (RMSE), $\left\{\sum_b (\hat{\tau}-\tau)^2/500\right\}^{1/2}$, for \textsc{geepers}, mixture model, and principal score weighting principal effect estimates under varying data generating models.\\
+
+\begin{table}
+  \caption{Empirical RMSE  for \geepers, \pmm, and \psw when $n=500$ per condition.}
+  \input{rmseTabAppendix500}
+ \end{table}
+
+
+ \begin{table}
+  \caption{Empirical RMSE  for \geepers, \pmm, and \psw when $n=1000$ per condition.}
+  \input{rmseTabAppendix1000}
+ \end{table}
+
+%\end{table}
+%\clearpage
+
+
+\FloatBarrier
+\section{Additional Results from the OPT Study}
+\FloatBarrier
+\singlespacing
+\FloatBarrier
+\subsection{Summary Statistics}
+\FloatBarrier
+The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
+
+\begin{table}
+
+\caption{\label{tab:optTab1}Descriptive statistics---mean and standard deviation or count and percent---for study variables in the full OPT dataset and in the analysis sample (i.e., complete cases)}
+\centering
+\begin{tabular}[t]{lllll}
+\toprule
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{Full Data} & \multicolumn{2}{c}{Complete Cases} \\
+\cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-5}
+  & Control & Treatment & Control & Treatment\\
+\midrule
+n & 410 & 413 & 326 & 314\\
+Fibrinogen & 21.3 (14.9) & 20.2 (13.3) & 21.5 (15.4) & 20 (13.1)\\
+Endotoxin & 1.8 (1.1) & 1.8 (1.1) & 1.8 (1.1) & 1.8 (1.1)\\
+\% Sites Bleeding & 67.3 (21.1) & 43.9 (20.4) & 67.6 (21.3) & 43.5 (20.3)\\
+Trt. Completed: No & - & 14 (3.4\%) & - & 4 (1.3\%)\\
+\addlinespace
+Trt. Completed: Und & - & 196 (47.5\%) & - & 153 (48.7\%)\\
+Trt. Completed: Yes & - & 185 (44.8\%) & - & 157 (50\%)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%\clearpage
+\FloatBarrier
+\section{Additional Results from the Bottoming-Out Study}
+\singlespacing
+The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
+
+\FloatBarrier
+\subsection{Summary Statistics}
+\FloatBarrier
+
+The following table gives summary statistics for covariates and post-treatment outcomes in two of the conditions from the empirical study.\\
+\small
+\input{tab1fac}
+%\clearpage
+
+\small
+\input{tab1num}
+\FloatBarrier
+\subsection{Regression Results}
+\FloatBarrier
+
+Regression estimates from three principal score logit models and three outcome regressions, based on the "All Covariates" principal score model, for \textsc{geepers} estimates. Standard errors shown are nominal regression errors, not sandwich corrected. Fixed-effect estimates for school (PS-models) or classroom (outcome models) are omitted.
+
+\small
+%\input{outcomeRegAppendix}
+\input{psTab}
+
+\input{regTab}
+
+% \bibliographystylesupp{plainnat}
+% \bibliographysupp{MOM}
+
+
+\bibliographystyle{apalike}
+\bibliography{MOM}
+
+\end{document}
