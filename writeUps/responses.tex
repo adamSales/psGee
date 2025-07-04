@@ -8,31 +8,15 @@
 \RequirePackage{amsmath,amsfonts,amssymb}
 %\RequirePackage[authoryear]{natbib}
 \usepackage{longtable}
-%\usepackage[notablist,tablesfirst]{endfloat}% To `separate' figures and tables from text if required
 
-\usepackage{epstopdf}% To incorporate .eps illustrations using PDFLaTeX, etc.
 \usepackage[caption=false]{subfig}% Support for small, `sub' figures and tables
-\usepackage[doublespacing]{setspace}% To produce a `double spaced' document if required
-%\setlength\parindent{24pt}% To increase paragraph indentation when line spacing is doubled
+\usepackage[doublespacing]{setspace}
 
 \usepackage[longnamesfirst,sort]{natbib}% Citation support using natbib.sty
 \bibpunct[, ]{(}{)}{;}{a}{,}{,}% Citation support using natbib.sty
 \renewcommand\bibfont{\fontsize{10}{12}\selectfont}% To set the list of references in 10 point font using natbib.sty
 
 
-% \theoremstyle{plain}% Theorem-like structures provided by asthma.sty
-% \newtheorem{theorem}{Theorem}[section]
-% \newtheorem{lemma}[theorem]{Lemma}
-% \newtheorem{corollary}[theorem]{Corollary}
-% \newtheorem{prop}[theorem]{Proposition}
-
-% \theoremstyle{definition}
-% \newtheorem{definition}[theorem]{Definition}
-% \newtheorem{example}[theorem]{Example}
-
-% \theoremstyle{remark}
-% \newtheorem{remark}{Remark}
-% \newtheorem{notation}{Notation}
 
 \usepackage{amsthm}
 \usepackage[utf8]{inputenc} % set input encoding (not needed with XeLaTeX)
@@ -76,15 +60,14 @@
 
 \maketitle
 We are grateful for the reviewers' and the editor's careful reading
-and comments. We believe that the the substantial changes we made
-chages to the manuscript in response to those comments greatly
+and comments. We believe that the substantial changes we made
+to the manuscript in response to those comments greatly
 improved the paper. Most significantly, we clarified our presentation
 and added a second application.
 We provide point-by-point responses below.
 
 \section*{Reviewer 1}
 
-The article effectively presents a simulation study comparing three methods and provides a clear application example of applying GEEPERs. However, there are notable areas for improvement, including a lack of literature review on previous simulation studies about Principal Stratification and some unclear presentations of results. Specific comments are outlined below.
 
 \begin{enumerate}
  
@@ -104,13 +87,13 @@ Thanks for this suggestion. We have added material to the introduction, starting
 \item \begin{itquote}
      Page 15: The simulation details about how variable Z is simulated and the number of replications for each condition are not clearly explained. Providing more information on these aspects would contribute to the transparency and replicability of the study.
 \end{itquote}
-We agree that the previous draft was unclear in the description of the outcome-generating model (now equation \ref{eq:y-sim}). We have added material to section \ref{sec:dataGeneration} and Table \ref{tab:factor} that includes the necessary details. Should anything still be unclear, replication code is available in the anonymized GitHub repository at \url{https://anonymous.4open.science/r/psGee-B498/}.
+We agree that the previous draft was unclear in the description of the outcome-generating model (now equation \ref{eq:y-sim}). We have added material to section \ref{sec:dataGeneration} and Table \ref{tab:factor} that includes the necessary details. Should anything still be unclear, replication code is available at \url{https://osf.io/fu2sv/?view_only=b2baebc2f3054ef796717863e4a9662f}.
 
 
 \item \begin{itquote}     Page 17: The rationale for selecting specific values for manipulated factors, such as choosing a sample size range of 100 to 1000 and using N(0,1/2) instead of N(0,1), is not adequately justified. Including evidence and citations to support these choices would strengthen the methodological foundation of the study.
 
 \end{itquote}
-We added rationale, including citations, to the paragraph beginning ``Potential and observed outcomes...'' on page \pageref{potential} and to section \ref{sec:manipulatedFactors}.
+This was a helpful suggestion. We added rationale, including citations, to section \ref{sec:manipulatedFactors}.
 
 \item \begin{itquote}     Page 18: A section detailing the evaluation metrics and criteria used to assess simulation results should precede the presentation of results. This would provide readers with a clear understanding of the benchmarks against which the findings are measured.
 
@@ -127,7 +110,7 @@ Your suggestion of a paragraph summarizing the results was quite helpful. We inc
 \item \begin{itquote}      APA Citations and References: The paper does not adhere to the APA 7th style. Authors are advised to consult the APA Formatting and Style Guide for proper citation and reference formatting throughout the manuscript. Consistency in style is crucial for scholarly publications.
 \end{itquote}
 Thank you. We have fixed the formatting.
-\End{enumerate}
+\end{enumerate}
 
 \section*{Reviewer 2}
 Comments to the Author
@@ -135,7 +118,7 @@ Great work. Well written. Please find some of my comments below. I hope they are
 
 \begin{enumerate}
 
-\item \begin{itquote}   Please provide more background on M-estimators especially to the extent it evolves to become relevant to the GEEPERs. 
+\item \begin{itquote}   Please provide more background on M-estimators, especially to the extent it evolves to become relevant to the GEEPERs. 
 \end{itquote}
 Thanks for this suggestion---in response, we added Section \ref{sec:mest}
 \item \begin{itquote}      I am wondering if doubly robust PSW estimator would reduce the remaining bias difference between GEEPERs and PSW, and Mixture and PSW.
@@ -147,7 +130,8 @@ We were also surprised by how well the \pmm performed in the simulation, especia
 
 \item \begin{itquote}    Would it be possible to offer some evaluation metric for GEEPERs, which would indicate, under some conditions researchers could possibly opt or seek other estimators?
 \end{itquote}
-This is a great suggestion. We added the paragraph beginning ``The simulation study suggests\dots'' on page \pageref{evalMetric} to give some guidance along those lines. 
+This is a great suggestion. We added some suggestions at the end of the paragraph beginning ``In sum," on page \pageref{simsum}.
+
 \item \begin{itquote}     Quickly checked Frangakis and Rubin (2002). Do you think the effect of bottom-outers (or similar experimental designs) could be partitioned into associative and dissociative effects with GEEPERs?
 \end{itquote}
 This is correct, but only in a narrow technical sense. 
@@ -155,7 +139,8 @@ Under our notation, Frangakis and Rubin (2002) define dissociative effects as co
 
 \item \begin{itquote}    It would be great if you could share the code for estimation and simulation in the next round of review (if there is). Also make sure you have comments in the code so someone reading the article can match the narrative with the code.
 \end{itquote}
-Full replication code is available at \url{FILL IN} 
+\sloppy
+Full replication code is available at \url{https://osf.io/fu2sv/?view_only=b2baebc2f3054ef796717863e4a9662f}. 
 \end{enumerate}
 
 \section{Reviewer 3}
@@ -172,11 +157,11 @@ Full replication code is available at \url{FILL IN}
 Depending on the meaning of ``do no worse,'' \geepers may or may not meet those criteria. 
 In the scenarios we tested, \geepers is always less biased and its nominal confidence intervals achieve higher empirical coverage than the competitors we tested.
 However, the competing methods often boast smaller standard errors than \geepers. 
-This set of results is typical for semi- or non-parametric methods, which tend to be less efficient than their parametric counterparts when the latter's assumptions are met, but are, say, less biased when those assumptions are violated.
+This pattern is typical for semi- or non-parametric methods, which tend to be less efficient than their parametric counterparts when the latter's assumptions are met, but are, say, less biased when those assumptions are violated.
 
 Unfortunately, \geepers may not even meet that criterion relative to \psw. Our simulation did not include scenarios in which principal ignorability held, but we expect that in such scenarios---depending on other factors---\psw may outperform \geepers in every respect. 
 That said, principal ignorability is untestable and, in our opinion, rather strong. 
-As we stated on page \pageref{evalMetric} (in the paragraph beginning ``The simulation study suggests''), researchers will have to decide in each application which assumptions are the most plausible, and choose estimators based on that decision. 
+As we stated on page \pageref{simsum} (in the paragraph beginning ``In sum''), researchers will have to decide in each application which assumptions are the most plausible, and choose estimators based on that decision. 
 
 \begin{itquote} Given this criterion, it seems to me that the simulation should focus on the last three factors in the design.  That is, I would hold the sample size and alpha fixed.  Currently, too many factors are varied at the same time to give a clear picture.  
 I would alter Table 1 to indicate which factors yield assumption violations and then violate these assumptions in isolation instead of relaxing them simultaneously.  As it currently stands, it is quite hard to understand the relative performance of GEEPERs compared to extant methods. Careful relaxation of each assumption allows the reader to see how much bias results from a single factor. 
@@ -188,7 +173,7 @@ The second part presents results for scenarios where assumptions are violated.
 The results in Figure \ref{fig:boxplots} and in Table \ref{tab:coverage} now hold $n$ fixed at $n=500$ per group and completely cross the other factors, i.e. $\alpha=0.2$ or $0.5$, interactions between $\bm{x}$ and $\st$ or $Z$, and the distribution of the residuals.
 Now it is apparent from Figure \ref{fig:boxplots} that, for instance, none of the methods are sensitive to interactions between $\bm{x}$ and $\st$, and that \pmm, but not the others, is sensitive to the distribution of the residuals.  
 
-Following your fine suggestion, we formatted Table \ref{tab:coverage}, highlighting results in red when one or more assumptions have been violated.
+Following your fine suggestion, we formatted Tables \ref{tab:factor} and \ref{tab:coverage}, highlighting results in red when one or more assumptions have been violated.
 This format makes it clearer that, for instance, \pmm makes distributional assumptions while \geepers does not, and that \geepers is less sensitive to the assumptions that both estimators make, especially when $\alpha=0.5$. 
 
 
@@ -210,4 +195,4 @@ Most prominently, we added an extensive discussion in Section \ref{sec:psInEdTec
 
 
     
-\end{document}}
+\end{document}
